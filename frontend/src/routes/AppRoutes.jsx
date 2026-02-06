@@ -3,16 +3,15 @@ import { Routes, Route } from 'react-router-dom';
 
 // Import your Layout and Pages
 import MainLayout from '../layouts/MainLayout';
-import Register from '../pages/auth/Register';
-import Login from '../pages/auth/Login';
+import Auth from '../pages/auth/Login';
 
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register/>} />
+        <Route path="login" element={<Auth />} />
+        <Route path="Register" element={<Auth />} />
       </Route>
     </Routes>
   );
