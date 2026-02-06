@@ -1,0 +1,21 @@
+.custom-btn {
+  border: none;
+  border-radius: 15px;
+  padding: 1em 2em;
+  background-color: #ccc;
+  box-shadow: 2px 5px 10px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: 300ms ease-in-out;
+  font-weight: bold;
+  width: 100%;
+}
+
+.custom-btn:hover {
+  transform: scale(1.02);
+  background-color: #6EC1D1; /* A nice brand color */
+  color: white;
+}
+
+.custom-btn:active {
+  box-shadow: inset 2px 5px 10px rgba(0,0,0,0.3); /* "Pushes" the button in */
+}
