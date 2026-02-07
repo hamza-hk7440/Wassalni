@@ -41,7 +41,8 @@ class FirebasePaymentService implements PaymentRepo {
           amount: amount,
           type: type,
           method: method,
-          status:'pending', //initial status will be pending until we get the webhook from paymee
+          status:
+              'pending', //initial status will be pending until we get the webhook from paymee
           timestamp: DateTime.now(),
         );
         await _firestore

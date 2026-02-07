@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:app/data/models/payment_model.dart';
-import 'package:app/data/services/firebase/payment_service_MYVERSION.dart';
-import 'package:app/data/services/api/paymee_remote.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebViewScreen extends StatelessWidget {
