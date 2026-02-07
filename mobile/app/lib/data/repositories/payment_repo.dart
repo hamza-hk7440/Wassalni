@@ -1,8 +1,18 @@
+import 'package:app/data/models/payment_model.dart';
+
 abstract class PaymentRepo {
   //==========payment operations===========
 
+  //create payment method this method will be called when the user start the payment and will call the paymee api
+  Future<String> createPaymentMethod({
+    required String userId,
+    required double amount,
+    required String type, //paymee,tokens
+    required String method, //online ,in station --but for the mobile will be alwyays online
+  });
+
   //save payment method
-  Future<PaymentRequest> savePaymentMethod(PaymentRequest request);
+  Future<PaymentModel> savePaymentMethod(PaymentModel Model);
 
   //update payment method
   Future<void> updatePayment({
@@ -11,7 +21,7 @@ abstract class PaymentRepo {
   });
 
   //get payment method by id
-  Future<PaymentRequest> getPaymentById(String paymentId);
+  Future<PaymentModel> getPaymentById(String paymentId);
 
   //==========token operations==========
 
@@ -23,8 +33,4 @@ abstract class PaymentRepo {
   Future<void> redeemTokens(String userId, double amount);
   //check if user has enough tokens
   Future<bool> hasEnoughTokens(String userId, double amount);
-  //============validation operations===========
-
-  //validate payment before processing
-  Future<Map<String, dynamic>> validatePayment(PaymentRequest request);
 }
