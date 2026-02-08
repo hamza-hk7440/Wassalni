@@ -8,4 +8,6 @@ abstract class TicketRepo {
   Future<String> getQrDataOfTheTicketById(String ticketId);
   //update the status of the ticket to used when the user use it
   Future<void> updateTicketStatus(String ticketId, String status);
+  //verify ticket validity by its qr data
+  Future<bool> verifyTicketValidity(String qrData);
 }
