@@ -1,2 +1,5 @@
 import { useRef } from "react";
-const inputRef = useRef<HTMLInputElement>(null);
+
+export const useInputRef = () => {
+  return useRef(null);
+};
