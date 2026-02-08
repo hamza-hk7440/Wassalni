@@ -1,3 +1,4 @@
+import 'package:app/features/controller/controller_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:app/features/payment/screens/test_payment.dart';
 
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: TestPayment(),
+      home: TicketScannerScreen(),
     );
   }
 }
