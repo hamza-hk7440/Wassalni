@@ -1,8 +1,27 @@
-import express from 'express';
-import bodyParser from 'body-parser';
+import dotenv from "dotenv/config";
+import express from "express";
+import webhooksRouter from "./src/webhooks/index.js";
+import paymentRoutes from "./src/routes/payment.routes.js";
 
 const app = express();
-app.use(bodyParser.json()); // read JSON from POST requests
+app.use(express.json());
+
+//----wwebhooks routes----//
+//paymee webhook route
+app.use("/webhooks", webhooksRouter);
+
+//paymee normal route
+//so the post that comes from the user it contains /api/payments soit go here first,this route name will call paymentRoutes that is imported from payment.routes.js so we go there
+app.use("/api/payments", paymentRoutes);
+
+//test route to check if the server is running
+app.get("/", (req, res) => {
+  res.send("Backend API is running");
+});
+app.get("/payment-success", (req, res) =>
+  res.send("Success! You can close this tab."),
+);
+app.get("/payment-error", (req, res) => res.send("Payment was cancelled."));
 
 const PORT = 3000;
 
