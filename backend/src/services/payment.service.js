@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../config/supabase.js";
 import dotenv from "dotenv";
 dotenv.config();
 import {
@@ -11,8 +11,6 @@ import axios from "axios";
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
-
-const supabase = createClient(supabaseUrl, supabaseKey);
 export async function createRecharge({ user_id, amount }) {
   try {
     //to create a recharge transaction, we need to insert a new record in the transactions table with type as recharge, method as online and status as pending
@@ -50,7 +48,7 @@ export async function createRecharge({ user_id, amount }) {
       return_url: "https://localhost:3000/payment-success",
       cancel_url: "https://localhost:3000/payment-error",
       webhook_url: `${process.env.NGROK_URL}/webhooks/paymee`, //this is the route that paymee will send to it the response,and like we said it have to be public(on the internet bcz paymee can't communicate to local host ) so we use Ngrok
-      order_id: transaction?.transaction_id?.toString() || "temp_id", //here we are verifying if the id is null so we will put to it temp_id to don't crash
+      order_id: transaction.transaction_id || "temp_id", //here we are verifying if the id is null so we will put to it temp_id to don't crash
     };
     //the axios.post take 3 parameters the first is url is the destination (is the sandbox url given by paymee),the second is the data (the Payload) and the third is config it means how it should be sent
     const response = await axios.post(
@@ -69,5 +67,69 @@ export async function createRecharge({ user_id, amount }) {
   } catch (error) {
     console.error("Paymee API error:", error.response?.data || error.message);
     throw error;
+  }
+}
+//to update the tokens ballance after a recharge or a payment
+export async function updateTokenBalance({ user_id, amount }) {
+  try {
+    //the rpc can call a supabase function ,so in our case the function is called increment_token
+    const { data: users, error: dbError } = await supabase.rpc(
+      "increment_tokens",
+      {
+        target_user_id: user_id,
+        add_amount: amount,
+      },
+    );
+    if (dbError) throw dbError;
+    return users;
+  } catch (error) {
+    console.log("balance update error", error.message);
+  }
+}
+//to verify if the tokens that one user have are enough for payment or no
+export async function verifyTokensNumber({ user_id, amount }) {
+  try {
+    const { data: users, error: dbError } = await supabase
+      .from("users")
+      .select("token_balance")
+      .eq("user_id", user_id)
+      .single();
+
+    if (dbError) throw dbError;
+    return users.token_balance >= amount;
+  } catch (error) {
+    console.log("balance verify error", error.message);
+  }
+}
+//to get the  token ballance
+export async function getTokensBalance({ user_id }) {
+  try {
+    const { data: users, error: dbError } = await supabase
+      .from("users")
+      .select("token_balance")
+      .eq("user_id", user_id)
+      .single();
+    if (dbError) throw dbError;
+    return users.token_balance;
+  } catch (error) {
+    console.log("balance verify error", error.message);
+  }
+}
+//to get the equivalent between money and token
+export function moneyAndTokensEquivalent({ amount }) {
+  return amount * 10;
+}
+//get the user id by the transaction id
+export async function getUserIdByTransactionId({ transaction_id }) {
+  try {
+    const { data: transactions, error: dbError } = await supabase
+      .from("transactions")
+      .select("user_id")
+      .eq("transaction_id", transaction_id)
+      .single();
+    if (dbError) throw dbError;
+    return transactions.user_id;
+  } catch (error) {
+    console.log(" get User Id By Transaction Id verify error", error.message);
   }
 }

@@ -5,7 +5,7 @@ import paymentRoutes from "./src/routes/payment.routes.js";
 
 const app = express();
 app.use(express.json());
-
+app.use(express.urlencoded({ extended: true })); //we add this bcz paymee don't use json it use a format called :application/x-www-form-urlencoded
 //----wwebhooks routes----//
 //paymee webhook route
 app.use("/webhooks", webhooksRouter);
