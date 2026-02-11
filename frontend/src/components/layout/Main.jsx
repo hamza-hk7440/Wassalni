@@ -1,9 +1,9 @@
 function MainLayout() {
   return (
    
-    <div className="p-10 flex flex-col items-center gap-12">
-      
-      <p className="text-2xl font-bold text-gray-800">Total Tickets: 120</p>
+    <div className="min-h-screen pt-24 p-10 flex flex-col items-center gap-12 bg-slate-50">
+       <div>
+       </div>
       
       <div className="flex justify-center gap-15">
       
