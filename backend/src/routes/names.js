@@ -70,4 +70,10 @@ http://localhost:3000/token/updatetokenbalance
 //patameters
 user_id
 amount
+=====to redeem tokens from user======
+//the POST
+http://localhost:3000/users/redeemtokensfromuser
+//parameters
+user_id
+amount
 */

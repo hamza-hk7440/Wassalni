@@ -176,22 +176,13 @@ export async function redeemTokensFromUser({ user_id, amount }) {
       .select("token_balance")
       .eq("user_id", user_id)
       .single();
-
     if (tokenError) {
       throw tokenError;
     }
-
-    if (typeof tokenBalance !== 'number') {
-      throw new Error('Token balance is not a number');
-    }
-
-    if (tokenBalance < amount) {
-      throw new Error('Insufficient token balance');
-    }
-
+    const currentBalance = tokenBalance.token_balance;
     await supabase
       .from("users")
-      .update({ token_balance: tokenBalance - amount })
+      .update({ token_balance: currentBalance - amount })
       .eq("user_id", user_id);
   } catch (error) {
     console.error("redeem token operation failed", error.message);
