@@ -71,17 +71,20 @@ export async function createRecharge({ user_id, amount }) {
 }
 //to update the tokens ballance after a recharge or a payment
 export async function updateTokenBalance({ user_id, amount }) {
+  console.log("user_id:", user_id, "amount:", amount);
+
   try {
-    //the rpc can call a supabase function ,so in our case the function is called increment_token
-    const { data: users, error: dbError } = await supabase.rpc(
-      "increment_tokens",
-      {
-        target_user_id: user_id,
-        add_amount: amount,
-      },
-    );
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("token_balance")
+      .eq("user_id", user_id)
+      .single();
+    if (error) throw error;
+    const { error: dbError } = await supabase
+      .from("users")
+      .update({ token_balance: user.token_balance + amount })
+      .eq("user_id", user_id);
     if (dbError) throw dbError;
-    return users;
   } catch (error) {
     console.log("balance update error", error.message);
   }
@@ -115,10 +118,15 @@ export async function getTokensBalance({ user_id }) {
     console.log("balance verify error", error.message);
   }
 }
-//to get the equivalent between money and token
-export function moneyAndTokensEquivalent({ amount }) {
+//convert money to token
+export function moneyToToken({ amount }) {
   return amount * 10;
 }
+//convert token to money
+export function tokenToMoney({ amount }) {
+  return amount / 10;
+}
+
 //get the user id by the transaction id
 export async function getUserIdByTransactionId({ transaction_id }) {
   try {

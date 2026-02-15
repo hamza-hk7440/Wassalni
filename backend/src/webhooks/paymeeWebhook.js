@@ -1,7 +1,7 @@
 import { supabase } from "../config/supabase.js";
 import {
   getUserIdByTransactionId,
-  moneyAndTokensEquivalent,
+  moneyToToken,
   updateTokenBalance,
 } from "../services/payment.service.js";
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -40,7 +40,7 @@ export default async function paymeeWebhook(req, res) {
       const userId = await getUserIdByTransactionId({
         transaction_id: order_id,
       });
-      const tokens_added = moneyAndTokensEquivalent({
+      const tokens_added = moneyToToken({
         amount: parseFloat(amount),
       });
 
