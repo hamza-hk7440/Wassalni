@@ -1,0 +1,12 @@
+{
+  "name": "pfaa-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.95.3",
+    "axios": "^1.13.5",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "qrcode": "^1.5.4"
+  }
+}
