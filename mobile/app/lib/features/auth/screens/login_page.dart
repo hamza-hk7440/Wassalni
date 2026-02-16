@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/core/theme/colors_R.dart';
+import 'package:app/core/theme/styles_R.dart';
 class LoginScreen extends StatefulWidget{
   const LoginScreen({super.key});
   State<LoginScreen> createState() => _LoginScreenState();
@@ -11,14 +12,19 @@ class _LoginScreenState extends State<LoginScreen>{
   Widget build(BuildContext context){
     return Scaffold(
       backgroundColor: AppColors.colorK,
-
-      body: Center(child:SingleChildScrollView(padding: const EdgeInsets.all(25),child: Form(key: _formKey,
+      body: Center(child:SingleChildScrollView(padding: const EdgeInsets.all(25), child: Form(key: _formKey,
       child: Column(children: [
-        SizedBox(height: 150,child:Image.asset("assets/logo.png"),),
+        const SizedBox(height: 40),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(color: Colors.white,boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1),blurRadius: 20,spreadRadius: 2,offset: const Offset(0, 8))]),
+          child: Image.asset("assets/logoApp.png",height: 120,),
+        ),
         const SizedBox(height: 25),
-        const Text("Welcome Back to Wassalni",style:TextStyle(fontSize: 26,fontWeight: FontWeight.bold,),),
+        const Text("Welcome Back to Wassalni",style: AppTextStyles.grandTitre),
         const SizedBox(height: 30),
-        TextFormField(controller: emailController,decoration: InputDecoration(labelText:"Email",border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),),prefixIcon: const Icon(Icons.email),),
+        TextFormField(controller: emailController,
+        decoration: InputDecoration(labelText:"Email",hintText :"Enter your mail", labelStyle: AppTextStyles.hint,hintStyle: AppTextStyles.hint,border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),),prefixIcon: const Icon(Icons.email),),
         validator: (value){
           if (value==null || value.isEmpty){
             return "Please enter your email";
@@ -27,9 +33,8 @@ class _LoginScreenState extends State<LoginScreen>{
         },
         ),
         const SizedBox(height:20),
-        TextFormField( controller: passwordController,obscureText: true,decoration: InputDecoration(
-          labelText: "Password",border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),),prefixIcon: const Icon(Icons.lock),
-        ),validator: (value) {
+        TextFormField( controller: passwordController,obscureText: true,
+        decoration: InputDecoration(labelText: "Password",hintText:"Enter your password ",labelStyle: AppTextStyles.hint,hintStyle: AppTextStyles.hint,border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),),prefixIcon: const Icon(Icons.lock),),validator: (value) {
           if (value==null || value.isEmpty){
             return "Password cannot be empty !";
           }
@@ -38,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen>{
         ),
         const SizedBox(height: 30),
         SizedBox(
-          width:double.infinity,
+          width:100,
           height: 50,
           child: ElevatedButton(style: ElevatedButton.styleFrom(elevation: 3,shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12),),),
           onPressed:() {
