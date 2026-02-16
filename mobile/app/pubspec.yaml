@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  mobile_scanner: ^5.0.0
   http: ^1.1.0
   qr_flutter: ^4.0.0
   webview_flutter: ^4.2.1
@@ -68,7 +69,11 @@ flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
-  uses-material-design: true
+    uses-material-design: true
+
+    assets:
+      - assets/logoApp.png
+      - assets/token.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
