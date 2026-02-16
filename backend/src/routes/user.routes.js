@@ -3,6 +3,8 @@ const router = express.Router();
 import {
   createUser,
   getUserEssentialInfo,
+  googleSignIn,
+  googleSignUpCallback,
   redeemTokensFromUser,
 } from "../controllers/user.controller.js";
 //create user route
@@ -11,4 +13,6 @@ router.post("/createuser", createUser);
 router.post("/getuseressentialinfo", getUserEssentialInfo);
 //redem an amount of tokens from user
 router.post("/redeemtokensfromuser", redeemTokensFromUser);
+router.get("/auth/google", googleSignIn);
+router.get("/auth/callback", googleSignUpCallback);
 export default router;

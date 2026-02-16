@@ -1,3 +1,4 @@
+import { url } from "inspector";
 import * as userService from "../services/user.service.js";
 
 export const createUser = async (req, res) => {
@@ -53,7 +54,7 @@ export const getUserEssentialInfo = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-export const redeemTokensFromUser =async (req, res) => {
+export const redeemTokensFromUser = async (req, res) => {
   try {
     const { user_id, amount } = req.body;
     if (!user_id || !amount) {
@@ -61,8 +62,30 @@ export const redeemTokensFromUser =async (req, res) => {
         error: "user id and amount are required",
       });
     }
-    const newBalance = await userService.redeemTokensFromUser({ user_id, amount });
-    res.status(200).json({ message: "tokens redeemed successfully", newBalance });
+    const newBalance = await userService.redeemTokensFromUser({
+      user_id,
+      amount,
+    });
+    res
+      .status(200)
+      .json({ message: "tokens redeemed successfully", newBalance });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+export const googleSignIn = async (req, res) => {
+  try {
+    const data = await userService.signUpWithGoogle();
+    res.status(200).json({ url: data.url });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+export const googleSignUpCallback = async (req, res) => {
+  try {
+    const { code } = req.query;
+    const data = await userService.handleAuthCallback(code);
+    res.status(200).json({ user: data.user });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

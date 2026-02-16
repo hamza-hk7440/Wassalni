@@ -189,3 +189,32 @@ export async function redeemTokensFromUser({ user_id, amount }) {
     throw error;
   }
 }
+export async function signUpWithGoogle() {
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: process.env.GOOGLE_OAUTH_REDIRECT_URL,
+      },
+    });
+    if (error) {
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    console.error("Google sign-in error:", error.message);
+    throw error;
+  }
+}
+export async function handleAuthCallback(code) {
+  try {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    console.error("Auth callback error:", error.message);
+    throw error;
+  }
+}
