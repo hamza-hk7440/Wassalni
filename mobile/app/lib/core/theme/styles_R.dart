@@ -5,8 +5,8 @@ class AppTextStyles {
 
   static const TextStyle grandTitre = TextStyle(
     fontFamily: 'serif',
-    fontSize: 28,
-    fontWeight: FontWeight.w700,
+    fontSize: 25,
+    fontWeight: FontWeight.w600,
     letterSpacing: 0.4,
   );
 

@@ -11,14 +11,14 @@ class _LoginScreenState extends State<LoginScreen>{
   final _formKey = GlobalKey<FormState>();
   Widget build(BuildContext context){
     return Scaffold(
-      backgroundColor: AppColors.colorK,
+      backgroundColor: AppColors.colorA,
       body: Center(child:SingleChildScrollView(padding: const EdgeInsets.all(25), child: Form(key: _formKey,
       child: Column(children: [
         const SizedBox(height: 40),
         Container(
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(color: Colors.white,boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1),blurRadius: 20,spreadRadius: 2,offset: const Offset(0, 8))]),
-          child: Image.asset("assets/logoApp.png",height: 120,),
+          decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1),blurRadius: 20,spreadRadius: 2,offset: const Offset(0, 8))]),
+          child: Image.asset("assets/logoApp.png",height: 170,width: 50,),
         ),
         const SizedBox(height: 25),
         const Text("Welcome Back to Wassalni",style: AppTextStyles.grandTitre),
@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen>{
         ),
         const SizedBox(height: 30),
         SizedBox(
-          width:100,
+          width:400,
           height: 50,
           child: ElevatedButton(style: ElevatedButton.styleFrom(elevation: 3,shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12),),),
           onPressed:() {
