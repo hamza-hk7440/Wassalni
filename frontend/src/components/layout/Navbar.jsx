@@ -1,124 +1,216 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 function Navbar() {
-  {/*const [stats, setStats] = useState({nom:"",prenom:"",email:"",role:""});
-  const [loading, setLoading] = useState(true);
-
-  
-  useEffect(() => {
-    fetch('http://votre-api.com/stats') 
-      .then(response => response.json())
-      .then(data => {
-        setStats(data);
-        setLoading(false);
-      })
-      .catch(error => console.error("Erreur backend:", error));
-  }, []);
-  if (loading) return <div className="p-10 text-center text-blue-600 font-bold">Chargement...</div>;
-  */}
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [notifications] = useState(3);
+{/*const [stats, setStats] = useState({nom:"",prenom:"",email:"",role:""});
+  const [loading, setLoading] = useState(true);
+
+  
+  useEffect(() => {
+    fetch('http://votre-api.com/stats') 
+      .then(response => response.json())
+      .then(data => {
+        setStats(data);
+        setLoading(false);
+      })
+      .catch(error => console.error("Erreur backend:", error));
+  }, []);
+  if (loading) return <div className="p-10 text-center text-blue-600 font-bold">Chargement...</div>;
+  */}
+const coolPalette = {
+  deepOcean: "#1E5470", // Bleu foncé (Primaire)
+  classicBlue: "#34729C",
+  skyBlue: "#6CB1DA",
+  softTeal: "#6EC1D1",   // Accent
+  frostBlue: "#C8EAEC",
+  iceWhite: "#D1ECFF"    // Fond / Texte clair
+};
+
   const states = {
     nom: "rayen",
     prenom: "raddaoui",
     email: "raddaoui.rayen@gmail.com",
     role: "Administrateur"
   };
+
   const closeProfile = () => {
     setIsProfileOpen(false);
   };
 
   return (
     <>
-    
-    <div className="fixed inset-0  z-30  "
-          onClick={() => { setIsOpen(false); closeProfile(); }} style={{ backgroundColor: isOpen ? 'rgba(0, 0, 0, 0.5)' : 'transparent' }}></div>
-      {/* hadhi lbar lfo9ania  */}
-      <div className='fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-100 z-30 
-      flex items-center  px-8 shadow-sm justify-between'>      
-        <h1 className="text-blue-600 text-xl font-black tracking-tight ml-16">
-          TRANSPORT<span className="text-slate-400 font-light">PRO</span>
+      <div className="fixed inset-0 z-30"
+           onClick={() => { setIsOpen(false); closeProfile(); }} 
+           style={{ backgroundColor: isOpen ? 'rgba(0, 96, 100, 0.3)' : 'transparent' }}></div>
+
+  
+      <div className='fixed top-0 left-0 right-0 h-16 bg-white border-b z-30 flex items-center px-8 shadow-sm justify-between'
+           style={{ borderColor: coolPalette.frostBlue }}>      
+        <h1 className="text-xl font-black tracking-tight ml-16" style={{ color: coolPalette.deepOcean }}>
+          TRANSPORT<span className="font-light" style={{ color: coolPalette.softTeal }}>PRO</span>
         </h1>
 
-        {/* lprofil ta3 l'admin*/}
-          <div className="flex items-center"  >
-              <button onClick={() => setIsProfileOpen(true)}
-               className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md border-2 
-                border-white hover:scale-105 transition-transform">
-                {states.prenom.charAt(0).toUpperCase()}{states.nom.charAt(0).toUpperCase()}
-              </button>
-            {isProfileOpen ? <div className="absolute top-16
-             right-8 w-48 bg-white rounded-lg shadow-lg p-4 z-40">
-             <p className="text-[11px] text-slate-500 truncate w-full mb-1">{states.email}</p>
-             <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">{states.role}</p>
-           <button className="mt-2 text-xs text-red-500 hover:text-red-700" onClick={() => setIsProfileOpen(false)}>Fermer</button>
-          </div> : null}
-</div>
         
+        <div className="flex items-center gap-4">
+          {/* Notification Bell */}
+          <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-all">
+            <span className="text-xl">🔔</span>
+            {notifications > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
+                    style={{ backgroundColor: coolPalette.softTeal }}>
+                {notifications}
+              </span>
+            )}
+          </button>
+
+          {/* Profile Button */}
+          <button onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-md border-2 border-white hover:scale-105 transition-transform"
+                  style={{ backgroundColor: coolPalette.deepOcean }}>
+            {states.prenom.charAt(0).toUpperCase()}{states.nom.charAt(0).toUpperCase()}
+          </button>
+
+          {isProfileOpen && (
+            <div className="absolute top-16 right-8 w-64 bg-white rounded-xl shadow-2xl p-5 z-40 border animate-fadeIn"
+                 style={{ borderColor: coolPalette.frostBlue }}>
+              {/* Profile Header */}
+              <div className="flex items-center gap-3 mb-4 pb-4 border-b" style={{ borderColor: coolPalette.frostBlue }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                     style={{ backgroundColor: coolPalette.deepOcean }}>
+                  {states.prenom.charAt(0).toUpperCase()}{states.nom.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-sm" style={{ color: coolPalette.deepOcean }}>
+                    {states.prenom} {states.nom}
+                  </p>
+                  <p className="text-xs" style={{ color: coolPalette.skyBlue }}>
+                    {states.email}
+                  </p>
+                </div>
+              </div>
+
+              {/* Role Badge */}
+              <div className="mb-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg inline-block"
+                   style={{ backgroundColor: coolPalette.iceWhite, color: coolPalette.deepOcean }}>
+                  ⭐ {states.role}
+                </p>
+              </div>
+
+              {/* Menu Items */}
+              <div className="space-y-1 mb-4">
+                <button className="w-full text-left px-3 py-2 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-all"
+                        style={{ color: coolPalette.deepOcean }}>
+                  ⚙️ Paramètres
+                </button>
+                <button className="w-full text-left px-3 py-2 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-all"
+                        style={{ color: coolPalette.deepOcean }}>
+                  👤 Mon Profil
+                </button>
+              </div>
+
+              {/* Logout */}
+              <Link to="/login" 
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-bold rounded-lg hover:bg-red-50 transition-all text-red-600 border border-red-200"
+                    onClick={() => setIsProfileOpen(false)}>
+                <span>🚪</span> Déconnexion
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* bottonati ili y7ilo w ysakrou lbar 3la jnab */}
+      {/* Boutons d'ouverture/fermeture */}
       {!isOpen ? (  
-        <button className="fixed top-3.5 left-4 z-50 p-2 bg-slate-50 text-slate-600 rounded-lg 
-        hover:bg-blue-50 hover:text-blue-600 transition-all border border-slate-200" 
-        onClick={() => setIsOpen(true)}>
+        <button className="fixed top-3.5 left-4 z-50 p-2 rounded-lg transition-all border" 
+                style={{ backgroundColor: coolPalette.iceWhite, borderColor: coolPalette.frostBlue, color: coolPalette.deepOcean }}
+                onClick={() => setIsOpen(true)}>
           <span className="">☰</span>
         </button>
       ) : (  
-        <button className="fixed top-3.5 left-4 z-50 p-2 bg-red-50 text-red-600 rounded-lg 
-        hover:bg-red-100 transition-all border border-red-100" 
-        onClick={() => setIsOpen(false)}>
+        <button className="fixed top-3.5 left-4 z-50 p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all border border-red-100" 
+                onClick={() => setIsOpen(false)}>
           <span className="text-xl">✕</span>
         </button>
       )}   
 
-
-      {/* lbar 3la jnab */}
-      <nav className={`fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-40 transform transition-transform duration-500  ${
-        isOpen  ? 'translate-x-0' : '-translate-x-full'}`}>
+      {/* Sidebar latérale */}
+      <nav className={`fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-40 transform transition-transform duration-500 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+           style={{ borderRight: `1px solid ${coolPalette.frostBlue}` }}>
         
         <div className="flex flex-col h-full p-6 pt-24">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Menu Principal</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] mb-6" style={{ color: coolPalette.deepOcean }}>Menu Principal</p>
           
-          <ul className="flex flex-col space-y-2 flex-grow">
+          <ul className="flex flex-col space-y-1 flex-grow">
+            <li>
+              <Link to="/dashboard" onClick={() => setIsOpen(false)} 
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
+                style={{ color: coolPalette.deepOcean }}>
+                <span className="text-xl group-hover:scale-125 transition-transform">🏠</span> 
+                <span>Tableau de bord</span>
+              </Link>
+            </li>
             <li>
               <Link to="/client" onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200 font-semibold group">
-                <span className="group-hover:scale-120 transition-transform">👤</span> Client
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
+                style={{ color: coolPalette.deepOcean }}>
+                <span className="text-xl group-hover:scale-125 transition-transform">👤</span> 
+                <span>Client</span>
               </Link>
             </li>
             <li>
               <Link to="/controleur" onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200 font-semibold group">
-                <span className="group-hover:scale-120 transition-transform">👨‍💼</span> Contrôleur
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
+                style={{ color: coolPalette.deepOcean }}>
+                <span className="text-xl group-hover:scale-125 transition-transform">👨‍💼</span> 
+                <span>Contrôleur</span>
               </Link>
             </li>
             <li>
               <Link to="/NvAdmin" onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200 font-semibold group">
-                <span className="group-hover:scale-120 transition-transform">⚙️</span> Nouveau Admin
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
+                style={{ color: coolPalette.deepOcean }}>
+                <span className="text-xl group-hover:scale-125 transition-transform">⚙️</span> 
+                <span>Nouveau Admin</span>
               </Link>
             </li>
             <li>
               <Link to="/transport" onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200 font-semibold group">
-                <span className="group-hover:scale-120 transition-transform">🚌</span> Transport
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
+                style={{ color: coolPalette.deepOcean }}>
+                <span className="text-xl group-hover:scale-125 transition-transform">🚌</span> 
+                <span>Transport</span>
               </Link>
             </li>
             <li>
               <Link to="/ticket" onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all duration-200 font-semibold group">
-                <span className="group-hover:scale-120 transition-transform">🎫</span> Ticket
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
+                style={{ color: coolPalette.deepOcean }}>
+                <span className="text-xl group-hover:scale-125 transition-transform">🎫</span> 
+                <span>Ticket</span>
               </Link>
             </li>
           </ul>
 
-          
-          <div className="mt-auto pt-6 border-t border-slate-100">
+          {/* Status Indicator */}
+          <div className="mt-auto pt-6 border-t" style={{ borderColor: coolPalette.frostBlue }}>
+            <div className="mb-4 px-4">
+              <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: coolPalette.skyBlue }}>
+                Statut
+              </p>
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
+                <span className="text-sm font-semibold" style={{ color: coolPalette.deepOcean }}>En ligne</span>
+              </div>
+            </div>
+            
             <Link to="/login" onClick={() => setIsOpen(false)} 
-              className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 font-bold group">
-              <span className="group-hover:rotate-12 transition-transform">🚪</span> Deconnexion
+              className="flex items-center justify-center gap-3 mx-4 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 font-bold group border-2 border-red-200 active:scale-95">
+              <span className="text-lg group-hover:rotate-12 transition-transform">🚪</span> 
+              <span>Déconnexion</span>
             </Link>
           </div>
         </div>
