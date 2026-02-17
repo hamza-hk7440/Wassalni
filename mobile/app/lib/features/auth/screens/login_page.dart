@@ -18,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen>{
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1),blurRadius: 20,spreadRadius: 2,offset: const Offset(0, 8))]),
-          child: Image.asset("assets/logoApp.png",height: 700,width: 500,),
+          child: Image.asset("assets/logoApp.png",height: 400,width: 500,),
         ),
         const SizedBox(height: 25),
         const Text("Welcome Back to Wassalni",style: AppTextStyles.grandTitre),

@@ -1,6 +1,4 @@
-import 'package:app/features/controller/controller_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:app/features/payment/screens/test_payment.dart';
 import 'package:app/features/auth/screens/login_page.dart';
 
 void main() {
@@ -12,12 +10,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
-    );
+    return MaterialApp(debugShowCheckedModeBanner: false, home: LoginScreen());
   }
 }
-
-
-
