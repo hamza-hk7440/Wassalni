@@ -11,3 +11,15 @@
 -->wlla fmma 3 codes :super admin code,admin code,controller code
 
 ### NB: bnsba lel super admin bch ikn 3ndou 2 code (admin code fih 6 chiffre bch y3ml login 3di w special code ali houwa super admin code fih 4 chiffre bch yd5l lel 7wyj eli tb3a super admin)
+
+## Authentification
+
+-->el login wel signup lkol kmlthm (mt3 passenger web w mobile w bel google zde,mt3 admin super admin fel web,mt3 controller fel mobile)
+
+## Payment
+
+-->payment kml rk7tou
+
+## Ticket
+
+-->ticket generation wel functions eli tb3inha kmlt rk7thm

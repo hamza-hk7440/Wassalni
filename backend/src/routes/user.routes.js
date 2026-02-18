@@ -1,11 +1,15 @@
 import express from "express";
 const router = express.Router();
 import {
+  controllerLogin,
   createUser,
   getUserEssentialInfo,
   googleSignIn,
   googleSignUpCallback,
+  loginForPassengerAdminAndSuperAdmin,
   redeemTokensFromUser,
+  secondStepLoginForAdminAndSuperAdmin,
+  userLoginForMobile,
 } from "../controllers/user.controller.js";
 //create user route
 router.post("/createuser", createUser);
@@ -15,4 +19,8 @@ router.post("/getuseressentialinfo", getUserEssentialInfo);
 router.post("/redeemtokensfromuser", redeemTokensFromUser);
 router.get("/auth/google", googleSignIn);
 router.get("/auth/callback", googleSignUpCallback);
+router.post("/loginwebfirststep", loginForPassengerAdminAndSuperAdmin);
+router.post("/loginwebsecondstep", secondStepLoginForAdminAndSuperAdmin);
+router.post("/loginmobile", userLoginForMobile);
+router.post("/controllerlogin", controllerLogin);
 export default router;

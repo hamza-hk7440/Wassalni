@@ -2,6 +2,7 @@ import { supabase } from "../config/supabase.js";
 import crypto from "crypto";
 import dotenv from "dotenv";
 dotenv.config();
+const pendingSessions = {};
 //in this function we will create a user by role,we will use the signUP supabase function
 //the user when he created her will be inserted in the auth and users table by the function written on sql in supabase the function in supabase is called : handle_new_user
 export async function createUser({
@@ -108,7 +109,7 @@ export async function createUser({
         return finalCode;
       }
 
-      case "super_admin": {
+      case "superAdmin": {
         let finalCode;
         let saved = false;
 
@@ -132,7 +133,7 @@ export async function createUser({
           });
 
           if (!error) {
-            finalCode = code;
+            finalCode = code1;
             saved = true;
             console.log("Super admin created successfully:", typeFour.user);
           } else if (error.code === "23505") {
@@ -189,11 +190,13 @@ export async function redeemTokensFromUser({ user_id, amount }) {
     throw error;
   }
 }
+//this function will be used to sign in with google and it will return the user data if the sign in was successful
 export async function signUpWithGoogle() {
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
+        //this where the user will be redirected after the sign in process is done
         redirectTo: process.env.GOOGLE_OAUTH_REDIRECT_URL,
       },
     });
@@ -206,6 +209,7 @@ export async function signUpWithGoogle() {
     throw error;
   }
 }
+//this function will be used to handle the callback from google after the user sign in and it will return the session data if the sign in was successful
 export async function handleAuthCallback(code) {
   try {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -215,6 +219,177 @@ export async function handleAuthCallback(code) {
     return data;
   } catch (error) {
     console.error("Auth callback error:", error.message);
+    throw error;
+  }
+}
+export async function userLoginForMobile({ email, password }) {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      throw error;
+    }
+
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("role,first_name,last_name,token_balance")
+      .eq("user_id", data.user.id)
+      .single();
+    if (userError) {
+      throw userError;
+    }
+    if (userData.role !== "passenger") {
+      throw new Error(
+        "Access denied.Use the correct login method for your role.",
+      );
+    }
+    return {
+      token: data.session.access_token,
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+        role: userData.role,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        token_balance: userData.token_balance,
+      },
+    };
+  } catch (error) {
+    console.error("Mobile login error:", error.message);
+    throw error;
+  }
+}
+export async function verifyAdminCode({ user_id, code }) {
+  try {
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("admin_code")
+      .eq("user_id", user_id)
+      .single();
+    if (userError) {
+      throw userError;
+    }
+    return userData.admin_code === code;
+  } catch (error) {
+    console.error("verify admin code error:", error.message);
+    throw error;
+  }
+}
+export async function verifycontrollerCode({ user_id, code }) {
+  try {
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("controller_code")
+      .eq("user_id", user_id)
+      .single();
+    if (userError) {
+      throw userError;
+    }
+    return userData.controller_code === code;
+  } catch (error) {
+    console.error("verify controller code error:", error.message);
+    throw error;
+  }
+}
+export async function loginForPassengerAdminAndSuperAdmin({ email, password }) {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      throw error;
+    }
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("role, first_name, last_name, token_balance,user_id")
+      .eq("user_id", data.user.id)
+      .single();
+    if (userError) {
+      throw userError;
+    }
+    if (userData.role === "passenger") {
+      return {
+        token: data.session.access_token,
+        role: "passenger",
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          role: userData.role,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          token_balance: userData.token_balance,
+        },
+      };
+    }
+    if (userData.role === "admin" || userData.role === "superAdmin") {
+      const tempSesionId = crypto.randomUUID();
+      pendingSessions[tempSesionId] = {
+        user_id: userData.user_id,
+        token: data.session.access_token,
+        role: userData.role,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        email: data.user.email,
+      };
+      return {
+        role: "admin_or_super_admin",
+        session: tempSesionId,
+      };
+    }
+  } catch (error) {
+    console.error("Login error:", error.message);
+    throw error;
+  }
+}
+export async function controllerLogin({ email, password }) {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      throw error;
+    }
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("role, first_name, last_name,user_id,controller_code")
+      .eq("user_id", data.user.id)
+      .single();
+    if (userError) {
+      throw userError;
+    }
+    return {
+      token: data.session.access_token,
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        controller_code: userData.controller_code,
+      },
+    };
+  } catch (error) {
+    console.error("Controller login error:", error.message);
+    throw error;
+  }
+}
+
+export async function getPendingSession(sessionId) {
+  try {
+    return pendingSessions[sessionId] || null;
+  } catch (error) {
+    console.error("Get pending session error:", error.message);
+    throw error;
+  }
+}
+export async function deletePendingSession(sessionId) {
+  try {
+    delete pendingSessions[sessionId];
+  } catch (error) {
+    console.error("Delete pending session error:", error.message);
     throw error;
   }
 }
