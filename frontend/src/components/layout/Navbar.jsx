@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Navbar() {
+  const navigator = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [notifications] = useState(3);
@@ -21,12 +22,12 @@ function Navbar() {
   if (loading) return <div className="p-10 text-center text-blue-600 font-bold">Chargement...</div>;
   */}
 const coolPalette = {
-  deepOcean: "#1E5470", // Bleu foncé (Primaire)
+  deepOcean: "#1E5470", 
   classicBlue: "#34729C",
   skyBlue: "#6CB1DA",
-  softTeal: "#6EC1D1",   // Accent
+  softTeal: "#6EC1D1",   
   frostBlue: "#C8EAEC",
-  iceWhite: "#D1ECFF"    // Fond / Texte clair
+  iceWhite: "#D1ECFF"    
 };
 
   const states = {
@@ -103,12 +104,9 @@ const coolPalette = {
               {/* Menu Items */}
               <div className="space-y-1 mb-4">
                 <button className="w-full text-left px-3 py-2 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-all"
-                        style={{ color: coolPalette.deepOcean }}>
+                        style={{ color: coolPalette.deepOcean }}
+                        onClick={() => navigator('/parametre')}>
                   ⚙️ Paramètres
-                </button>
-                <button className="w-full text-left px-3 py-2 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-all"
-                        style={{ color: coolPalette.deepOcean }}>
-                  👤 Mon Profil
                 </button>
               </div>
 
@@ -162,7 +160,7 @@ const coolPalette = {
               </Link>
             </li>
             <li>
-              <Link to="/controleur" onClick={() => setIsOpen(false)} 
+              <Link to="/superlog" onClick={() => setIsOpen(false)} 
                 className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
                 style={{ color: coolPalette.deepOcean }}>
                 <span className="text-xl group-hover:scale-125 transition-transform">👨‍💼</span> 
@@ -170,7 +168,7 @@ const coolPalette = {
               </Link>
             </li>
             <li>
-              <Link to="/NvAdmin" onClick={() => setIsOpen(false)} 
+              <Link to="/superlog" onClick={() => setIsOpen(false)} 
                 className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
                 style={{ color: coolPalette.deepOcean }}>
                 <span className="text-xl group-hover:scale-125 transition-transform">⚙️</span> 
