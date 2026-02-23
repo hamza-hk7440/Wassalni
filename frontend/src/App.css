@@ -1,9 +1,31 @@
+* {
+  box-sizing: border-box;
+}
 
-/* css for main bashbord*/
-.container {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 50px;
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #16384a;
+  background: linear-gradient(180deg, #e8f6ff 0%, #f5fbff 50%, #ffffff 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 

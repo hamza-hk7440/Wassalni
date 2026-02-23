@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Superlog() {
+    const navigate = useNavigate();
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -35,6 +37,9 @@ function Superlog() {
 
         setSuccess('✓ Accès autorisé! Bienvenue super admin');
         setPassword('');
+        setTimeout(() => {
+            navigate('/admin');
+        }, 700);
     };
 
     return (
