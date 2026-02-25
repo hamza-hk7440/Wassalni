@@ -11,10 +11,11 @@ import {
   secondStepLoginForAdminAndSuperAdmin,
   userLoginForMobile,
 } from "../controllers/user.controller.js";
+import { requireAuth } from "../middlewares/requireAuth.js";
 //create user route
 router.post("/createuser", createUser);
 //get essential info ny user id(first name, last name, email,role)
-router.post("/getuseressentialinfo", getUserEssentialInfo);
+router.post("/getuseressentialinfo",requireAuth, getUserEssentialInfo);
 //redem an amount of tokens from user
 router.post("/redeemtokensfromuser", redeemTokensFromUser);
 router.get("/auth/google", googleSignIn);
