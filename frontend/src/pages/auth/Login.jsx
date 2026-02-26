@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Input from '../../components/common/Input';
-import './Login.css';
+import Button from '../../components/common/Button';
+import '../../App.css';
 
 const Auth = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Determine if we show Login or Register based on the URL
+
   const [isLogin, setIsLogin] = useState(location.pathname === '/login');
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Sync state if URL changes (e.g., user clicks back button)
+
   useEffect(() => {
     setIsLogin(location.pathname === '/login');
   }, [location.pathname]);
@@ -23,80 +24,42 @@ const Auth = () => {
   };
 
   return (
-    <div className="login-page-wrapper">
-      
-      {/* Role Toggle: Stays fixed at the top */}
-      <div className="role-toggle-container">
-        <button 
-          className={`toggle-btn ${!isAdmin ? 'active-user' : ''}`}
-          onClick={() => setIsAdmin(false)}
-        >
-          User Account
-        </button>
-        <button 
-          className={`toggle-btn ${isAdmin ? 'active-admin' : ''}`}
-          onClick={() => setIsAdmin(true)}
-        >
-          Admin Portal
-        </button>
+   <div className='auth-container'>
+      <div className='role-switcher'>
+        <Button variant={!isAdmin ? 'active-user':''} onClick={()=>setIsAdmin(false)}>User Account</Button>
+        <Button variant={!isAdmin ? 'active-user':''} onClick={()=>setIsAdmin(true)}>admin portal</Button>
       </div>
-
-      <div className="perspective-container">
-        <div className={`flip-card-inner ${isAdmin ? 'is-flipped' : ''}`}>
-          
-          {/* --- FRONT FACE: USER (Swaps between Login/Register) --- */}
-          <div className="card-face face-front">
-            <h1 className="form-title">{isLogin ? "Login" : "Register"}</h1>
-            
-            <form className="flex flex-col gap-4">
-              {/* Conditional Fields for Register */}
-              {!isLogin && (
-                <div className="fade-in-fields">
-                  <Input label="Full Name" placeholder="John Doe" required />
-                </div>
-              )}
-
-              <Input label="Email" type="email" placeholder="user@example.com" required />
-              
-              <Input label="Password" type="password" placeholder="••••••••" required />
-
-              {!isLogin && (
-                <div className="fade-in-fields">
-                  <Input label="Confirm Password" type="password" placeholder="••••••••" required />
-                </div>
-              )}
-
-              <button className="custom-submit-btn" type="submit">
-                {isLogin ? "Sign In" : "Create Account"}
-              </button>
-            </form>
-
-            <p className="card-footer-text">
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
-              <button className="link-btn" onClick={toggleAuthMode}>
-                {isLogin ? "Register here" : "Login here"}
-              </button>
-            </p>
-          </div>
-
-          {/* --- BACK FACE: ADMIN --- */}
-          <div className="card-face face-back">
-            <h1 className="form-title" style={{ color: '#1E5470' }}>Admin Access</h1>
-            <form className="flex flex-col gap-4">
-              <Input label="Admin ID" placeholder="ADM-XXXX" required />
-              <Input label="Security Key" type="password" placeholder="Enter Secret Key" required />
-              <button className="custom-submit-btn admin-btn" type="submit">
-                Verify Identity
-              </button>
-            </form>
-            <p className="card-footer-text" style={{ fontSize: '11px', color: '#999', letterSpacing: '2px' }}>
-              RESTRICTED PERSONNEL ONLY
-            </p>
-          </div>
-
+      <div className='container'>
+        <div className={`card-flip-engine ${isAdmin ? 'is-flipped' : ''}`}> {/*responsable for the animation of the card flipping*/}
+        <div className='card-face-user'>
+          <h1 className='user-title'>{isLogin?"login":"register"}</h1>
+          <form action="" className='auth-form'>
+            {!isLogin&& <Input label="Full Name" placeholder="Full Name" required/>}
+            <Input label="Email" type='email'placeholder="user@example.com"required/>
+            <Input label="Password" type='password'placeholder="••••••••"required/>
+            {!isLogin && (
+            <div className="fade-in-fields"><Input label="Confirm Password" type="password" placeholder="••••••••" required /></div> )}
+            <Button type='submit'variant='submit-primary'>{isLogin?"sign In":"Create Account"}</Button>
+          </form>
+          <p className='card-footer-text'>{isLogin?"Don't have an account?":"Already have an account "}
+            <Button variant='link-bnt'onClick={toggleAuthMode}>
+              {isLogin?"Register here":"login here"}
+            </Button>
+          </p>
         </div>
       </div>
-    </div>
+      <div className='card-face-admin'>
+        <h1 className='admin-title'>Admin Access</h1>
+        <form action="" className='auth-form'>
+          <Input label="Admin ID" placeholder="ADM-XXXX"required/>
+          <Input label="Security key"placeholder="Enter Secret Key" type='password'required/>
+          <Button type='submit' variant='submit-admin'>Verify Identity</Button>
+        </form>
+        <p className='card-footer-text'>RESTRICTED PERSONNEL ONLY</p>
+      </div>
+      
+      </div>
+   </div>
   );
 };
 

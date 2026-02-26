@@ -1,11 +1,14 @@
 import { Outlet } from 'react-router-dom';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 
 const MainLayout = () => {
   return (
     <div>
-      {/* If you have a Navbar, it goes here */}
       <main>
-        <Outlet /> {/* <--- WITHOUT THIS, LOGIN.JSX IS INVISIBLE */}
+        <Navbar/>
+       <Outlet/>
+       <Footer/>
       </main>
     </div>
   );
