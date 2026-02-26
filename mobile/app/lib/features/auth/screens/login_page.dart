@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen>{
       color: Colors.white.withOpacity(0.1),
       borderRadius: BorderRadius.circular(18),
       border: Border.all(
-        color: const Color(0xFF4DD0E1).withOpacity(0.3),
+        color: const Color.fromARGB(255, 243, 248, 248).withOpacity(0.3),
       ),
     ),
     child: InkWell(
@@ -34,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen>{
         const Text(
             "Continue with Google",
             style: TextStyle(
-              color: Color(0xFFE0F7FA),
+              color: Color.fromARGB(255, 10, 58, 64),
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen>{
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      backgroundColor: AppColors.colorF,
+      backgroundColor: AppColors.colorL,
       body: Center(child:SingleChildScrollView(padding: const EdgeInsets.all(25), child: Form(key: _formKey,
       child: Column(children: [SizedBox(height: 30),Text("Welcome Back",style: GoogleFonts.poppins(fontSize: 28,fontWeight: FontWeight.w700,color: Colors.blue[900],
                 shadows: [Shadow(offset: Offset(1, 1),blurRadius: 3,color: Colors.blueGrey.withOpacity(0.5),)],),
