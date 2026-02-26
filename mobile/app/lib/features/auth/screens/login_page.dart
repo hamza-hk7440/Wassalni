@@ -48,33 +48,34 @@ class _LoginScreenState extends State<LoginScreen>{
   Widget build(BuildContext context){
     return Scaffold(
       backgroundColor: AppColors.colorL,
-      body: Center(child:SingleChildScrollView(padding: const EdgeInsets.all(25), child: Form(key: _formKey,
-      child: Column(children: [SizedBox(height: 30),Text("Welcome Back",style: GoogleFonts.poppins(fontSize: 28,fontWeight: FontWeight.w700,color: Colors.blue[900],
-                shadows: [Shadow(offset: Offset(1, 1),blurRadius: 3,color: Colors.blueGrey.withOpacity(0.5),)],),
-                  textAlign: TextAlign.center,
-        ),
-        SizedBox(height: 30),
-        TextFormField(controller: emailController, decoration: InputDecoration(labelText: 'Email',hintText: 'Enter your email',prefixIcon: Icon(Icons.email, color: Colors.blue[800]),
-           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),),filled: true,fillColor: Colors.white,),
-           validator: (value) {
-             if (value == null || value.isEmpty) {
-                return 'Please enter your email';
-             }
+      body: Center(child:SingleChildScrollView(padding: const EdgeInsets.all(25), 
+      child: Form(key: _formKey,
+      child: Column(children: [SizedBox(height: 20),Text("Welcome Back",style: GoogleFonts.poppins(fontSize: 28,fontWeight: FontWeight.w700,color: Colors.blue[900],
+      shadows: [Shadow(offset: Offset(1,1),blurRadius: 3,color: Colors.blueGrey.withOpacity(0.5),)],), textAlign: TextAlign.center),
+      SizedBox(height: 40),
+      SizedBox(width: 300,
+        child: TextFormField(controller: emailController, decoration: InputDecoration(labelText: 'Email',hintText: 'Enter your email',prefixIcon: Icon(Icons.email, color: AppColors.colorD),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),),filled: true,fillColor: Colors.white,),
+        validator: (value) {
+        if (value == null || value.isEmpty) {
+            return 'Please enter your email';
+        }
              return null;
-          },
-        ),
-        SizedBox(height: 20), 
-        TextFormField(controller: passwordController,obscureText: true,decoration: InputDecoration(labelText: 'Password',hintText: 'Enter your password',
-          prefixIcon: Icon(Icons.lock, color: Colors.blue[800]),border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),),filled: true,fillColor: Colors.white,),
+        },
+        ),)
+      ,SizedBox(height: 40), 
+       SizedBox(width: 300,
+          child: TextFormField(controller: passwordController,obscureText: true,decoration: InputDecoration(labelText: 'Password',hintText: 'Enter your password',
+          prefixIcon: Icon(Icons.lock, color: AppColors.colorD),border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),),filled: true,fillColor: Colors.white,),
           validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Password cannot be empty!';
               }
               return null;
           },
-       ),
-        const SizedBox(height: 30),
-        SizedBox( width: double.infinity,height: 50,child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[800],shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12),),),
+       ),)
+        ,SizedBox(height: 40),
+         SizedBox( width: 300,height: 50,child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: AppColors.colorD,shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12),),),
           onPressed: () {
             if (_formKey.currentState!.validate()){
               print("Email :${emailController.text}");
@@ -82,12 +83,12 @@ class _LoginScreenState extends State<LoginScreen>{
             }
           },
           child:Text("Login",style: GoogleFonts.poppins(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.white,),),),),
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("Don't have an account ?",style: GoogleFonts.poppins(color: Colors.grey[700]),),
-              TextButton(onPressed: () {}, child: Text("Create Account",style: GoogleFonts.poppins(fontWeight: FontWeight.bold,color: Colors.blue[700],decoration: TextDecoration.underline,),),)
+              TextButton(onPressed: () {}, child: Text("Create Account",style: GoogleFonts.poppins(fontWeight: FontWeight.bold,color: AppColors.colorD,decoration: TextDecoration.underline,),),)
             ],
           ),
         const SizedBox(height: 30),
