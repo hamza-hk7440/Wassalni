@@ -1,14 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 function Parametre() {
-    const [nom, setNom] = useState('');
-    const [email, setEmail] = useState('');
-    const [telephone, setTelephone] = useState('');
-    const [adresse, setAdresse] = useState('');
+    const defaultProfile = {
+        nom: 'Rayen Masmoudi',
+        email: 'rayen.masmoudi@example.com',
+        telephone: '12345678',
+        adresse: '123 Rue Principale, Tunis'
+    };
+
+    const [nom, setNom] = useState(defaultProfile.nom);
+    const [email, setEmail] = useState(defaultProfile.email);
+    const [telephone, setTelephone] = useState(defaultProfile.telephone);
+    const [adresse, setAdresse] = useState(defaultProfile.adresse);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
-
-    // Palette du navbar
+    const [changeNom, setChangeNom] = useState(false);
+    const [changeEmail, setChangeEmail] = useState(false);
+    const [changeTelephone, setChangeTelephone] = useState(false);
+    const [changeAdresse, setChangeAdresse] = useState(false);
+    const nomRef = useRef(null);
+    const emailRef = useRef(null);
+    const telephoneRef = useRef(null);
+    const adresseRef = useRef(null);
     const palette = {
         deepOcean: "#1E5470", 
         classicBlue: "#34729C",
@@ -42,60 +55,99 @@ function Parametre() {
         }
 
         setMessage('✓ Paramètres mis à jour avec succès');
-        setNom('');
-        setEmail('');
-        setTelephone('');
-        setAdresse('');
+        setChangeNom(false);
+        setChangeEmail(false);
+        setChangeTelephone(false);
+        setChangeAdresse(false);
     };
 
-    const InputField = ({ label, type, value, onChange, placeholder }) => (
+    useEffect(() => {
+        if (changeNom && nomRef.current) {
+            nomRef.current.focus();
+        }
+    }, [changeNom, nom.length]);
+
+    useEffect(() => {
+        if (changeEmail && emailRef.current) {
+            emailRef.current.focus();
+        }
+    }, [changeEmail, email.length]);
+
+    useEffect(() => {
+        if (changeTelephone && telephoneRef.current) {
+            telephoneRef.current.focus();
+        }
+    }, [changeTelephone, telephone.length]);
+
+    useEffect(() => {
+        if (changeAdresse && adresseRef.current) {
+            adresseRef.current.focus();
+            
+        }
+    }, [changeAdresse, adresse.length]);
+
+    const InputField = ({ label, type, value, onChange, placeholder, isEditing, onToggle, inputRef }) => (
         <div className="space-y-2">
-            <label style={{ color: palette.deepOcean }} className="block text-sm font-semibold">{label}</label>
+            <div className="flex items-center justify-between">
+                <label style={{ color: palette.deepOcean }} className="block text-sm font-semibold">{label}</label>
+                <button
+                    type="button"
+                    onClick={onToggle}
+                    className="text-sm font-semibold"
+                    style={{ color: isEditing ? palette.deepOcean : palette.classicBlue }}
+                >
+                    {isEditing ? '❌' : '✏️'}
+                </button>
+            </div>
             <input
+                ref={inputRef}
                 type={type}
                 value={value}
                 onChange={onChange}
                 placeholder={placeholder}
-                style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
-                className="w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition duration-200 bg-white shadow-sm"
-                onFocus={(e) => e.target.style.borderColor = palette.softTeal}
-                onBlur={(e) => e.target.style.borderColor = palette.frostBlue}
+                readOnly={!isEditing}
+                style={{
+                    borderColor: isEditing ? palette.softTeal : palette.frostBlue,
+                    color: palette.deepOcean,
+                    backgroundColor: isEditing ? '#FFFFFF' : '#F8FAFC'
+                }}
+                className="w-full px-4 py-3 border rounded-md focus:outline-none bg-white"
             />
         </div>
     );
 
     return (
-        <div style={{ background: `linear-gradient(to bottom right, ${palette.iceWhite}, white, ${palette.frostBlue})` }} className="min-h-screen py-12 px-4">
+        <div style={{ background: `linear-gradient(to bottom right, ${palette.iceWhite}, white, ${palette.frostBlue})` }} className="min-h-screen py-10 px-4">
             <div className="mx-auto max-w-2xl">
                 {/* Header */}
-                <div className="text-center mb-10">
+                <div className="text-center mb-8">
                     <div 
-                        className="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg mb-4"
+                        className="inline-flex items-center justify-center w-14 h-14 rounded-xl mb-3"
                         style={{ background: `linear-gradient(135deg, ${palette.deepOcean}, ${palette.classicBlue})` }}
                     >
-                        <span className="text-3xl">⚙️</span>
+                        <span className="text-2xl">⚙️</span>
                     </div>
                     <h1 
-                        className="text-4xl font-bold bg-clip-text text-transparent mb-2"
+                        className="text-3xl font-bold bg-clip-text text-transparent mb-1"
                         style={{ backgroundImage: `linear-gradient(to right, ${palette.deepOcean}, ${palette.classicBlue})` }}
                     >
                         Paramètres du Compte
                     </h1>
-                    <p style={{ color: palette.skyBlue }} className="text-sm font-semibold">Gérez vos informations personnelles</p>
+                    <p style={{ color: palette.skyBlue }} className="text-sm">Gérez vos informations personnelles</p>
                 </div>
 
                 {/* Card */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div className="bg-white rounded-xl shadow-md overflow-hidden border" style={{ borderColor: palette.frostBlue }}>
                     <div 
                         className="h-1"
                         style={{ background: `linear-gradient(to right, ${palette.deepOcean}, ${palette.softTeal})` }}
                     ></div>
 
-                    <div className="p-8 sm:p-10">
+                    <div className="p-6 sm:p-8">
                         {/* Messages */}
                         {error && (
-                            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-                                <p className="text-red-700 font-medium flex items-center">
+                            <div className="mb-6 p-3 rounded-md border-l-4" style={{ backgroundColor: palette.iceWhite, borderColor: palette.classicBlue }}>
+                                <p className="font-medium flex items-center" style={{ color: palette.deepOcean }}>
                                     <span className="text-xl mr-2">⚠️</span>
                                     {error}
                                 </p>
@@ -103,8 +155,8 @@ function Parametre() {
                         )}
 
                         {message && (
-                            <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg">
-                                <p className="text-green-700 font-medium flex items-center">
+                            <div className="mb-6 p-3 rounded-md border-l-4" style={{ backgroundColor: palette.iceWhite, borderColor: palette.softTeal }}>
+                                <p className="font-medium flex items-center" style={{ color: palette.deepOcean }}>
                                     <span className="text-xl mr-2">✓</span>
                                     {message}
                                 </p>
@@ -118,7 +170,10 @@ function Parametre() {
                                 type="text"
                                 value={nom}
                                 onChange={(e) => setNom(e.target.value)}
-                                placeholder={`${states.nom} ${states.prenom}`}
+                                placeholder="donner votre nom complet"
+                                isEditing={changeNom}
+                                onToggle={() => setChangeNom(!changeNom)}
+                                inputRef={nomRef}
                             />
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -127,14 +182,20 @@ function Parametre() {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder={states.email}
+                                    placeholder="donner votre email"
+                                    isEditing={changeEmail}
+                                    onToggle={() => setChangeEmail(!changeEmail)}
+                                    inputRef={emailRef}
                                 />
                                 <InputField
                                     label="Téléphone"
                                     type="tel"
                                     value={telephone}
                                     onChange={(e) => setTelephone(e.target.value)}
-                                    placeholder={states.telephone }
+                                    placeholder="donner votre numéro de téléphone"
+                                    isEditing={changeTelephone}
+                                    onToggle={() => setChangeTelephone(!changeTelephone)}
+                                    inputRef={telephoneRef}
                                 />
                             </div>
 
@@ -143,7 +204,10 @@ function Parametre() {
                                 type="text"
                                 value={adresse}
                                 onChange={(e) => setAdresse(e.target.value)}
-                                placeholder={states.adresse}
+                                placeholder="donner votre adresse"
+                                isEditing={changeAdresse}
+                                onToggle={() => setChangeAdresse(!changeAdresse)}
+                                inputRef={adresseRef}
                             />
 
                             {/* Buttons */}
@@ -151,9 +215,7 @@ function Parametre() {
                                 <button
                                     type="submit"
                                     style={{ background: `linear-gradient(to right, ${palette.deepOcean}, ${palette.classicBlue})` }}
-                                    className="text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-lg transform hover:scale-105 active:scale-95"
-                                    onMouseEnter={(e) => e.target.style.background = `linear-gradient(to right, ${palette.classicBlue}, #1e4959)`}
-                                    onMouseLeave={(e) => e.target.style.background = `linear-gradient(to right, ${palette.deepOcean}, ${palette.classicBlue})`}
+                                    className="text-white font-semibold py-3 px-6 rounded-md"
                                 >
                                     Modifier les Paramètres
                                 </button>
@@ -161,9 +223,7 @@ function Parametre() {
                                     type="button"
                                     onClick={() => window.history.back()}
                                     style={{ background: 'linear-gradient(to right, #EF4444, #DC2626)' }}
-                                    className="text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-lg transform hover:scale-105 active:scale-95"
-                                    onMouseEnter={(e) => e.target.style.background = 'linear-gradient(to right, #DC2626, #991B1B)'}
-                                    onMouseLeave={(e) => e.target.style.background = 'linear-gradient(to right, #EF4444, #DC2626)'}
+                                    className="text-white font-semibold py-3 px-6 rounded-md"
                                 >
                                     Quitter sans changer
                                 </button>
