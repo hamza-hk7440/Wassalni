@@ -52,7 +52,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               child: SlideTransition(position: _slideAnimation, child: Image.asset('assets/AppIcon.png',height: 150,),),
               ),
         const SizedBox(height: 20),
-            // Texte animé
             FadeTransition(
               opacity: _fadeAnimation,
               child: Text(
@@ -60,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 style: GoogleFonts.poppins(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.colorA, // Ton bleu foncé
+                  color: AppColors.colorA, 
                   letterSpacing: 1.5,
                 ),
               ),
