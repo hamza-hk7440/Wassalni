@@ -49,9 +49,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   child: Column(mainAxisAlignment: MainAxisAlignment.center,
   children: [
     FadeTransition(opacity: _fadeAnimation,
-              child: SlideTransition(position: _slideAnimation, child: Image.asset('assets/AppIcon.png',height: 150,),),
-              ),
-        const SizedBox(height: 20),
+      child: SlideTransition(position: _slideAnimation, child: Image.asset('assets/AppIcon.png',height: 150,),),),
+      const SizedBox(height: 20),
             FadeTransition(
               opacity: _fadeAnimation,
               child: Text(
