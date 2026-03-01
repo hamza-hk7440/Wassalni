@@ -9,9 +9,11 @@ class SignupScreen extends StatefulWidget {
   _SignupScreenState createState() => _SignupScreenState();
 }
 class _SignupScreenState extends State<SignupScreen> {
-  final nameController = TextEditingController();
+  final firstNameController = TextEditingController();
+  final lastNameController =TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
@@ -53,22 +55,31 @@ class _SignupScreenState extends State<SignupScreen> {
     const SizedBox(height: 8),
     Text("Join us today!", textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey[600])),
     const SizedBox(height: 40),
-    TextFormField(controller: nameController,keyboardType: TextInputType.name,decoration: InputDecoration(labelText: 'Full Name',prefixIcon: Icon(Icons.person_outline, color: AppColors.colorA),
+    Row(children: [Expanded(
+    child:TextFormField(controller: firstNameController,keyboardType: TextInputType.name,decoration: InputDecoration(labelText: 'First Name',prefixIcon: Icon(Icons.person_outline, color: AppColors.colorA),
     filled: true,fillColor: Colors.white,border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),),
-    validator: (value) => (value == null || value.isEmpty) ? 'Name is required' : null,),
+    validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,),),
+    const SizedBox(width: 15),
+    Expanded(child: TextFormField(controller: lastNameController,decoration: InputDecoration(labelText: 'Last Name',filled: true,fillColor: Colors.white,border: OutlineInputBorder(borderRadius: BorderRadius.circular(15),borderSide: BorderSide.none),),
+    validator: (value) => (value == null || value.isEmpty)? 'Required' : null,),),],),
     const SizedBox(height: 18),
-
     TextFormField(controller: emailController,keyboardType: TextInputType.emailAddress,decoration: InputDecoration(labelText: 'Email',prefixIcon: Icon(Icons.email_outlined, color: AppColors.colorA),
     filled: true,fillColor: Colors.white,border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),),
-    validator: (value) => (value == null || value.isEmpty) ? 'Email is required' : null,),
+    validator: (value) => (value == null || value.contains('@')) ? 'Invalid Email' : null,),
     const SizedBox(height: 18),
-
     TextFormField(controller: passwordController,obscureText: !_isPasswordVisible,decoration: InputDecoration(labelText: 'Password',prefixIcon: Icon(Icons.lock_outline, color: AppColors.colorA),
     suffixIcon: IconButton(icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.grey),
     onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),),
     filled: true,fillColor: Colors.white,border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),),
     validator: (value) => (value == null || value.length < 6) ? 'Minimum 6 characters' : null,
     ),
+    const SizedBox(height: 18),
+    TextFormField(controller: confirmPasswordController,obscureText: !_isPasswordVisible,decoration: InputDecoration(labelText: 'Confirm Password',prefixIcon: Icon(Icons.lock_reset,color: AppColors.colorA),filled: true,fillColor: Colors.white,border: OutlineInputBorder(borderRadius: BorderRadius.circular(15),borderSide: BorderSide.none),),
+    validator: (value) {
+      if (value == null || value.isEmpty) return 'Please confirm password !';
+      if (value != passwordController.text) return 'Passwords do not match' ;
+      return null ;
+    },),
     const SizedBox(height: 30),
     SizedBox(height: 55,child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: AppColors.colorA,elevation: 5,shadowColor: AppColors.colorA.withOpacity(0.4),shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),),
     onPressed: _isLoading ? null : () async {
@@ -78,7 +89,7 @@ class _SignupScreenState extends State<SignupScreen> {
         if (mounted) {
             setState(() => _isLoading = false);
             ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Account created for ${nameController.text}!"), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating),);
+            SnackBar(content: Text("Account created "), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating),);
         }
       }
     },

@@ -14,6 +14,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Wasalni',
-       home: const SplashScreen());
+      home: const SplashScreen());
   }
 }
