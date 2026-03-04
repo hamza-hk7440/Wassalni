@@ -3,6 +3,7 @@ import webhooksRouter from "./src/webhooks/index.js";
 import paymentRoutes from "./src/routes/payment.routes.js";
 import userRoutes from "./src/routes/user.routes.js";
 import ticketRoutes from "./src/routes/ticket.routes.js";
+import adminRoutes from "./src/routes/admin.routes.js";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); //we add this bcz paymee don't use json it use a format called :application/x-www-form-urlencoded
@@ -20,6 +21,8 @@ app.use("/token", paymentRoutes);
 app.use("/users", userRoutes);
 //create ticket route
 app.use("/ticket", ticketRoutes);
+//create admin route
+app.use("/admin", adminRoutes);
 
 //test route to check if the server is running
 app.get("/", (req, res) => {

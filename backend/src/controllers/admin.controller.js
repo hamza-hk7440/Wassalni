@@ -1,11 +1,11 @@
 
-const { supabase } = require('../config/supabase');
-const { v4: uuidv4 } = require('uuid');
+import { supabase } from '../config/supabase.js';
+import { v4 as uuidv4 } from 'uuid';
 
 
 // use case mt3 stats fi dashboard
 
-const getDashboardStats = async (req, res) => {
+export const getDashboardStats = async (req, res) => {
     try {
         const [users, transactions, buses] = await Promise.all([
             supabase.from('users').select('user_id', { count: 'exact' }),
@@ -13,12 +13,14 @@ const getDashboardStats = async (req, res) => {
             supabase.from('transports').select('transport_id', { count: 'exact' })
         ]);
 
-        const { data: revenueData } = await supabase
+        const { data: revenueData, error: revenueError } = await supabase
             .from('transactions')
             .select('amount')
-            .eq('status', 'success');
+            .eq('status', 'completed');
 
-        const totalRevenue = revenueData.reduce((sum, transaction) => sum + transaction.amount, 0);
+        if (revenueError) throw revenueError;
+
+        const totalRevenue = revenueData.reduce((sum, transaction) => sum + Number(transaction.amount), 0);
 
         res.status(200).json({
             total_users: users.count,
@@ -37,9 +39,9 @@ const getDashboardStats = async (req, res) => {
 
 // use case mt3 create controller
 
-const createController = async (req, res) => {
+export const createController = async (req, res) => {
     try {
-        const { email, password, full_name } = req.body;
+        const { email, password, first_name, last_name } = req.body;
 
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email,
@@ -48,16 +50,17 @@ const createController = async (req, res) => {
 
         if (authError) throw authError;
 
-        const uniqueCode = `CTRL-${Math.floor(1000 + Math.random() * 9000)}`;
+        const controllerCode = `CTRL-${Math.floor(1000 + Math.random() * 9000)}`;
 
         const { data, error: dbError} = await supabase
             .from('users')
             .insert([{
                 user_id: authData.user.id,
                 email: email,
-                full_name: full_name,
+                first_name: first_name,
+                last_name: last_name,
                 role: 'controller',
-                unique_code: uniqueCode
+                controller_code: controllerCode
             }])
             .select();
 
@@ -75,8 +78,3 @@ const createController = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
-
-module.exports = {
-    getDashboardStats,
-    createController
-};
