@@ -16,14 +16,15 @@ const requireAdmin = async (req, res, next) => {
         const { data: userData, error: dbError } = await supabase
             .from('users')
             .select('role')
-            .eq('id', user.id)
+            .eq('user_id', user.id) // FIXED: Changed 'id' to 'user_id'
             .single();
 
         if (dbError || !userData) {
             return res.status(500).json({ error: 'Failed to fetch user data.' });
         }
 
-        if (userData.role !== 'admin') {
+        // FIXED: Allow both 'admin' and 'superAdmin' to pass
+        if (userData.role !== 'admin' && userData.role !== 'superAdmin') {
             return res.status(403).json({ error: 'Access Denied, Admins only.' });
         }
 
