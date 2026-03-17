@@ -1,4 +1,4 @@
-import { supabase } from "../config/supabase";
+import { supabase } from "../config/supabase.js";
 //next() we  will use it to pass the control to the next middleware or route bcz in routes we will call for example router.get('/profile', requireAuth, getProfile); so we need to pass the control to the getProfile function
 //the rreq result will contain 2 main things the header and the body and in the header we habe the authorization that contain the token
 export const requireAuth = async (req, res, next) => {

@@ -1,4 +1,4 @@
-import { supabase } from "../config/supabase";
+import { supabase } from "../config/supabase.js";
 export const requirePassenger = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
