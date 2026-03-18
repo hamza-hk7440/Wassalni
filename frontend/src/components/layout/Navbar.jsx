@@ -75,7 +75,7 @@ const coolPalette = {
       <div className='fixed top-0 left-0 right-0 h-16 bg-white/95 border-b z-30 flex items-center px-6 md:px-8 shadow-sm justify-between backdrop-blur-sm'
            style={{ borderColor: coolPalette.frostBlue }}>
         <h1 className="text-xl font-black tracking-tight ml-14 md:ml-16" style={{ color: coolPalette.deepOcean }}>
-          TRANSPORT<span className="font-light" style={{ color: coolPalette.softTeal }}>PRO</span>
+          WASSALNI<span className="font-light" style={{ color: coolPalette.softTeal }}>ADMIN</span>
         </h1>
 
         

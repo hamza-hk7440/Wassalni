@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import bus from './bus';
 function MainLayout() {
   const navigate = useNavigate();
 
@@ -61,7 +61,7 @@ function MainLayout() {
             </div>
           </div>
           <p className="text-xs mt-4 font-bold" style={{ color: coolPalette.textGray }}>
-            Basé sur {totalPlaces} transactions validées
+            Base sur {totalPlaces} transactions validees
           </p>
         </div>
         <div className="bg-white p-6 md:p-8 shadow-md w-full max-w-6xl rounded-2xl border" style={{ borderColor: coolPalette.frostBlue }}>
@@ -111,7 +111,7 @@ function MainLayout() {
           
           {/* Métro Card */}
           <div onClick={() => navigate('/metro')} 
-            className="bg-white p-6 rounded-2xl shadow-sm border w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md active:scale-95"
+            className="bg-white p-6 rounded-2xl shadow-xl border-l-4 w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md active:scale-95"
             style={{ borderLeftColor: coolPalette.deepOcean }}>
             <span className="text-4xl mb-2 block">🚈</span> 
             <span className="text-3xl font-black block" style={{ color: coolPalette.deepOcean }}>{stats.metroEnService}</span>
@@ -122,18 +122,18 @@ function MainLayout() {
 
           {/* Bus Card */}
           <div onClick={() => navigate('/bus')} 
-            className="bg-white p-6 rounded-2xl shadow-sm border w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md active:scale-95"
+            className="bg-white p-6 rounded-2xl shadow-xl border-l-4 w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md active:scale-95"
             style={{ borderLeftColor: coolPalette.softTeal }}>
             <span className="text-4xl mb-2 block">🚌</span> 
             <span className="text-3xl font-black block" style={{ color: coolPalette.deepOcean }}>{stats.busEnservice}</span>
             <span className="font-bold uppercase text-xs tracking-tighter" style={{ color: coolPalette.textGray }}>bus en service</span>
             <div className="border-t border-gray-100 my-3"></div>
-            <span className="text-sm font-medium text-gray-500">total flotte: <span className="font-bold text-black" style={{ color: coolPalette.softTeal }}>{stats.NbBus||0}</span></span>
+            <span className="text-sm font-medium text-gray-500">total flotte: <span className="font-bold text-black" >{stats.NbBus||0}</span></span>
           </div>
 
           {/* Agent Card */}
           <div onClick={() => navigate('/agents')}
-            className="bg-white p-6 rounded-2xl shadow-sm border w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md active:scale-95"
+            className="bg-white p-6 rounded-2xl shadow-xl border-l-4 w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md active:scale-95"
             style={{ borderLeftColor: coolPalette.warmAccent }}>
             <span className="text-4xl mb-2 block">👨‍💼</span> 
             <span className="text-3xl font-black block" style={{ color: coolPalette.deepOcean }}>{stats.agentsEnService || 0}</span>
