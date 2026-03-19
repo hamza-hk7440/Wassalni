@@ -108,6 +108,10 @@ class ApiClient {
 
   dynamic _handleResponse(http.Response response) {
     try {
+      // ← ADD THESE 2 LINES
+      print('📡 Response Status: ${response.statusCode}');
+      print('📡 Response Body: ${response.body}');
+
       final decodedBody = jsonDecode(response.body) ?? {};
       if (response.statusCode == 200 || response.statusCode == 201) {
         return decodedBody;
@@ -135,7 +139,11 @@ class ApiClient {
     } on ApiException {
       rethrow;
     } catch (e) {
-      throw ApiException('Failed to process response', originalError: e);
+      print('❌ Error: $e, Response: ${response.body}');
+      throw ApiException(
+        'Failed to process response: ${response.body}',
+        originalError: e,
+      );
     }
   }
 
