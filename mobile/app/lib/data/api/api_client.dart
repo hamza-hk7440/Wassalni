@@ -72,7 +72,7 @@ class ApiClient {
   //constants
   //base url of the backend server
   //it will be changed to the actual url of the backend server when we deploy it, for now we will use localhost for testing
-  static const String baseUrl = 'http://localhost:8000';
+  static const String baseUrl = 'http://10.0.2.2:3000';
   //timeout duration for the http requests
   //if the request takes more than 10 seconds, we will consider it as a network error and throw a NetworkException
   static const int timeoutSeconds = 10;
