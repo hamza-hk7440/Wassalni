@@ -1,7 +1,6 @@
-import 'package:app/features/controller/controller_controller.dart';
+import 'package:app/features/auth/screens/splash_screen.dart';
+import 'package:get/get.dart'; // ← ADD THIS
 import 'package:flutter/material.dart';
-import 'package:app/features/payment/screens/test_payment.dart';
-import 'package:app/features/auth/screens/login_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,12 +11,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
+      // ← CHANGE THIS (was MaterialApp)
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
+      title: 'Wasalni',
+      home: const SplashScreen(),
     );
   }
 }
-
-
-
