@@ -94,6 +94,7 @@ class ApiClient {
     if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';
     }
+    print('📤 Sending Headers: $headers'); // ← DEBUG: Print headers
     return headers;
   }
 
@@ -108,8 +109,9 @@ class ApiClient {
 
   dynamic _handleResponse(http.Response response) {
     try {
-      // ← ADD THESE 2 LINES
+      // ← ADD THESE DEBUG LINES
       print('📡 Response Status: ${response.statusCode}');
+      print('📡 Response Headers: ${response.headers}');
       print('📡 Response Body: ${response.body}');
 
       final decodedBody = jsonDecode(response.body) ?? {};
@@ -139,7 +141,8 @@ class ApiClient {
     } on ApiException {
       rethrow;
     } catch (e) {
-      print('❌ Error: $e, Response: ${response.body}');
+      print('❌ Error: $e');
+      print('📡 Full Response Body: ${response.body}');
       throw ApiException(
         'Failed to process response: ${response.body}',
         originalError: e,
@@ -155,6 +158,7 @@ class ApiClient {
           .join('&');
       url += '?$queryString';
     }
+    print('🔗 Full URL: $url'); // ← DEBUG: Print URL
     return url;
   }
 
@@ -215,6 +219,7 @@ class ApiClient {
       final url = _buildUrl(endpoint);
       //step 3: encode the body to JSON
       final jsonBody = jsonEncode(body);
+      print('📤 Request Body: $jsonBody'); // ← DEBUG: Print request body
       //step 4: make the http POST request with a timeout
       final response = await http
           .post(Uri.parse(url), headers: headers, body: jsonBody)
