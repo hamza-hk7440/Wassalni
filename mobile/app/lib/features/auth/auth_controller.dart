@@ -112,15 +112,37 @@ class User {
   });
   //from json to user model
   factory User.fromJson(Map<String, dynamic> json) {
+    final userMeta = json['user_metadata'] is Map
+        ? json['user_metadata'] as Map<String, dynamic>
+        : <String, dynamic>{};
+
     return User(
-      userId: json['user_id'] ?? '', // ✅
-      firstName: json['first_name'] ?? '', // ✅
-      lastName: json['last_name'] ?? '', // ✅
-      email: json['email'] ?? '',
-      role: json['role'] ?? 'passenger',
-      tokenBalance: (json['token_balance'] ?? 0).toDouble(), // ✅
+      userId:
+          json['id']?.toString() ??
+          json['user_id']?.toString() ??
+          json['sub']?.toString() ??
+          '',
+      firstName:
+          json['first_name']?.toString() ??
+          userMeta['first_name']?.toString() ??
+          '',
+      lastName:
+          json['last_name']?.toString() ??
+          userMeta['last_name']?.toString() ??
+          '',
+      email: json['email']?.toString() ?? '',
+      role:
+          json['role']?.toString() ??
+          userMeta['role']?.toString() ??
+          'passenger',
+      tokenBalance:
+          double.tryParse(
+            (json['token_balance'] ?? userMeta['token_balance'] ?? 0)
+                .toString(),
+          ) ??
+          0.0,
       timestamp: json['timestamp'] != null
-          ? DateTime.parse(json['timestamp'])
+          ? DateTime.tryParse(json['timestamp'].toString()) ?? DateTime.now()
           : DateTime.now(),
     );
   }

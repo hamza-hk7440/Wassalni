@@ -23,13 +23,13 @@ export const createUser = async (req, res) => {
 
     if (isPassenger) {
       return res.status(201).json({
-        message: "user created successfully",
+        token: authData.token,
         user: authData.user,
       });
     } else {
       return res.status(201).json({
-        message: "user created successfully",
-        special_code: authData,
+        token: authData.token,
+        user: authData.user,
       });
     }
   } catch (error) {
