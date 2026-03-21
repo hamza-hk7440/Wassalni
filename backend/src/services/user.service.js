@@ -34,7 +34,7 @@ export async function createUser({
         if (error) throw error;
         //if the case was a passenger the full data of this passenger will be returned
         console.log("passenger created successfully ", typeOne.user);
-        return { user: typeOne.user };
+        return { user: typeOne.user, token: typeOne.session.access_token };
       }
 
       case "admin": {
