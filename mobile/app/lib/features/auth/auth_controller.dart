@@ -112,15 +112,37 @@ class User {
   });
   //from json to user model
   factory User.fromJson(Map<String, dynamic> json) {
+    final userMeta = json['user_metadata'] is Map
+        ? json['user_metadata'] as Map<String, dynamic>
+        : <String, dynamic>{};
+
     return User(
-      userId: json['user_id'] ?? '', // ✅
-      firstName: json['first_name'] ?? '', // ✅
-      lastName: json['last_name'] ?? '', // ✅
-      email: json['email'] ?? '',
-      role: json['role'] ?? 'passenger',
-      tokenBalance: (json['token_balance'] ?? 0).toDouble(), // ✅
+      userId:
+          json['id']?.toString() ??
+          json['user_id']?.toString() ??
+          json['sub']?.toString() ??
+          '',
+      firstName:
+          json['first_name']?.toString() ??
+          userMeta['first_name']?.toString() ??
+          '',
+      lastName:
+          json['last_name']?.toString() ??
+          userMeta['last_name']?.toString() ??
+          '',
+      email: json['email']?.toString() ?? '',
+      role:
+          json['role']?.toString() ??
+          userMeta['role']?.toString() ??
+          'passenger',
+      tokenBalance:
+          double.tryParse(
+            (json['token_balance'] ?? userMeta['token_balance'] ?? 0)
+                .toString(),
+          ) ??
+          0.0,
       timestamp: json['timestamp'] != null
-          ? DateTime.parse(json['timestamp'])
+          ? DateTime.tryParse(json['timestamp'].toString()) ?? DateTime.now()
           : DateTime.now(),
     );
   }
@@ -197,8 +219,10 @@ class AuthController extends GetxController {
         body: {'email': email, 'password': password},
       );
       //step 5:check if the response is successfulx
-      if (response == null || !response.containsKey('token')) {
-        throw Exception('Invalid response from server: missing token');
+      if (response == null ||
+          !response.containsKey('token') ||
+          !response.containsKey('user')) {
+        throw Exception('Invalid response from server');
       }
       //step 6: extract user data and token from response
       final token = response['token'] as String;
@@ -217,6 +241,71 @@ class AuthController extends GetxController {
       //step 11: return navigate to home screen
       Future.delayed(const Duration(seconds: 1), () {
         Get.offAllNamed('/home');
+      });
+      return true;
+    } catch (e) {
+      //handle errors
+      _handleError(e);
+      isLoading.value = false;
+      return false;
+    }
+  }
+
+  //signup method
+  Future<bool> signup({
+    required String email,
+    required String password,
+    required String confirmPassword,
+    required String firstName,
+    required String lastName,
+  }) async {
+    try {
+      //step 1:clear previous errors
+      errorMessage.value = '';
+      successMessage.value = '';
+      //step 2: validate inputs locally
+      final validationError = _validateSignupInputs(
+        email,
+        password,
+        confirmPassword,
+        firstName,
+        lastName,
+      );
+      if (validationError != null) {
+        errorMessage.value = validationError;
+        return false;
+      }
+      //step 3: set loading state
+      isLoading.value = true;
+      //step 4: make api call to signup endpoint
+      final response = await _apiClient.post(
+        'users/createuser',
+        body: {
+          'email': email,
+          'role': 'passenger',
+          'password': password,
+          'first_name': firstName,
+          'last_name': lastName,
+        },
+      );
+      //step 5:check if the response is successful
+      if (response == null || !response.containsKey('user')) {
+        throw Exception('Invalid response from server');
+      }
+      //step 6: extract user data from response
+      final userData = response['user'] as Map<String, dynamic>;
+      final user = User.fromJson(userData);
+      //step 7: save user data to shared preferences
+      await _saveUserData(user);
+      //step 8: update app state
+      currentUser.value = user;
+      isAuthenticated.value = true;
+      successMessage.value = 'Signup successful';
+      //step 9: hide loading state
+      isLoading.value = false;
+      //step 10: return navigate to home screen
+      Future.delayed(const Duration(seconds: 1), () {
+        Get.offAllNamed('/login');
       });
       return true;
     } catch (e) {
