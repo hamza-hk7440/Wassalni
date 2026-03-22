@@ -289,17 +289,13 @@ class AuthController extends GetxController {
         },
       );
       //step 5:check if the response is successful
-      if (response == null ||
-          !response.containsKey('token') ||
-          !response.containsKey('user')) {
+      if (response == null || !response.containsKey('user')) {
         throw Exception('Invalid response from server');
       }
-      //step 6: extract user data and token from response
-      final token = response['token'] as String;
+      //step 6: extract user data from response
       final userData = response['user'] as Map<String, dynamic>;
       final user = User.fromJson(userData);
-      //step 7: save token and user data to shared preferences
-      await _saveToken(token);
+      //step 7: save user data to shared preferences
       await _saveUserData(user);
       //step 8: update app state
       currentUser.value = user;
@@ -309,7 +305,7 @@ class AuthController extends GetxController {
       isLoading.value = false;
       //step 10: return navigate to home screen
       Future.delayed(const Duration(seconds: 1), () {
-        Get.offAllNamed('/home');
+        Get.offAllNamed('/login');
       });
       return true;
     } catch (e) {
