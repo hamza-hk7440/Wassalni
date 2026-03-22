@@ -22,9 +22,15 @@ export const createUser = async (req, res) => {
     const isPassenger = role === "passenger";
 
     if (isPassenger) {
-      return res.status(201).json(authData);
+      return res.status(201).json({
+        message: "user created successfully",
+        user: authData.user,
+      });
     } else {
-      return res.status(201).json(authData);
+      return res.status(201).json({
+        message: "user created successfully",
+        user: authData.user,
+      });
     }
   } catch (error) {
     console.error("controller error:", error.message);
