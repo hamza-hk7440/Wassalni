@@ -216,7 +216,7 @@ export async function handleAuthCallback(code) {
     if (error) {
       throw error;
     }
-    return data;
+    return { user: data.user, token: data.session.access_token };
   } catch (error) {
     console.error("Auth callback error:", error.message);
     throw error;
