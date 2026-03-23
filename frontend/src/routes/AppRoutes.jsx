@@ -1,12 +1,13 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Dashboard from '../pages/admin/Dashboard';
-import MainLayout from '../components/layout/Main';
 import Parametre from '../components/layout/parametre';
 import Superlog from '../components/layout/superlog';
 import CreateEmp from '../pages/admin/CreateEmp';
-
-import Bus from '../components/layout/bus';
+import Metro from '../pages/admin/Metro';
+import Bus from '../pages/admin/Bus';
+import Agents from '../pages/admin/Agents';
+import Transport from '../pages/admin/Transport';
 const AppRoutes = () => {
   return (
     <Routes>
@@ -16,8 +17,9 @@ const AppRoutes = () => {
       <Route path="/superlog" element={<Superlog />} /> 
       <Route path="/admin" element={<CreateEmp />} />
       <Route path="/bus" element={<Bus />} />
-    
-        
+      <Route path="/metro" element={<Metro />} />
+      <Route path="/transport" element={<Transport />} />
+      <Route path="/agents" element={<Agents />} />
     </Routes>
   );
 };

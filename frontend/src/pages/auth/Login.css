@@ -8,8 +8,11 @@
   width: 100vw;             
   margin: 0;
   padding: 20px;
-  background: linear-gradient(135deg, #D1ECFF 0%, #C8E1EC 100%);
-  font-family: 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(108, 177, 218, 0.28), transparent 30%),
+    radial-gradient(circle at 100% 100%, rgba(30, 84, 112, 0.14), transparent 35%),
+    linear-gradient(135deg, #d1ecff 0%, #eaf7ff 50%, #f7fcff 100%);
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
   overflow-x: hidden;
 }
 
@@ -28,7 +31,7 @@
   width: 100%;
   /* We use min-height so it can expand if Register has more fields */
   min-height: 620px; 
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
   transform-style: preserve-3d;
 }
 
@@ -44,10 +47,12 @@
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
-  border-radius: 40px;
+  border-radius: 32px;
   padding: 40px;
-  background: #ffffff;
-  box-shadow: 0 20px 50px rgba(52, 114, 156, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 20px 50px rgba(52, 114, 156, 0.16);
+  border: 1px solid #c8eaec;
+  backdrop-filter: blur(4px);
   display: flex;
   flex-direction: column;
 }
@@ -58,7 +63,7 @@
 
 /* 5. COMPONENTS: Titles, Toggles, and Buttons */
 .form-title {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 800;
   margin-bottom: 1.5rem;
   text-align: center;
@@ -69,19 +74,20 @@
 
 .role-toggle-container {
   display: flex;
-  background: rgba(108, 177, 218, 0.15);
+  background: rgba(108, 177, 218, 0.18);
   padding: 6px;
-  border-radius: 20px;
+  border-radius: 16px;
   margin-bottom: 30px;
-  width: 280px;
+  width: 300px;
   border: 1px solid #6CB1DA;
+  box-shadow: 0 10px 24px rgba(52, 114, 156, 0.14);
 }
 
 .toggle-btn {
   flex: 1;
   border: none;
   padding: 12px;
-  border-radius: 15px;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: bold;
   transition: all 0.4s ease;
@@ -101,10 +107,10 @@
 
 .custom-submit-btn {
   width: 100%;
-  background: #6CB1DA;
+  background: linear-gradient(110deg, #1E5470, #34729C);
   color: white;
   padding: 16px;
-  border-radius: 15px;
+  border-radius: 12px;
   border: none;
   font-weight: bold;
   font-size: 1.1rem;
@@ -114,13 +120,13 @@
 }
 
 .custom-submit-btn:hover {
-  background: #34729C;
+  background: linear-gradient(110deg, #1a4a63, #2e678c);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(52, 114, 156, 0.3);
+  box-shadow: 0 12px 24px rgba(52, 114, 156, 0.3);
 }
 
 .admin-btn {
-  background: #1E5470;
+  background: linear-gradient(110deg, #153b50, #1E5470);
 }
 
 /* 6. FOOTER: Navigation links */
@@ -141,6 +147,13 @@
   text-decoration: none;
   padding: 0;
   font-size: 14px;
+}
+
+.link-btn:focus-visible,
+.toggle-btn:focus-visible,
+.custom-submit-btn:focus-visible {
+  outline: 2px solid #6cb1da;
+  outline-offset: 2px;
 }
 
 .link-btn:hover {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import bus from './bus';
+
 function MainLayout() {
   const navigate = useNavigate();
 
@@ -40,14 +40,14 @@ function MainLayout() {
       <div
         className="min-h-screen pt-24 p-6 md:p-10 flex flex-col items-center gap-8 md:gap-10"
         style={{
-          background: `linear-gradient(180deg, ${coolPalette.iceWhite} 0%, #eff8ff 45%, #f7fbff 100%)`,
+          background: `radial-gradient(circle at 5% -20%, rgba(108,177,218,0.25), transparent 38%), linear-gradient(180deg, ${coolPalette.iceWhite} 0%, #eff8ff 45%, #f7fbff 100%)`,
         }}
       >
 
        
         <div
-          className="bg-white/90 backdrop-blur-sm p-6 md:p-9 shadow-md w-full max-w-6xl text-center"
-          style={{ borderRadius: '16px', border: `1px solid ${coolPalette.frostBlue}` }}
+          className="bg-white/95 backdrop-blur-sm p-6 md:p-9 shadow-xl w-full max-w-6xl text-center rounded-3xl border"
+          style={{ borderColor: coolPalette.frostBlue }}
         >
           <h1 className="text-sm md:text-lg font-bold uppercase tracking-widest" style={{ color: coolPalette.deepOcean }}>
             Revenus du {new Date().toLocaleDateString()}
@@ -61,14 +61,14 @@ function MainLayout() {
             </div>
           </div>
           <p className="text-xs mt-4 font-bold" style={{ color: coolPalette.textGray }}>
-            Base sur {totalPlaces} transactions validees
+            Basé sur {totalPlaces} transactions validées
           </p>
         </div>
-        <div className="bg-white p-6 md:p-8 shadow-md w-full max-w-6xl rounded-2xl border" style={{ borderColor: coolPalette.frostBlue }}>
+        <div className="bg-white p-6 md:p-8 shadow-xl w-full max-w-6xl rounded-3xl border" style={{ borderColor: coolPalette.frostBlue }}>
   
   
   <h2 className="text-sm font-black mb-6 uppercase tracking-widest" style={{ color: coolPalette.deepOcean }}>
-    📊 Performance des deux derniere jour
+    📊 Performance des deux derniers jours
   </h2>
   <div className="space-y-6">
     
@@ -111,8 +111,8 @@ function MainLayout() {
           
           {/* Métro Card */}
           <div onClick={() => navigate('/metro')} 
-            className="bg-white p-6 rounded-2xl shadow-xl border-l-4 w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md active:scale-95"
-            style={{ borderLeftColor: coolPalette.deepOcean }}>
+            className="bg-white p-6 rounded-3xl shadow-xl border w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-95"
+            style={{ borderColor: coolPalette.frostBlue, borderLeftWidth: '6px', borderLeftColor: coolPalette.deepOcean }}>
             <span className="text-4xl mb-2 block">🚈</span> 
             <span className="text-3xl font-black block" style={{ color: coolPalette.deepOcean }}>{stats.metroEnService}</span>
             <span className="font-bold uppercase text-xs tracking-tighter" style={{ color: coolPalette.textGray }}>métro en service</span><br />
@@ -122,8 +122,8 @@ function MainLayout() {
 
           {/* Bus Card */}
           <div onClick={() => navigate('/bus')} 
-            className="bg-white p-6 rounded-2xl shadow-xl border-l-4 w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md active:scale-95"
-            style={{ borderLeftColor: coolPalette.softTeal }}>
+            className="bg-white p-6 rounded-3xl shadow-xl border w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-95"
+            style={{ borderColor: coolPalette.frostBlue, borderLeftWidth: '6px', borderLeftColor: coolPalette.softTeal }}>
             <span className="text-4xl mb-2 block">🚌</span> 
             <span className="text-3xl font-black block" style={{ color: coolPalette.deepOcean }}>{stats.busEnservice}</span>
             <span className="font-bold uppercase text-xs tracking-tighter" style={{ color: coolPalette.textGray }}>bus en service</span>
@@ -133,8 +133,8 @@ function MainLayout() {
 
           {/* Agent Card */}
           <div onClick={() => navigate('/agents')}
-            className="bg-white p-6 rounded-2xl shadow-xl border-l-4 w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md active:scale-95"
-            style={{ borderLeftColor: coolPalette.warmAccent }}>
+            className="bg-white p-6 rounded-3xl shadow-xl border w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-95"
+            style={{ borderColor: coolPalette.frostBlue, borderLeftWidth: '6px', borderLeftColor: coolPalette.warmAccent }}>
             <span className="text-4xl mb-2 block">👨‍💼</span> 
             <span className="text-3xl font-black block" style={{ color: coolPalette.deepOcean }}>{stats.agentsEnService || 0}</span>
             <span className="font-bold uppercase text-xs tracking-tighter" style={{ color: coolPalette.textGray }}>agents en service</span>

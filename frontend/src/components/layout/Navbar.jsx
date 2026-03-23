@@ -6,9 +6,9 @@ function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const notifications = [{ id: 1, title: 'Nouveau ticket valide', detail: 'Ticket traite', time: '2 min' },
-    { id: 2, title: 'Admin cree', detail: 'Compte admin ajoute', time: '10 min' },
-    { id: 3, title: 'Maintenance', detail: 'Verification bus 12', time: '1 h' },];
+  const notifications = [{ id: 1, title: 'Nouveau ticket validé', detail: 'Ticket traité', time: '2 min' },
+    { id: 2, title: 'Admin créé', detail: 'Compte admin ajouté', time: '10 min' },
+    { id: 3, title: 'Maintenance', detail: 'Vérification bus 12', time: '1 h' },];
 {/*const [stats, setStats] = useState({nom:"",prenom:"",email:"",role:""});
   const [loading, setLoading] = useState(true);
 
@@ -236,11 +236,11 @@ const coolPalette = {
               </Link>
             </li>
             <li>
-              <Link to="/superlog" onClick={() => setIsOpen(false)} 
+              <Link to="/agents" onClick={() => setIsOpen(false)} 
                 className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
                 style={{ color: coolPalette.deepOcean }}>
                 <span className="text-xl group-hover:scale-125 transition-transform">👨‍💼</span> 
-                <span>Contrôleur</span>
+                <span>Personnel</span>
               </Link>
             </li>
             <li>
