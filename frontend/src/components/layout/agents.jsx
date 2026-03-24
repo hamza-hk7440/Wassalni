@@ -1,15 +1,6 @@
 import { useMemo, useState } from 'react';
+import palette from '../common/pallette';
 function AgentsLayout() {
-	const palette = {
-		deepOcean: '#1E5470',
-		classicBlue: '#34729C',
-		skyBlue: '#6CB1DA',
-		softTeal: '#6EC1D1',
-		frostBlue: '#C8EAEC',
-		iceWhite: '#D1ECFF',
-		warmAccent: '#F0B35D',
-	};
-
 	const [agents, setAgents] = useState([
 		{
 			id: 1,

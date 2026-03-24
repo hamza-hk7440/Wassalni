@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import palette from '../common/pallette';
 
 function Superlog() {
     const navigate = useNavigate();
@@ -10,15 +11,6 @@ function Superlog() {
     const ADMIN_PASSWORD = 'admin123';
 
     
-    const palette = {
-        deepOcean: "#1E5470", 
-        classicBlue: "#34729C",
-        skyBlue: "#6CB1DA",
-        softTeal: "#6EC1D1",   
-        frostBlue: "#C8EAEC",
-        iceWhite: "#D1ECFF"    
-    };
-
     const handleSubmit = (e) => {
         e.preventDefault();
         setError('');

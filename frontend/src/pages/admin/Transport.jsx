@@ -1,18 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
+import palette from '../../components/common/pallette';
 
 function Transport() {
-  const palette = {
-    deepOcean: '#1E5470',
-    classicBlue: '#34729C',
-    skyBlue: '#6CB1DA',
-    softTeal: '#6EC1D1',
-    frostBlue: '#C8EAEC',
-    iceWhite: '#D1ECFF',
-    warmAccent: '#F0B35D',
-  };
-
   return (
     <div>
       <Navbar />

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import palette from '../common/pallette';
 
 function Parametre() {
     const defaultProfile = {
@@ -22,15 +23,6 @@ function Parametre() {
     const emailRef = useRef(null);
     const telephoneRef = useRef(null);
     const adresseRef = useRef(null);
-    const palette = {
-        deepOcean: "#1E5470", 
-        classicBlue: "#34729C",
-        skyBlue: "#6CB1DA",
-        softTeal: "#6EC1D1",   
-        frostBlue: "#C8EAEC",
-        iceWhite: "#D1ECFF"    
-    };
-
     const states = {
         nom:"Rayen",
         prenom:"Masmoudi",
@@ -93,8 +85,9 @@ function Parametre() {
                 <button
                     type="button"
                     onClick={onToggle}
-                    className="text-sm font-semibold"
+                    className="text-sm font-semibold cursor-pointer transition-transform hover:scale-110"
                     style={{ color: isEditing ? palette.deepOcean : palette.classicBlue }}
+                    
                 >
                     {isEditing ? '❌' : '✏️'}
                 </button>
@@ -215,7 +208,7 @@ function Parametre() {
                                 <button
                                     type="submit"
                                     style={{ background: `linear-gradient(to right, ${palette.deepOcean}, ${palette.classicBlue})` }}
-                                    className="text-white font-semibold py-3 px-6 rounded-md"
+                                    className="text-white cursor-pointer hover:opacity-90 font-semibold py-3 px-6 rounded-md"
                                 >
                                     Modifier les Paramètres
                                 </button>
@@ -223,7 +216,7 @@ function Parametre() {
                                     type="button"
                                     onClick={() => window.history.back()}
                                     style={{ background: 'linear-gradient(to right, #EF4444, #DC2626)' }}
-                                    className="text-white font-semibold py-3 px-6 rounded-md"
+                                    className="text-white cursor-pointer hover:opacity-90 font-semibold py-3 px-6 rounded-md"
                                 >
                                     Quitter sans changer
                                 </button>

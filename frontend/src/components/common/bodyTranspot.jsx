@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
+import palette from './pallette';
 
 const DEFAULT_STATUS_LIST = ['En ligne', 'Maintenance', 'Retard'];
 const DEFAULT_EMPTY_FORM = {
@@ -34,16 +35,7 @@ const DEFAULT_STATUS_STYLE = {
   Retard: { text: '#DC2626', bg: '#FEE2E2' },
 }
 
-const DEFAULT_PALETTE = {
-  deepOcean: '#1E5470',
-  classicBlue: '#34729C',
-  skyBlue: '#6CB1DA',
-  softTeal: '#6EC1D1',
-  frostBlue: '#C8EAEC',
-  iceWhite: '#D1ECFF',
-  textGray: '#5B7181',
-  warmAccent: '#F0B35D',
-};
+const DEFAULT_PALETTE = palette;
 
 function BodyTransport({
   nom = 'Gestion des bus',

@@ -1,37 +1,23 @@
 import { useState } from 'react';
-
+import palette from '../../components/common/pallette';
 function CreateEmp() {
-  const makeCode = (selectedRole) => {
-    const prefix = selectedRole === 'controller' ? 'CTR' : 'ADM';
-    const random = Math.random().toString(36).slice(2, 8).toUpperCase();
-    return `${prefix}-${random}`;
-  };
+  
 
   const [nom, setNom] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('admin');
-  const [code, setCode] = useState(makeCode('admin'));
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const palette = {
-    deepOcean: '#1E5470',
-    classicBlue: '#34729C',
-    skyBlue: '#6CB1DA',
-    softTeal: '#6EC1D1',
-    frostBlue: '#C8EAEC',
-    iceWhite: '#D1ECFF',
-  };
+  
 
   const handleRoleChange = (event) => {
     const value = event.target.value;
     setRole(value);
-    setCode(makeCode(value));
+    setSuccess('');
   };
 
-  const regenerateCode = () => {
-    setCode(makeCode(role));
-  };
+  
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -49,11 +35,10 @@ function CreateEmp() {
     }
 
     const roleLabel = role === 'controller' ? 'Contrôleur' : 'Nouveau Admin';
-    setSuccess(`✓ ${roleLabel} créé avec succès. Code généré: ${code}`);
+    setSuccess(`✓ ${roleLabel} créé avec succès.`);
     setNom('');
     setEmail('');
     setRole('admin');
-    setCode(makeCode('admin'));
   };
 
   return (
@@ -63,6 +48,17 @@ function CreateEmp() {
       }}
       className="min-h-screen py-10 md:py-14 px-4"
     >
+      <button
+                        type="button"
+                        onClick={() => window.history.back()}
+                        className="absolute top-4 right-4 z-10 flex items-center justify-center w-10 h-10 rounded-full transition duration-200 transform hover:scale-110"
+                        style={{ background: '#EF4444', color: 'white' }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#DC2626'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = '#EF4444'}
+                        title="Fermer"
+                    >
+                        <span className="text-2xl font-bold">×</span>
+                    </button>
       <div className="mx-auto max-w-2xl">
         <div className="text-center mb-8 md:mb-10">
           <div
@@ -146,28 +142,8 @@ function CreateEmp() {
                 </select>
               </div>
 
-              <div className="p-4 rounded-2xl border" style={{ borderColor: palette.frostBlue, backgroundColor: '#f9fdff' }}>
-                <label className="block text-sm font-semibold mb-2" style={{ color: palette.deepOcean }}>
-                  Code généré automatiquement
-                </label>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="text"
-                    value={code}
-                    readOnly
-                    className="w-full px-4 py-3 border rounded-xl focus:outline-none bg-white font-bold tracking-[0.2em]"
-                    style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
-                  />
-                  <button
-                    type="button"
-                    onClick={regenerateCode}
-                    className="px-4 py-3 rounded-xl font-semibold border whitespace-nowrap hover:shadow-sm transition-all"
-                    style={{ borderColor: palette.frostBlue, color: palette.deepOcean, backgroundColor: '#ffffff' }}
-                  >
-                    🔁 Générer
-                  </button>
-                </div>
-              </div>
+              
+              
 
               <button
                 type="submit"
