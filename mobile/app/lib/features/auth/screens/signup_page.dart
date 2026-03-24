@@ -55,18 +55,20 @@ class _SignupScreenState extends State<SignupScreen> {
     const SizedBox(height: 8),
     Text("Join us today!", textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey[600])),
     const SizedBox(height: 40),
-    Row(children: [Expanded(
-    child:TextFormField(controller: firstNameController,keyboardType: TextInputType.name,decoration: InputDecoration(labelText: 'First Name',prefixIcon: Icon(Icons.person_outline, color: AppColors.colorA),
+
+    TextFormField(controller: firstNameController,keyboardType: TextInputType.name,decoration: InputDecoration(labelText: 'First Name',prefixIcon: Icon(Icons.badge_outlined, color: AppColors.colorA),
     filled: true,fillColor: Colors.white,border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),),
-    validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,),),
-    const SizedBox(width: 15),
-    Expanded(child: TextFormField(controller: lastNameController,decoration: InputDecoration(labelText: 'Last Name',filled: true,fillColor: Colors.white,border: OutlineInputBorder(borderRadius: BorderRadius.circular(15),borderSide: BorderSide.none),),
-    validator: (value) => (value == null || value.isEmpty)? 'Required' : null,),),],),
+    validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,),
     const SizedBox(height: 18),
+    TextFormField(controller: lastNameController,decoration: InputDecoration(labelText: 'Last Name',prefixIcon: Icon(Icons.person_outline,color: AppColors.colorA),filled: true,fillColor: Colors.white,border: OutlineInputBorder(borderRadius: BorderRadius.circular(15),borderSide: BorderSide.none),),
+    validator: (value) => (value == null || value.isEmpty)? 'Required' : null,),
+    const SizedBox(height: 18),
+
     TextFormField(controller: emailController,keyboardType: TextInputType.emailAddress,decoration: InputDecoration(labelText: 'Email',prefixIcon: Icon(Icons.email_outlined, color: AppColors.colorA),
     filled: true,fillColor: Colors.white,border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),),
     validator: (value) => (value == null || value.contains('@')) ? 'Invalid Email' : null,),
     const SizedBox(height: 18),
+
     TextFormField(controller: passwordController,obscureText: !_isPasswordVisible,decoration: InputDecoration(labelText: 'Password',prefixIcon: Icon(Icons.lock_outline, color: AppColors.colorA),
     suffixIcon: IconButton(icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.grey),
     onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),),

@@ -1,5 +1,6 @@
 import 'package:app/features/auth/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:app/features/auth/screens/home_screen.dart';
 
 
 void main() {
@@ -14,6 +15,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Wasalni',
-      home: const SplashScreen());
+      home: const HomePage());
   }
 }
