@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:app/core/theme/colors_R.dart';
-
+import 'package:app/features/auth/screens/BusSchedule_screen.dart';
+import 'package:app/features/auth/screens/TrainSchedule_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage ({super.key});
@@ -33,15 +34,21 @@ class HomePageState extends State<HomePage>{
       child: SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 25),
       child: Column( mainAxisAlignment: MainAxisAlignment.center , children: [
-      Text("Where are you going today ?" , textAlign: TextAlign.center , style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.colorA),),
-      const SizedBox(height: 30),
-      _buildTransportCard(title: "Train Station", subtitle: "Check schedule & buy tickets ", imagePath: "assets/trainnn.png", onTap: () => print("Vers Train Scedule")),
+      Text("Where are you going today ?" , style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w700 , color: AppColors.colorN),),
+      const SizedBox(height: 40),
+      _buildTransportCard(title: "Train Station", subtitle: "Check schedule & buy tickets ", imagePath: "assets/trainnn.png", onTap: () {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const TrainSchedulePage()),
+        );
+      },
+    ),
       const SizedBox(height: 20),
-      _buildTransportCard(title: "Bus Station", subtitle: "Find the next Bus available", imagePath: "assets/bus.png", onTap: () => print("Vers Bus Schedule"))
-          ],),
-          ),
-        )),
-      ],)),
+      _buildTransportCard(title: "Bus Station", subtitle: "Find the next Bus available", imagePath: "assets/bus.png", onTap: () {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const BusSchedulePage()),
+    );
+    },)
+    ],),),
+    )),
+    ],)),
     bottomNavigationBar: BottomNavigationBar(currentIndex: _selectedIndex, onTap: (index) => setState(() => _selectedIndex = index),selectedItemColor: AppColors.colorA,unselectedItemColor: Colors.grey, items: [
     BottomNavigationBarItem(icon: Image.asset("assets/home.png", height: 24,),activeIcon: Image.asset("assets/home.png" , height: 24),label: "Home"),
     BottomNavigationBarItem(icon: Image.asset("assets/tickett.png", height: 24), label: "Tickets"),
