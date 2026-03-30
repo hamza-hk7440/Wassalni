@@ -81,6 +81,15 @@ flutter:
       - assets/Image1.png
       - assets/logoGoogle.png
       - assets/icon.png
+      - assets/users.png
+      - assets/controller.png
+      - assets/bus.png
+      - assets/trainn.png
+      - assets/trainnn.png
+      - assets/home.png
+      - assets/profile.png
+      - assets/tickett.png
+      
 
   # To add assets to your application, add an assets section, like this:
   # assets:
