@@ -1,4 +1,6 @@
-import { supabase } from "../config/supabase";
+import { supabase } from "../config/supabase.js";
+import dotenv from "dotenv";
+dotenv.config();
 class ScheduleService {
   //create schedule
   async createSchedule(scheduleData) {
@@ -44,19 +46,37 @@ class ScheduleService {
     return data;
   }
   //get all schedules
-  async getAllSchedules() {
+  async getAllSchedules(date) {
+    const startOfDay = `${date}T00:00:00.000Z`;
+    const endOfDay = `${date}T23:59:59.999Z`;
+
     const { data, error } = await supabase
       .from("schedules")
       .select(
-        `*,
-                routes(name),
-                transports(license_plate,type)
-            `,
+        `
+      schedule_id,
+      route_id,
+      departure_time,
+      arrival_time,
+      available_seats,
+      current_price,
+      routes (
+        name,
+        base_price,
+        start_station:stations!routes_start_station_id_fkey (name),
+        end_station:stations!routes_end_station_id_fkey (name)
+      ),
+      transports (
+        type,
+        license_plate
       )
+    `,
+      )
+      .gte("departure_time", startOfDay)
+      .lte("departure_time", endOfDay)
       .order("departure_time", { ascending: true });
-    if (error) {
-      throw new Error(error.message);
-    }
+
+    if (error) throw new Error(error.message);
     return data;
   }
   //delete schedule
@@ -69,6 +89,25 @@ class ScheduleService {
       throw new Error(error.message);
     }
     return { message: "Schedule deleted successfully" };
+  }
+
+  async getSchedulesByRoute(routeId) {
+    const { data, error } = await supabase
+      .from("schedules")
+      .select(
+        `
+      schedule_id,
+      departure_time,
+      arrival_time,
+      available_seats,
+      current_price
+    `,
+      )
+      .eq("route_id", routeId)
+      .order("departure_time", { ascending: true });
+
+    if (error) throw new Error(error.message);
+    return data;
   }
 }
 export default new ScheduleService();

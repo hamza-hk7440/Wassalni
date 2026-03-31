@@ -1,4 +1,4 @@
-import * as scheduleService from "../services/schedule.service.js";
+import scheduleService from "../services/schedule.service.js";
 class ScheduleController {
   async create(req, res) {
     try {
@@ -8,9 +8,19 @@ class ScheduleController {
       res.status(400).json({ success: false, error: error.message });
     }
   }
+  async getByRoute(req, res) {
+    try {
+      const { routeId } = req.params;
+      const schedules = await scheduleService.getSchedulesByRoute(routeId);
+      res.status(200).json({ success: true, data: schedules });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
   async getAll(req, res) {
     try {
-      const schedules = await scheduleService.getAllSchedules();
+      const date = req.query.date ?? new Date().toISOString().split("T")[0];
+      const schedules = await scheduleService.getAllSchedules(date);
       res.status(200).json({ success: true, data: schedules });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
@@ -23,6 +33,18 @@ class ScheduleController {
       res.status(200).json({ success: true, message: result.message });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
+    }
+  }
+  async update(req, res) {
+    try {
+      const { id } = req.params;
+      const updatedSchedule = await scheduleService.updateSchedule(
+        id,
+        req.body,
+      );
+      res.status(200).json({ success: true, data: updatedSchedule });
+    } catch (error) {
+      res.status(400).json({ success: false, error: error.message });
     }
   }
 }

@@ -5,7 +5,7 @@ import userRoutes from "./src/routes/user.routes.js";
 import ticketRoutes from "./src/routes/ticket.routes.js";
 import adminRoutes from "./src/routes/admin.routes.js";
 import scheduleRoutes from "./src/routes/schedule.routes.js";
-import stationsRoutes from "./src/routes/stations.routes.js";
+import stationsRoutes from "./src/routes/station.routes.js";
 import routeRoutes from "./src/routes/route.routes.js";
 import transportRoutes from "./src/routes/transport.routes.js";
 const app = express();
