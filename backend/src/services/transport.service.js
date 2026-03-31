@@ -1,4 +1,6 @@
-import { supabase } from "../config/supabase";
+import { supabase } from "../config/supabase.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 class TransportService {
   //create transport
@@ -62,3 +64,4 @@ class TransportService {
     return { message: "Transport deleted successfully" };
   }
 }
+export default new TransportService();

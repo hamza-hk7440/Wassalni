@@ -1,4 +1,4 @@
-import * as routeService from "../services/route.service.js";
+import routeService from "../services/route.service.js";
 class RouteController {
   async create(req, res) {
     try {
@@ -43,6 +43,27 @@ class RouteController {
       res
         .status(200)
         .json({ success: true, message: "Route deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
+  async update(req, res) {
+    try {
+      const { id } = req.params;
+      const { routeData, stationSequence } = req.body;
+      if (!routeData || !stationSequence) {
+        return res.status(400).json({
+          success: false,
+          error: "routeData and stationSequence are required",
+        });
+      }
+      const updatedRoute = await routeService.updateFullRoute(
+        id,
+        routeData,
+        stationSequence,
+      );
+      res.status(200).json({ success: true, route: updatedRoute });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
     }

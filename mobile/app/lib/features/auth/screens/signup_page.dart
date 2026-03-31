@@ -40,6 +40,16 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
   Widget _buildGoogleButton() {
     return Container(
       width: double.infinity,
@@ -252,14 +262,15 @@ class _SignupScreenState extends State<SignupScreen> {
                     Obx(() {
                       if (authController.errorMessage.value.isNotEmpty) {
                         return Padding(
-                          padding: EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.only(bottom: 16),
                           child: Text(
                             authController.errorMessage.value,
-                            style: TextStyle(color: Colors.red),
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
                           ),
                         );
                       }
-                      return SizedBox.shrink();
+                      return const SizedBox.shrink();
                     }),
                     SizedBox(
                       height: 55,
@@ -330,7 +341,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ],
                     ),
-                    _buildDivider(),
+                    _buildDivider(), // Ensure you have this helper method defined
                     _buildGoogleButton(),
                     const SizedBox(height: 30),
                   ],
@@ -341,15 +352,5 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    firstNameController.dispose();
-    lastNameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
-    super.dispose();
   }
 }

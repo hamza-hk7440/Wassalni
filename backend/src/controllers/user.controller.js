@@ -87,7 +87,7 @@ export const googleSignUpCallback = async (req, res) => {
     //req.query will contain the code that google sends
     const { code } = req.query;
     const data = await userService.handleAuthCallback(code);
-    res.status(200).json({ user: data.user, token: data.token });
+    res.status(200).json({ user: data.user });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
