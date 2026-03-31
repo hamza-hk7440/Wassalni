@@ -5,8 +5,8 @@ import 'dart:convert';
 import 'package:app/data/api/api_client.dart';
 // ==================== PRIVATE METHODS====================
 
-/// Get stored token from SharedPreferences
-/// Returns null if no token found
+/// get stored token from SharedPreferences
+/// returns null if no token found
 Future<String?> _getToken() async {
   try {
     final prefs = await SharedPreferences.getInstance();
@@ -17,7 +17,7 @@ Future<String?> _getToken() async {
   }
 }
 
-/// Save token to SharedPreferences
+/// save token to SharedPreferences
 Future<void> _saveToken(String token) async {
   try {
     final prefs = await SharedPreferences.getInstance();
@@ -29,7 +29,7 @@ Future<void> _saveToken(String token) async {
   }
 }
 
-/// Delete token from SharedPreferences
+/// delete token from SharedPreferences
 Future<void> _deleteToken() async {
   try {
     final prefs = await SharedPreferences.getInstance();
@@ -40,8 +40,8 @@ Future<void> _deleteToken() async {
   }
 }
 
-/// Get stored user data from SharedPreferences
-/// Returns null if no user data found
+/// get stored user data from SharedPreferences
+/// returns null if no user data found
 Future<User?> _getUserData() async {
   try {
     final prefs = await SharedPreferences.getInstance();
@@ -51,7 +51,7 @@ Future<User?> _getUserData() async {
       return null;
     }
 
-    // Decode JSON string back to User object
+    // decode JSON string back to User object
     final userData = jsonDecode(userDataJson) as Map<String, dynamic>;
     return User.fromJson(userData);
   } catch (e) {
@@ -60,7 +60,7 @@ Future<User?> _getUserData() async {
   }
 }
 
-/// Save user data to SharedPreferences
+/// save user data to SharedPreferences
 Future<void> _saveUserData(User user) async {
   try {
     final prefs = await SharedPreferences.getInstance();
@@ -73,7 +73,7 @@ Future<void> _saveUserData(User user) async {
   }
 }
 
-/// Delete user data from SharedPreferences
+/// delete user data from SharedPreferences
 Future<void> _deleteUserData() async {
   try {
     final prefs = await SharedPreferences.getInstance();
@@ -180,7 +180,7 @@ class AuthController extends GetxController {
   ///current logged in user
   Rx<User?> currentUser = Rx<User?>(null);
 
-  ///is ogin/signup request in progress?
+  ///is login/signup request in progress?
   RxBool isLoading = false.obs;
   //is the user logged in?
   RxBool isAuthenticated = false.obs;
@@ -199,52 +199,69 @@ class AuthController extends GetxController {
   }
 
   //=====public methods=====
-  //login method
+  // login method
   Future<bool> login({required String email, required String password}) async {
     try {
-      //step 1:clear previous errors
+      // step 1: clear previous errors
       errorMessage.value = '';
       successMessage.value = '';
-      //step 2: validate inputs locally
+
+      // step 2: validate inputs locally
       final validationError = _validateLoginInputs(email, password);
       if (validationError != null) {
         errorMessage.value = validationError;
         return false;
       }
-      //step 3: set loading state
+
+      // step 3: set loading state
       isLoading.value = true;
-      //step 4: make api call to login endpoint
+
+      // step 4: make api call to login endpoint
       final response = await _apiClient.post(
         'users/loginmobile',
         body: {'email': email, 'password': password},
       );
-      //step 5:check if the response is successfulx
+
+      // step 5: check if the response is successful
       if (response == null ||
           !response.containsKey('token') ||
           !response.containsKey('user')) {
         throw Exception('Invalid response from server');
       }
-      //step 6: extract user data and token from response
+
+      // step 6: extract user data and token from response
       final token = response['token'] as String;
       final userData = response['user'] as Map<String, dynamic>;
+
+      // --- TIMESTAMP FIX START ---
+      // We manually add the login time here so it is saved permanently to SharedPreferences
+      userData['timestamp'] = DateTime.now().toIso8601String();
+      // --- TIMESTAMP FIX END ---
+
       final user = User.fromJson(userData);
-      //step 7: save token and user data to shared preferences
+
+      // step 7: save token to shared preferences
       await _saveToken(token);
-      //step 8: save user data to shared preferences
+
+      // step 8: save user data (including the new timestamp) to shared preferences
       await _saveUserData(user);
-      //step 9: update app state
+
+      // step 9: update app state
       currentUser.value = user;
       isAuthenticated.value = true;
       successMessage.value = 'Login successful';
-      //step 10: hide loading state
+
+      // step 10: hide loading state
       isLoading.value = false;
-      //step 11: return navigate to home screen
+
+      // step 11: navigate based on the specific user role
       Future.delayed(const Duration(seconds: 1), () {
-        Get.offAllNamed('/home');
+        _navigateBasedOnRole(user);
       });
+
       return true;
     } catch (e) {
-      //handle errors
+      // handle errors
       _handleError(e);
       isLoading.value = false;
       return false;
@@ -316,66 +333,86 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<void> logout() async {
+    await _deleteToken();
+    await _deleteUserData();
+    currentUser.value = null;
+    isAuthenticated.value = false;
+    Get.offAllNamed('/rolechoice');
+  }
+
+  void _navigateBasedOnRole(User user) {
+    if (user.isController) {
+      Get.offAllNamed('/loginforcontroller');
+    } else {
+      Get.offAllNamed('/home');
+    }
+  }
+
   Future<void> checkAuthStatus() async {
     try {
-      // Step 1: Try to get stored token
       final token = await _getToken();
 
       if (token != null && token.isNotEmpty) {
-        // Step 2: Token exists, get user data
         final userData = await _getUserData();
+
         if (userData != null) {
-          // Step 3: Update app state
+          final now = DateTime.now();
+          final loginDate = userData.timestamp;
+          const int sessionLimitHours = 24;
+
+          if (now.difference(loginDate).inHours >= sessionLimitHours) {
+            print('Token expired. Logging out...');
+            await logout();
+            isAuthenticated.value = false;
+            return;
+          }
           currentUser.value = userData;
           isAuthenticated.value = true;
-          print('User already logged in: ${userData.email}');
+          _navigateBasedOnRole(userData);
         } else {
-          // Token exists but user data missing, clear token
           await _deleteToken();
           isAuthenticated.value = false;
         }
       } else {
-        // No token found, user needs to login
         isAuthenticated.value = false;
-        print('No stored token. User needs to login.');
       }
     } catch (e) {
       print('Error checking auth status: $e');
       isAuthenticated.value = false;
     }
   }
-
   // ==================== PRIVATE METHODS (Input Validation) ====================
 
-  /// Validate login inputs
-  /// Returns error message if validation fails, null if all good
+  /// validate login inputs
+  /// returns error message if validation fails, null if all good
   String? _validateLoginInputs(String email, String password) {
-    // Check if email is empty
+    // check if email is empty
     if (email.isEmpty) {
       return 'Email is required';
     }
 
-    // Check if email format is valid
+    // check if email format is valid
     if (!_isValidEmail(email)) {
       return 'Please enter a valid email';
     }
 
-    // Check if password is empty
+    // check if password is empty
     if (password.isEmpty) {
       return 'Password is required';
     }
 
-    // Check minimum password length
+    // check minimum password length
     if (password.length < 6) {
       return 'Password must be at least 6 characters';
     }
 
-    // All validations passed
+    // all validations passed
     return null;
   }
 
-  /// Validate signup inputs
-  /// Returns error message if validation fails, null if all good
+  /// validate signup inputs
+  /// returns error message if validation fails, null if all good
   String? _validateSignupInputs(
     String email,
     String password,
@@ -383,66 +420,66 @@ class AuthController extends GetxController {
     String firstName,
     String lastName,
   ) {
-    // Check if email is empty
+    // check if email is empty
     if (email.isEmpty) {
       return 'Email is required';
     }
 
-    // Check if email format is valid
+    // check if email format is valid
     if (!_isValidEmail(email)) {
       return 'Please enter a valid email';
     }
 
-    // Check if first name is empty
+    // check if first name is empty
     if (firstName.isEmpty) {
       return 'First name is required';
     }
 
-    // Check if first name has minimum length
+    // check if first name has minimum length
     if (firstName.length < 2) {
       return 'First name must be at least 2 characters';
     }
 
-    // Check if last name is empty
+    // check if last name is empty
     if (lastName.isEmpty) {
       return 'Last name is required';
     }
 
-    // Check if last name has minimum length
+    // check  if last name has minimum length
     if (lastName.length < 2) {
       return 'Last name must be at least 2 characters';
     }
 
-    // Check if password is empty
+    // check if password is empty
     if (password.isEmpty) {
       return 'Password is required';
     }
 
-    // Check minimum password length
+    // check minimum password length
     if (password.length < 6) {
       return 'Password must be at least 6 characters';
     }
 
-    // Check if password has uppercase letter
+    // check if password has uppercase letter
     if (!password.contains(RegExp(r'[A-Z]'))) {
       return 'Password must contain an uppercase letter';
     }
 
-    // Check if password has number
+    // check if password has number
     if (!password.contains(RegExp(r'[0-9]'))) {
       return 'Password must contain a number';
     }
 
-    // Check if passwords match
+    // check if passwords match
     if (password != confirmPassword) {
       return 'Passwords do not match';
     }
 
-    // All validations passed
+    // all validations passed
     return null;
   }
 
-  /// Check if email format is valid using regex
+  /// check if email format is valid using regex
   bool _isValidEmail(String email) {
     final emailRegex = RegExp(
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
@@ -452,14 +489,14 @@ class AuthController extends GetxController {
 
   // ==================== PRIVATE METHODS (Error Handling) ====================
 
-  /// Handle errors from API calls and convert to user-friendly messages
+  /// handle errors from API calls and convert to user-friendly messages
   void _handleError(dynamic error) {
     String message = 'An error occurred';
 
     if (error is Exception) {
       String errorString = error.toString();
 
-      // Check for specific error messages from API
+      // check for specific error messages from API
       if (errorString.contains('401') || errorString.contains('Unauthorized')) {
         message = 'Invalid email or password';
       } else if (errorString.contains('409') ||
