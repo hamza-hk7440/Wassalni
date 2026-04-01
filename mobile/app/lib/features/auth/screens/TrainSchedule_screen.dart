@@ -44,9 +44,11 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
     super.initState();
 
     _scheduleController.loadSchedules();
-
     _scheduleController.addListener(() {
       if (mounted) setState(() {});
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _scheduleController.loadSchedules();
     });
 
     _scrollController.addListener(() {

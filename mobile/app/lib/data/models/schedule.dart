@@ -1,6 +1,6 @@
 class Schedule {
   final String id;
-  final String routeId; // ✅ added
+  final String routeId; 
   final String from;
   final String to;
   final String departure;
@@ -11,7 +11,7 @@ class Schedule {
 
   Schedule({
     required this.id,
-    required this.routeId, // ✅ added
+    required this.routeId,
     required this.from,
     required this.to,
     required this.departure,
@@ -27,7 +27,7 @@ class Schedule {
 
     return Schedule(
       id: json['schedule_id']?.toString() ?? '',
-      routeId: json['route_id']?.toString() ?? '', // ✅ added
+      routeId: json['route_id']?.toString() ?? '', 
       from: route?['start_station']?['name'] ?? 'Unknown',
       to: route?['end_station']?['name'] ?? 'Unknown',
       departure: json['departure_time']?.toString() ?? '--:--',

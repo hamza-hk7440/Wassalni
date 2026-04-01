@@ -43,10 +43,15 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
   @override
   void initState() {
     super.initState();
+
     _scheduleController.loadSchedules();
     _scheduleController.addListener(() {
       if (mounted) setState(() {});
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _scheduleController.loadSchedules();
+    });
+
     _scrollController.addListener(() {
       if (_scrollController.offset > 50 && _isExtended) {
         setState(() => _isExtended = false);

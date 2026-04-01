@@ -139,7 +139,7 @@ class ApiClient {
     } on ApiException {
       rethrow;
     } catch (e) {
-      print('❌ Error: $e, Response: ${response.body}');
+      print(' Error: $e, Response: ${response.body}');
       throw ApiException(
         'Failed to process response: ${response.body}',
         originalError: e,

@@ -8,19 +8,48 @@ class ScheduleController extends ChangeNotifier {
   bool isLoading = false;
   String errorMessage = "";
   DateTime selectedDay = DateTime.now();
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  void _safeNotify() {
+    if (!_disposed) notifyListeners();
+  }
+
+  // schedule_controller.dart
 
   Future<void> loadSchedules({DateTime? day}) async {
     isLoading = true;
     errorMessage = "";
-    notifyListeners();
+    _safeNotify();
     try {
       final target = day ?? selectedDay;
-      schedules = await _apiService.fetchSchedules(date: target);
+      final result = await _apiService.fetchSchedules(date: target);
+
+      
+      if (result.isEmpty && day == null) {
+        for (int i = 1; i <= 7; i++) {
+          final nextDay = target.add(Duration(days: i));
+          final fallback = await _apiService.fetchSchedules(date: nextDay);
+          if (fallback.isNotEmpty) {
+            selectedDay = nextDay; 
+            schedules = fallback;
+            _safeNotify();
+            return;
+          }
+        }
+      }
+
+      schedules = result;
     } catch (e) {
       errorMessage = e.toString();
     } finally {
       isLoading = false;
-      notifyListeners();
+      _safeNotify();
     }
   }
 

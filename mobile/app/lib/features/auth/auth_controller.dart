@@ -149,12 +149,12 @@ class User {
   //from user model to json
   Map<String, dynamic> toJson() {
     return {
-      'userId': userId,
+      'id': userId,
       'email': email,
-      'firstName': firstName,
-      'lastName': lastName,
+      'first_name': firstName,
+      'last_name': lastName,
       'role': role,
-      'tokenBalance': tokenBalance,
+      'token_balance': tokenBalance,
       'timestamp': timestamp.toIso8601String(),
     };
   }
@@ -213,23 +213,27 @@ class AuthController extends GetxController {
         return false;
       }
 
-      // step 3: set loading state
+      // step 3: set loading state early to block any checkAuthStatus interference
       isLoading.value = true;
 
-      // step 4: make api call to login endpoint
+      // step 4: clear any stale session data before making the API call
+      await _deleteToken();
+      await _deleteUserData();
+
+      // step 5: make api call to login endpoint
       final response = await _apiClient.post(
         'users/loginmobile',
         body: {'email': email, 'password': password},
       );
 
-      // step 5: check if the response is successful
+      // step 6: check if the response is successful
       if (response == null ||
           !response.containsKey('token') ||
           !response.containsKey('user')) {
         throw Exception('Invalid response from server');
       }
 
-      // step 6: extract user data and token from response
+      // step 7: extract user data and token from response
       final token = response['token'] as String;
       final userData = response['user'] as Map<String, dynamic>;
 
@@ -240,21 +244,21 @@ class AuthController extends GetxController {
 
       final user = User.fromJson(userData);
 
-      // step 7: save token to shared preferences
+      // step 8: save token to shared preferences
       await _saveToken(token);
 
-      // step 8: save user data (including the new timestamp) to shared preferences
+      // step 9: save user data (including the new timestamp) to shared preferences
       await _saveUserData(user);
 
-      // step 9: update app state
+      // step 10: update app state
       currentUser.value = user;
       isAuthenticated.value = true;
       successMessage.value = 'Login successful';
 
-      // step 10: hide loading state
+      // step 11: hide loading state
       isLoading.value = false;
 
-      // step 11: navigate based on the specific user role
+      // step 12: navigate based on the specific user role
       Future.delayed(const Duration(seconds: 1), () {
         _navigateBasedOnRole(user);
       });
@@ -359,14 +363,18 @@ class AuthController extends GetxController {
         if (userData != null) {
           final now = DateTime.now();
           final loginDate = userData.timestamp;
-          const int sessionLimitHours = 24;
+          const int sessionLimitMinutes = 3;
 
-          if (now.difference(loginDate).inHours >= sessionLimitHours) {
-            print('Token expired. Logging out...');
-            await logout();
+          if (now.difference(loginDate).inMinutes >= sessionLimitMinutes) {
+            print('Session expired. Redirecting...');
+            await _deleteToken();
+            await _deleteUserData();
+            currentUser.value = null;
             isAuthenticated.value = false;
+            Get.offAllNamed('/rolechoice');
             return;
           }
+
           currentUser.value = userData;
           isAuthenticated.value = true;
           _navigateBasedOnRole(userData);
