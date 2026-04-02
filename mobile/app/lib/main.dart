@@ -3,6 +3,7 @@ import 'package:app/features/auth/screens/splash_screen.dart';
 import 'package:app/features/auth/screens/login_page.dart';
 import 'package:app/features/auth/screens/home_test.dart';
 import 'package:app/features/auth/screens/role_choice_screen.dart';
+import 'package:app/features/auth/screens/controller_login.dart';
 import 'package:app/features/auth/auth_controller.dart'; // Import your controller
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
