@@ -20,27 +20,21 @@ class ScheduleController extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
-  // schedule_controller.dart
-
-  Future<void> loadSchedules({DateTime? day}) async {
+  Future<void> loadSchedules({DateTime? day, int retries = 3}) async {
     isLoading = true;
     errorMessage = "";
     _safeNotify();
     try {
       final target = day ?? selectedDay;
-      final result = await _apiService.fetchSchedules(date: target);
 
-      
-      if (result.isEmpty && day == null) {
-        for (int i = 1; i <= 7; i++) {
-          final nextDay = target.add(Duration(days: i));
-          final fallback = await _apiService.fetchSchedules(date: nextDay);
-          if (fallback.isNotEmpty) {
-            selectedDay = nextDay; 
-            schedules = fallback;
-            _safeNotify();
-            return;
-          }
+      List<Schedule> result = [];
+      for (int attempt = 1; attempt <= retries; attempt++) {
+        result = await _apiService.fetchSchedules(date: target);
+        if (result.isNotEmpty) break;
+
+        if (attempt < retries) {
+          print('⚠️ Empty result, retrying... ($attempt/$retries)');
+          await Future.delayed(const Duration(seconds: 1));
         }
       }
 

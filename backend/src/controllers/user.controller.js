@@ -84,12 +84,30 @@ export const googleSignIn = async (req, res) => {
 //this function will get the code in the callback url to give it to the service
 export const googleSignUpCallback = async (req, res) => {
   try {
-    //req.query will contain the code that google sends
     const { code } = req.query;
     const data = await userService.handleAuthCallback(code);
-    res.status(200).json({ user: data.user });
+    const { data: userData } = await supabase
+      .from("users")
+      .select("role, first_name, last_name, token_balance")
+      .eq("user_id", data.user.id)
+      .single();
+
+    const token = data.session.access_token;
+    const userJson = encodeURIComponent(
+      JSON.stringify({
+        id: data.user.id,
+        email: data.user.email,
+        role: userData?.role ?? "passenger",
+        first_name: userData?.first_name ?? "",
+        last_name: userData?.last_name ?? "",
+        token_balance: userData?.token_balance ?? 0,
+      }),
+    );
+    res.redirect(`myapp://auth/callback?token=${token}&user=${userJson}`);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.redirect(
+      `myapp://auth/callback?error=${encodeURIComponent(error.message)}`,
+    );
   }
 };
 export const controllerLogin = async (req, res) => {
@@ -196,14 +214,12 @@ export const userLoginForMobile = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }
-
     const userData = await userService.userLoginForMobile({ email, password });
     console.log("userData:", userData);
 
     if (userData.user.role !== "passenger") {
       return res.status(403).json({ error: "Access denied: passengers only" });
     }
-
     return res.status(200).json({
       message: "Login successful",
       token: userData.token,
@@ -211,6 +227,64 @@ export const userLoginForMobile = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
+    return res.status(500).json({ error: "An unexpected error occurred" });
+  }
+};
+export const unifiedMobileLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+    const result = await userService.unifiedMobileLogin({ email, password });
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("Unified mobile login error:", error);
+    return res
+      .status(500)
+      .json({ error: error.message || "An unexpected error occurred" }); 
+  }
+};
+export const verifyRoleCode = async (req, res) => {
+  try {
+    const { session, code } = req.body;
+    if (!session || !code) {
+      return res.status(400).json({ error: "Session and code are required" });
+    }
+    const userData = await userService.getPendingSession(session);
+    console.log("🔍 pending session data:", userData);
+    if (!userData) {
+      return res.status(401).json({ error: "Invalid session" });
+    }
+    let isValid = false;
+    if (userData.role === "controller") {
+      isValid = await userService.verifycontrollerCode({
+        user_id: userData.user_id,
+        code,
+      });
+    } else if (userData.role === "superAdmin") {
+      isValid = await userService.verifySuperAdminCode({
+        user_id: userData.user_id,
+        code,
+      });
+    }
+    if (!isValid) {
+      return res.status(401).json({ error: "Invalid code" });
+    }
+    userService.deletePendingSession(session);
+    return res.status(200).json({
+      message: "Login successful",
+      token: userData.token,
+      user: {
+        id: userData.user_id,
+        email: userData.email,
+        role: userData.role,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+      },
+    });
+  } catch (error) {
+    console.error("Verification error:", error);
     return res.status(500).json({ error: "An unexpected error occurred" });
   }
 };

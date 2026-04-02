@@ -16,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
-  final AuthController authController = Get.put(AuthController());
+  final AuthController authController = Get.find<AuthController>();
 
   Widget _buildDivider() {
     return Padding(
@@ -53,25 +53,34 @@ class _LoginScreenState extends State<LoginScreen> {
         ],
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(15),
-        onTap: () {
-          print("Continue with Google tapped");
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset("assets/logoGoogle.png", height: 22),
-            const SizedBox(width: 12),
-            Text(
-              "Continue with Google",
-              style: GoogleFonts.poppins(
-                color: Colors.black87,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
+      child: Obx(
+        () => InkWell(
+          borderRadius: BorderRadius.circular(15),
+          onTap: authController.isLoading.value
+              ? null
+              : () => authController.loginWithGoogle(),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (authController.isLoading.value)
+                const SizedBox(
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                Image.asset("assets/logoGoogle.png", height: 22),
+              const SizedBox(width: 12),
+              Text(
+                "Continue with Google",
+                style: GoogleFonts.poppins(
+                  color: Colors.black87,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -281,5 +290,117 @@ class _LoginScreenState extends State<LoginScreen> {
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    ever(authController.pendingRole, (role) {
+      if (role.isNotEmpty && authController.pendingSession.value.isNotEmpty) {
+        _showCodeDialog(role);
+      }
+    });
+  }
+
+  void _showCodeDialog(String role) {
+    final codeController = TextEditingController();
+    final label = role == 'controller' ? 'Controller code' : 'Admin code';
+    final hint = role == 'controller'
+        ? 'Enter your 6-digit controller code'
+        : 'Enter your 4-digit admin code';
+    final maxLength = role == 'controller' ? 6 : 4;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Verification required',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'A verification code is required for your role.',
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 16),
+            Obx(() {
+              if (authController.errorMessage.value.isNotEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    authController.errorMessage.value,
+                    style: const TextStyle(color: Colors.red, fontSize: 13),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+            TextField(
+              controller: codeController,
+              keyboardType: TextInputType.number,
+              maxLength: maxLength,
+              decoration: InputDecoration(
+                labelText: label,
+                hintText: hint,
+                prefixIcon: Icon(Icons.lock_outline, color: AppColors.colorA),
+                filled: true,
+                fillColor: Colors.grey[100],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                counterText: '',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              authController.pendingSession.value = '';
+              authController.pendingRole.value = '';
+              authController.errorMessage.value = '';
+              Navigator.pop(context);
+            },
+            child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+          ),
+          Obx(
+            () => ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.colorA,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: authController.isLoading.value
+                  ? null
+                  : () async {
+                      final success = await authController.verifyRoleCode(
+                        code: codeController.text.trim(),
+                      );
+                      if (success) Navigator.pop(context);
+                    },
+              child: authController.isLoading.value
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      'Verify',
+                      style: GoogleFonts.poppins(color: Colors.white),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

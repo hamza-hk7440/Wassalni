@@ -1,9 +1,8 @@
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 import 'package:app/data/api/api_client.dart';
-// ==================== PRIVATE METHODS====================
 
 /// get stored token from SharedPreferences
 /// returns null if no token found
@@ -50,8 +49,6 @@ Future<User?> _getUserData() async {
     if (userDataJson == null) {
       return null;
     }
-
-    // decode JSON string back to User object
     final userData = jsonDecode(userDataJson) as Map<String, dynamic>;
     return User.fromJson(userData);
   } catch (e) {
@@ -175,22 +172,12 @@ class User {
 class AuthController extends GetxController {
   static const String authToken = 'auth_token';
   static const String userDataKey = 'user_data';
-
-  //GetX observable state
-  ///current logged in user
   Rx<User?> currentUser = Rx<User?>(null);
-
-  ///is login/signup request in progress?
   RxBool isLoading = false.obs;
-  //is the user logged in?
   RxBool isAuthenticated = false.obs;
-  //error message from failed requests
   RxString errorMessage = ''.obs;
-  //succes message for user feedback
   RxString successMessage = ''.obs;
-  //api client instance
   late final ApiClient _apiClient;
-  //lifecycle method called when the controller is initialized
   @override
   void onInit() {
     super.onInit();
@@ -198,74 +185,96 @@ class AuthController extends GetxController {
     checkAuthStatus();
   }
 
-  //=====public methods=====
+  //public methods
   // login method
+  // Replace the existing login() method:
   Future<bool> login({required String email, required String password}) async {
     try {
-      // step 1: clear previous errors
       errorMessage.value = '';
       successMessage.value = '';
-
-      // step 2: validate inputs locally
       final validationError = _validateLoginInputs(email, password);
       if (validationError != null) {
         errorMessage.value = validationError;
         return false;
       }
-
-      // step 3: set loading state early to block any checkAuthStatus interference
       isLoading.value = true;
-
-      // step 4: clear any stale session data before making the API call
       await _deleteToken();
       await _deleteUserData();
 
-      // step 5: make api call to login endpoint
       final response = await _apiClient.post(
-        'users/loginmobile',
+        'users/loginunified',
         body: {'email': email, 'password': password},
       );
+      if (response == null) throw Exception('Invalid response from server');
+      final requiresCode = response['requiresCode'] as bool? ?? false;
+      if (!requiresCode) {
+        if (!response.containsKey('token') || !response.containsKey('user')) {
+          throw Exception('Invalid response from server');
+        }
+        final token = response['token'] as String;
+        final userData = response['user'] as Map<String, dynamic>;
+        userData['timestamp'] = DateTime.now().toIso8601String();
+        final user = User.fromJson(userData);
+        await _saveToken(token);
+        await _saveUserData(user);
+        currentUser.value = user;
+        isAuthenticated.value = true;
+        successMessage.value = 'Login successful';
+        isLoading.value = false;
+        Future.delayed(
+          const Duration(seconds: 1),
+          () => _navigateBasedOnRole(user),
+        );
+        return true;
+      } else {
+        final role = response['role'] as String;
+        final session = response['session'] as String;
+        isLoading.value = false;
+        pendingSession.value = session;
+        pendingRole.value = role;
+        return true;
+      }
+    } catch (e) {
+      _handleError(e);
+      isLoading.value = false;
+      return false;
+    }
+  }
 
-      // step 6: check if the response is successful
+  RxString pendingSession = ''.obs;
+  RxString pendingRole = ''.obs;
+  Future<bool> verifyRoleCode({required String code}) async {
+    try {
+      errorMessage.value = '';
+      isLoading.value = true;
+      final response = await _apiClient.post(
+        'users/loginunified/verify',
+        body: {'session': pendingSession.value, 'code': code},
+      );
+
       if (response == null ||
           !response.containsKey('token') ||
           !response.containsKey('user')) {
         throw Exception('Invalid response from server');
       }
-
-      // step 7: extract user data and token from response
       final token = response['token'] as String;
       final userData = response['user'] as Map<String, dynamic>;
-
-      // --- TIMESTAMP FIX START ---
-      // We manually add the login time here so it is saved permanently to SharedPreferences
       userData['timestamp'] = DateTime.now().toIso8601String();
-      // --- TIMESTAMP FIX END ---
-
       final user = User.fromJson(userData);
-
-      // step 8: save token to shared preferences
       await _saveToken(token);
-
-      // step 9: save user data (including the new timestamp) to shared preferences
       await _saveUserData(user);
-
-      // step 10: update app state
       currentUser.value = user;
       isAuthenticated.value = true;
       successMessage.value = 'Login successful';
-
-      // step 11: hide loading state
       isLoading.value = false;
-
-      // step 12: navigate based on the specific user role
-      Future.delayed(const Duration(seconds: 1), () {
-        _navigateBasedOnRole(user);
-      });
-
+      pendingSession.value = '';
+      pendingRole.value = '';
+      Future.delayed(
+        const Duration(seconds: 1),
+        () => _navigateBasedOnRole(user),
+      );
       return true;
     } catch (e) {
-      // handle errors
       _handleError(e);
       isLoading.value = false;
       return false;
@@ -337,6 +346,82 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<void> loginWithGoogle() async {
+    try {
+      errorMessage.value = '';
+      successMessage.value = '';
+      isLoading.value = true;
+      final response = await _apiClient.get('users/auth/google');
+      if (response == null || !response.containsKey('url')) {
+        throw Exception('Failed to get Google sign-in URL');
+      }
+      final googleUrl = response['url'] as String;
+      await launchUrl(
+        Uri.parse(googleUrl),
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      _handleError(e);
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> handleGoogleCallback(Uri uri) async {
+    try {
+      final fragment = uri.fragment;
+      final params = Uri.splitQueryString(fragment);
+
+      final error = params['error'] ?? uri.queryParameters['error'];
+      if (error != null) {
+        errorMessage.value = Uri.decodeComponent(error);
+        isLoading.value = false;
+        return;
+      }
+      final token = params['access_token'];
+      if (token == null) {
+        errorMessage.value = 'Google sign-in failed. No token received.';
+        isLoading.value = false;
+        return;
+      }
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        errorMessage.value = 'Google sign-in failed. Invalid token.';
+        isLoading.value = false;
+        return;
+      }
+      String payload = parts[1];
+      payload += '=' * ((4 - payload.length % 4) % 4);
+      final payloadJson = utf8.decode(base64Url.decode(payload));
+      final payloadMap = jsonDecode(payloadJson) as Map<String, dynamic>;
+      final userMeta =
+          payloadMap['user_metadata'] as Map<String, dynamic>? ?? {};
+
+      final userData = {
+        'id': payloadMap['sub'] ?? '',
+        'email': payloadMap['email'] ?? '',
+        'role': 'passenger',
+        'first_name': userMeta['full_name']?.toString().split(' ').first ?? '',
+        'last_name':
+            userMeta['full_name']?.toString().split(' ').skip(1).join(' ') ??
+            '',
+        'token_balance': 0,
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+      final user = User.fromJson(userData);
+      await _saveToken(token);
+      await _saveUserData(user);
+      currentUser.value = user;
+      isAuthenticated.value = true;
+      successMessage.value = 'Google sign-in successful';
+      isLoading.value = false;
+      _navigateBasedOnRole(user);
+    } catch (e) {
+      print('🔴 [Google] handleGoogleCallback error: $e');
+      _handleError(e);
+      isLoading.value = false;
+    }
+  }
+
   Future<void> logout() async {
     await _deleteToken();
     await _deleteUserData();
@@ -346,8 +431,10 @@ class AuthController extends GetxController {
   }
 
   void _navigateBasedOnRole(User user) {
-    if (user.isController) {
-      Get.offAllNamed('/loginforcontroller');
+    if (user.isSuperAdmin) {
+      Get.offAllNamed('/superadminhome');
+    } else if (user.isController) {
+      Get.offAllNamed('/controllerhome');
     } else {
       Get.offAllNamed('/home');
     }
@@ -363,7 +450,7 @@ class AuthController extends GetxController {
         if (userData != null) {
           final now = DateTime.now();
           final loginDate = userData.timestamp;
-          const int sessionLimitMinutes = 3;
+          const int sessionLimitMinutes = 1;
 
           if (now.difference(loginDate).inMinutes >= sessionLimitMinutes) {
             print('Session expired. Redirecting...');
@@ -371,7 +458,6 @@ class AuthController extends GetxController {
             await _deleteUserData();
             currentUser.value = null;
             isAuthenticated.value = false;
-            Get.offAllNamed('/rolechoice');
             return;
           }
 
@@ -390,7 +476,6 @@ class AuthController extends GetxController {
       isAuthenticated.value = false;
     }
   }
-  // ==================== PRIVATE METHODS (Input Validation) ====================
 
   /// validate login inputs
   /// returns error message if validation fails, null if all good
@@ -495,16 +580,14 @@ class AuthController extends GetxController {
     return emailRegex.hasMatch(email);
   }
 
-  // ==================== PRIVATE METHODS (Error Handling) ====================
-
   /// handle errors from API calls and convert to user-friendly messages
   void _handleError(dynamic error) {
     String message = 'An error occurred';
 
     if (error is Exception) {
+      print('Raw error: $error');
+      print('Error type: ${error.runtimeType}');
       String errorString = error.toString();
-
-      // check for specific error messages from API
       if (errorString.contains('401') || errorString.contains('Unauthorized')) {
         message = 'Invalid email or password';
       } else if (errorString.contains('409') ||
@@ -512,7 +595,8 @@ class AuthController extends GetxController {
         message = 'Email is already registered. Please login instead.';
       } else if (errorString.contains('500') ||
           errorString.contains('Server')) {
-        message = 'Server error. Please try again later.';
+        message = error.toString().replaceAll('Exception: ', '');
+        ;
       } else if (errorString.contains('Network') ||
           errorString.contains('timeout')) {
         message = 'Network error. Please check your internet connection.';

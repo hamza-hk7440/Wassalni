@@ -19,7 +19,6 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
   final ScheduleController _scheduleController = ScheduleController();
   final ApiService _apiService = ApiService();
   bool _isExtended = true;
-
   String _formatTime(String raw) {
     try {
       final dt = DateTime.parse(raw).toLocal();
@@ -43,7 +42,6 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
   @override
   void initState() {
     super.initState();
-
     _scheduleController.loadSchedules();
     _scheduleController.addListener(() {
       if (mounted) setState(() {});
@@ -51,13 +49,16 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _scheduleController.loadSchedules();
     });
-
     _scrollController.addListener(() {
       if (_scrollController.offset > 50 && _isExtended) {
         setState(() => _isExtended = false);
       } else if (_scrollController.offset <= 50 && !_isExtended) {
         setState(() => _isExtended = true);
       }
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) await _scheduleController.loadSchedules();
     });
   }
 
@@ -73,7 +74,6 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
     final busSchedules = _scheduleController.schedules
         .where((s) => s.transportType.toLowerCase() == 'bus')
         .toList();
-
     return Scaffold(
       backgroundColor: AppColors.colorL,
       body: SafeArea(
