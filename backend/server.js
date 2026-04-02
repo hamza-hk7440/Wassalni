@@ -4,6 +4,10 @@ import paymentRoutes from "./src/routes/payment.routes.js";
 import userRoutes from "./src/routes/user.routes.js";
 import ticketRoutes from "./src/routes/ticket.routes.js";
 import adminRoutes from "./src/routes/admin.routes.js";
+import transportRoutes from "./src/routes/transport.routes.js";
+import routeRoutes from "./src/routes/route.routes.js";
+import scheduleRoutes from "./src/routes/schedule.routes.js";
+import stationsRoutes from "./src/routes/stations.routes.js";
 
 import cors from "cors";
 
@@ -35,6 +39,12 @@ app.use("/users", userRoutes);
 app.use("/ticket", ticketRoutes);
 //create admin route
 app.use("/admin", adminRoutes);
+//transport and stations routes
+app.use("/transports", transportRoutes);
+app.use("/stations", stationsRoutes);
+//schedules and routes paths
+app.use("/routes", routeRoutes);
+app.use("/schedules", scheduleRoutes);
 
 //test route to check if the server is running
 app.get("/", (req, res) => {

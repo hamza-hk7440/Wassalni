@@ -3,7 +3,7 @@ import express from "express";
 
 const router = express.Router();
 
-import { getDashboardStats, createController, } from "../controllers/admin.controller.js";
+import { getDashboardStats, createController, getAllUsers, deleteUser} from "../controllers/admin.controller.js";
 
 import requireAdmin from "../middlewares/auth.middleware.js";
 
@@ -18,4 +18,13 @@ router.get("/dashboard", getDashboardStats);
 // POST create a new controller account
 router.post("/createcontroller", validate(createControllerSchema), createController);
 
+// get all users for the dashboard
+router.get("/users", getAllUsers);
+
+// delete a user (permanent)
+router.delete("/users/:userId", deleteUser);
+
+
+
 export default router;
+

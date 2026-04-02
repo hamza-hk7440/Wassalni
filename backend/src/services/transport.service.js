@@ -1,9 +1,9 @@
-import { supabase } from "../config/supabase";
+import { supabase } from "../config/supabase.js";
 
 class TransportService {
   //create transport
   async createTransport(transport) {
-    const [type, capacity, status, license_plate] = transportData;
+    const { type, capacity, status, license_plate } = transport;
     const { data, error } = await supabase
       .from("transports")
       .insert([{ type, capacity, status, license_plate }])

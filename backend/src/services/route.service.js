@@ -1,4 +1,4 @@
-import { supabase } from "../config/supabase";
+import { supabase } from "../config/supabase.js";
 class RouteService {
     //create route
     async createFullRoute(routeData,stationSequence) {

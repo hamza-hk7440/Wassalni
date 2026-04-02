@@ -56,3 +56,36 @@ export const createController = async (controllerData) => {
 
     return data[0];
 };
+
+
+// zedna lpart bch nfetchou l users lkoll bch nalgouhom fl dashboard, w zedna el delete user zeda
+export const getAllUsers = async () => {
+    const { data, error } = await supabase
+        .from('users')
+        .select(`
+            user_id,
+            email,
+            first_name,
+            last_name,
+            role,
+            token_balance,
+            created_at
+        `)
+        .order('created_at', { ascending: false });
+    
+    if (error) throw new Error(error.message);
+
+    return data;
+}
+
+export const deleteUser = async (userId) => {
+    const { data, error } = await supabase.auth.admin.deleteUser(userId);
+    
+    if (error) throw new Error(error.message);
+
+    return data;
+
+}
+    
+
+        

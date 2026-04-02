@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 
-const StaionController = require("../controllers/stations.controller.js");
+import StaionController from "../controllers/stations.controller.js";
 //to get all stations
 router.get("/", StaionController.getAllStations);
 //to  get a station by id

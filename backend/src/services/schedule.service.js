@@ -1,4 +1,4 @@
-import { supabase } from "../config/supabase";
+import { supabase } from "../config/supabase.js";
 class ScheduleService {
   //create schedule
   async createSchedule(scheduleData) {
