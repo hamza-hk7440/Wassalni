@@ -19,7 +19,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
-  final AuthController authController = Get.put(AuthController());
+  final AuthController authController = Get.find<AuthController>();
 
   Widget _buildDivider() {
     return Padding(
@@ -66,23 +66,34 @@ class _SignupScreenState extends State<SignupScreen> {
         ],
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(15),
-        onTap: () => print("Google Signup Tapped"),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset("assets/logoGoogle.png", height: 22),
-            const SizedBox(width: 12),
-            Text(
-              "Continue with Google",
-              style: GoogleFonts.poppins(
-                color: Colors.black87,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
+      child: Obx(
+        () => InkWell(
+          borderRadius: BorderRadius.circular(15),
+          onTap: authController.isLoading.value
+              ? null
+              : () => authController.loginWithGoogle(),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (authController.isLoading.value)
+                const SizedBox(
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                Image.asset("assets/logoGoogle.png", height: 22),
+              const SizedBox(width: 12),
+              Text(
+                "Continue with Google",
+                style: GoogleFonts.poppins(
+                  color: Colors.black87,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -341,7 +352,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ],
                     ),
-                    _buildDivider(), // Ensure you have this helper method defined
+                    _buildDivider(),
                     _buildGoogleButton(),
                     const SizedBox(height: 30),
                   ],

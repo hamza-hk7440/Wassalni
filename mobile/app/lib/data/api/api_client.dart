@@ -3,12 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:async';
 
-//exceptions classes...we need this classes to handle the exceptions so instead of throwing a generic exception we can throw a specific exception and handle it in the UI
 class ApiException implements Exception {
-  final String message; //what we will show to the user
-  final String? errorCode; // 'UNAUTHORIZED', 'SERVER_ERROR', etc.
-  final int? statusCode; // HTTP status code (401, 500, etc.)
-  final dynamic originalError; // original error object for debugging
+  final String message; 
+  final String? errorCode;
+  final int? statusCode;
+  final dynamic originalError;
   ApiException(
     this.message, {
     this.errorCode,
@@ -19,7 +18,6 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-///exception for  401-Unauthorized(wrong password or token expired)
 class UnauthorizedException extends ApiException {
   UnauthorizedException({
     required String message,
@@ -33,7 +31,6 @@ class UnauthorizedException extends ApiException {
        );
 }
 
-/// exception for 500 - Server error
 class ServerException extends ApiException {
   ServerException({
     required String message,
@@ -47,7 +44,6 @@ class ServerException extends ApiException {
        );
 }
 
-/// exception for 400 - Bad request (invalid input)
 class ClientException extends ApiException {
   ClientException({
     required String message,
@@ -61,33 +57,20 @@ class ClientException extends ApiException {
        );
 }
 
-/// exception for network issues (no internet, timeout)
 class NetworkException extends ApiException {
   NetworkException({required String message, dynamic originalError})
     : super(message, errorCode: 'NETWORK_ERROR', originalError: originalError);
 }
 
-//api client class to handle all the api calls and handle the exceptions(main http communication layer between the app and the backend)
 class ApiClient {
-  //constants
-  //base url of the backend server
-  //it will be changed to the actual url of the backend server when we deploy it, for now we will use localhost for testing
   static const String baseUrl = 'http://10.0.2.2:3000';
-  //timeout duration for the http requests
-  //if the request takes more than 10 seconds, we will consider it as a network error and throw a NetworkException
   static const int timeoutSeconds = 10;
-  //method to get the auth token from shared preferences
-  //used to retrieve the token from shared preferences (must match the key used in auth_controller)
   static const String authTokenKey = 'auth_token';
-  //singleton pattern to ensure only one instance of ApiClient is created
-  //only one instance of ApiClient will be created and shared across the app, this is important to manage the http client and avoid creating multiple instances that can lead to memory leaks
   static final ApiClient _instance = ApiClient._internal();
   factory ApiClient() {
     return _instance;
   }
   ApiClient._internal();
-  // Add these methods to ApiClient class:
-
   Future<Map<String, String>> _getHeaders() async {
     final token = await _getToken();
     final headers = {'Content-Type': 'application/json'};
@@ -108,10 +91,6 @@ class ApiClient {
 
   dynamic _handleResponse(http.Response response) {
     try {
-      // ← ADD THESE 2 LINES
-      print('📡 Response Status: ${response.statusCode}');
-      print('📡 Response Body: ${response.body}');
-
       final decodedBody = jsonDecode(response.body) ?? {};
       if (response.statusCode == 200 || response.statusCode == 201) {
         return decodedBody;
@@ -159,10 +138,6 @@ class ApiClient {
   }
 
   //public meethods
-  //get request method
-  //parameters: endpoint (the api endpoint to call, e.g. 'auth/login'), queryParameters (optional query parameters for the request)
-  //returns: the response body as a Map (decoded from JSON)
-  //throws: ApiException (UnauthorizedException, ServerException, ClientException, NetworkException)
   Future<dynamic> get(
     String endpoint, {
     Map<String, String>? queryParameters,
@@ -186,7 +161,6 @@ class ApiClient {
       //step 4: handle the response based on the status code
       return _handleResponse(response);
     } on http.ClientException catch (e) {
-      // Specific exception type - catch first
       throw NetworkException(
         message: 'Network error. Please check your internet connection.',
         originalError: e,
@@ -202,8 +176,6 @@ class ApiClient {
   }
 
   //post request method
-  //parameters: endpoint (the api endpoint to call, e.g. 'auth/login'), body (the request body as a Map, will be encoded to JSON)
-  //returns: the response body as a Map (decoded from JSON)
   Future<dynamic> post(
     String endpoint, {
     required Map<String, dynamic> body,
@@ -229,7 +201,6 @@ class ApiClient {
       //step 5: handle the response based on the status code
       return _handleResponse(response);
     } on http.ClientException catch (e) {
-      // Specific exception type - catch first
       throw NetworkException(
         message: 'Network error. Please check your internet connection.',
         originalError: e,
