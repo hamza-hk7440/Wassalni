@@ -4,7 +4,19 @@ import paymentRoutes from "./src/routes/payment.routes.js";
 import userRoutes from "./src/routes/user.routes.js";
 import ticketRoutes from "./src/routes/ticket.routes.js";
 import adminRoutes from "./src/routes/admin.routes.js";
+
+import cors from "cors";
+
 const app = express();
+
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:5173", // Allow requests from the frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); //we add this bcz paymee don't use json it use a format called :application/x-www-form-urlencoded
 //========wwebhooks routes=======//
