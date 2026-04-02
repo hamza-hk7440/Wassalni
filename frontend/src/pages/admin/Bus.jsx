@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Navbar from '../../components/layout/Navbar';
 import BusLayout from '../../components/layout/bus';
@@ -12,3 +13,4 @@ function Bus() {
 }
 
 export default Bus;
+

@@ -28,7 +28,7 @@ function MainLayout() {
   return (
     <>
       <div
-        className="min-h-screen pt-24 p-6 md:p-10 flex flex-col items-center gap-8 md:gap-10"
+        className="min-h-screen pt-24 md:pt-28 p-4 md:p-10 flex flex-col items-center gap-6 md:gap-8"
         style={{
           background: `radial-gradient(circle at 5% -20%, rgba(108,177,218,0.25), transparent 38%), linear-gradient(180deg, ${palette.iceWhite} 0%, #eff8ff 45%, #f7fbff 100%)`,
         }}
@@ -36,38 +36,37 @@ function MainLayout() {
 
        
         <div
-          className="bg-white/95 backdrop-blur-sm p-6 md:p-9 shadow-xl w-full max-w-6xl text-center rounded-3xl border"
+          className="bg-white/95 backdrop-blur-sm p-5 md:p-10 shadow-xl w-full max-w-6xl text-center rounded-[28px] border"
           style={{ borderColor: palette.frostBlue }}
         >
-          <h1 className="text-sm md:text-lg font-bold uppercase tracking-widest" style={{ color: palette.deepOcean }}>
+          <h1 className="text-[11px] md:text-sm font-extrabold uppercase tracking-[0.22em]" style={{ color: palette.deepOcean }}>
             Revenus du {new Date().toLocaleDateString()}
           </h1>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
-            <span className="text-4xl md:text-6xl font-black leading-none" style={{ color: palette.deepOcean }}>
-              {totalRevenue.toFixed(2)} <small className="text-2xl font-bold" style={{ color: palette.softTeal }}>DT</small>
+          <div className="mt-3 md:mt-5 flex flex-wrap items-center justify-center gap-3 md:gap-4">
+            <span className="text-4xl md:text-6xl font-black leading-none tracking-tight" style={{ color: palette.deepOcean }}>
+              {totalRevenue.toFixed(2)} <small className="text-xl md:text-2xl font-bold" style={{ color: palette.softTeal }}>DT</small>
             </span>
-            <div className={`text-left ${isPositive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} px-4 py-1 rounded-full text-sm font-bold border border-current`}>
+            <div className={`text-left ${isPositive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm font-bold border border-current`}>
               {isPositive ? '↑' : '↓'} {Math.abs(difference).toFixed(1)}%
             </div>
           </div>
-          <p className="text-xs mt-4 font-bold" style={{ color: palette.textGray }}>
+          <p className="text-[11px] md:text-xs mt-3 md:mt-4 font-bold" style={{ color: palette.textGray }}>
             Basé sur {totalPlaces} transactions validées
           </p>
         </div>
-        <div className="bg-white p-6 md:p-8 shadow-xl w-full max-w-6xl rounded-3xl border" style={{ borderColor: palette.frostBlue }}>
+        <div className="bg-white p-5 md:p-8 shadow-xl w-full max-w-6xl rounded-[28px] border" style={{ borderColor: palette.frostBlue }}>
   
-  
-  <h2 className="text-sm font-black mb-6 uppercase tracking-widest" style={{ color: palette.deepOcean }}>
+  <h2 className="text-xs md:text-sm font-black mb-5 uppercase tracking-[0.18em]" style={{ color: palette.deepOcean }}>
     📊 Performance des deux derniers jours
   </h2>
-  <div className="space-y-6">
+  <div className="space-y-5">
     
     <div className="space-y-2">
-      <div className="flex justify-between text-xs font-bold" style={{ color: palette.deepOcean }}>
+      <div className="flex justify-between text-[11px] md:text-xs font-bold" style={{ color: palette.deepOcean }}>
         <span>{new Date().toLocaleDateString('fr-FR', { weekday: 'long' })} (Aujourd'hui)</span>
         <span>{totalRevenue.toFixed(2)} DT</span>
       </div>
-      <div className="w-full bg-gray-100 rounded-full h-4 overflow-hidden">
+      <div className="w-full bg-gray-100 rounded-full h-3.5 overflow-hidden">
         <div 
           className="h-full rounded-full transition-all duration-700" 
           style={{ width: '85%', backgroundColor: palette.softTeal }}
@@ -77,11 +76,11 @@ function MainLayout() {
 
 
     <div className="space-y-2">
-      <div className="flex justify-between text-xs font-bold" style={{ color: palette.deepOcean }}>
+      <div className="flex justify-between text-[11px] md:text-xs font-bold" style={{ color: palette.deepOcean }}>
         <span>{new Date(new Date().setDate(new Date().getDate() - 1)).toLocaleDateString('fr-FR', { weekday: 'long' })} (Hier)</span>
         <span>{stats.revenuHier.toFixed(2)} DT</span>
       </div>
-      <div className="w-full bg-gray-100 rounded-full h-4 overflow-hidden">
+      <div className="w-full bg-gray-100 rounded-full h-3.5 overflow-hidden">
         <div 
           className="h-full rounded-full transition-all duration-700" 
           style={{ width: '65%', backgroundColor: palette.classicBlue }}
@@ -92,44 +91,44 @@ function MainLayout() {
     
   </div>
 
-  <p className="mt-6 text-[10px] font-bold text-gray-400 text-center uppercase tracking-wide">
-    Le remplissage des barres est relatif à l'objectif quotidien (60 DT)
+  <p className="mt-5 text-[10px] font-bold text-gray-400 text-center uppercase tracking-[0.1em]">
+    Le remplissage des barres est relatif à l'objectif quotidien 
   </p>
 </div>
         {/* Grid des cartes */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 w-full max-w-6xl">
           
           {/* Métro Card */}
           <div onClick={() => navigate('/metro')} 
-            className="bg-white p-6 rounded-3xl shadow-xl border w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-95"
-            style={{ borderColor: palette.frostBlue, borderLeftWidth: '6px', borderLeftColor: palette.deepOcean }}>
-            <span className="text-4xl mb-2 block">🚈</span> 
-            <span className="text-3xl font-black block" style={{ color: palette.deepOcean }}>{stats.metroEnService}</span>
-            <span className="font-bold uppercase text-xs tracking-tighter" style={{ color: palette.textGray }}>métro en service</span><br />
+            className="bg-white p-5 md:p-6 rounded-[26px] shadow-xl border w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-95"
+            style={{ borderColor: palette.frostBlue, borderLeftWidth: '6px', borderLeftColor: palette.softTeal }}>
+            <span className="text-4xl mb-1.5 block">🚈</span> 
+            <span className="text-3xl md:text-[32px] font-black block leading-none" style={{ color: palette.deepOcean }}>{stats.metroEnService}</span>
+            <span className="font-bold uppercase text-[11px] tracking-wide" style={{ color: palette.textGray }}>métro en service</span><br />
             <div className="border-t border-gray-100 my-3"></div>
-            <span className="text-sm font-medium text-gray-500">total flotte: <span className="font-bold text-black">{stats.NbMetro||0}</span></span>
+            <span className="text-sm font-medium text-gray-500">total flotte: <span className="font-bold text-black">{stats.NbMetro || 0}</span></span>
           </div>
 
           {/* Bus Card */}
           <div onClick={() => navigate('/bus')} 
-            className="bg-white p-6 rounded-3xl shadow-xl border w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-95"
+            className="bg-white p-5 md:p-6 rounded-[26px] shadow-xl border w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-95"
             style={{ borderColor: palette.frostBlue, borderLeftWidth: '6px', borderLeftColor: palette.softTeal }}>
-            <span className="text-4xl mb-2 block">🚌</span> 
-            <span className="text-3xl font-black block" style={{ color: palette.deepOcean }}>{stats.busEnservice}</span>
-            <span className="font-bold uppercase text-xs tracking-tighter" style={{ color: palette.textGray }}>bus en service</span>
+            <span className="text-4xl mb-1.5 block">🚌</span> 
+            <span className="text-3xl md:text-[32px] font-black block leading-none" style={{ color: palette.deepOcean }}>{stats.busEnservice}</span>
+            <span className="font-bold uppercase text-[11px] tracking-wide" style={{ color: palette.textGray }}>bus en service</span>
             <div className="border-t border-gray-100 my-3"></div>
-            <span className="text-sm font-medium text-gray-500">total flotte: <span className="font-bold text-black" >{stats.NbBus||0}</span></span>
+            <span className="text-sm font-medium text-gray-500">total flotte: <span className="font-bold text-black">{stats.NbBus || 0}</span></span>
           </div>
 
           {/* Agent Card */}
-          <div onClick={() => navigate('/agents')}
-            className="bg-white p-6 rounded-3xl shadow-xl border w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-95"
-            style={{ borderColor: palette.frostBlue, borderLeftWidth: '6px', borderLeftColor: palette.warmAccent }}>
-            <span className="text-4xl mb-2 block">👨‍💼</span> 
-            <span className="text-3xl font-black block" style={{ color: palette.deepOcean }}>{stats.agentsEnService || 0}</span>
-            <span className="font-bold uppercase text-xs tracking-tighter" style={{ color: palette.textGray }}>agents en service</span>
+          <div onClick={() => navigate('/agent')}
+            className="bg-white p-5 md:p-6 rounded-[26px] shadow-xl border w-full text-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-2xl active:scale-95"
+            style={{ borderColor: palette.frostBlue, borderLeftWidth: '6px', borderLeftColor: palette.softTeal }}>
+            <span className="text-4xl mb-1.5 block">👨‍💼</span> 
+            <span className="text-3xl md:text-[32px] font-black block leading-none" style={{ color: palette.deepOcean }}>{stats.agentsEnService || 0}</span>
+            <span className="font-bold uppercase text-[11px] tracking-wide" style={{ color: palette.textGray }}>agents en service</span>
             <div className="border-t border-gray-100 my-3"></div>
-            <span className="text-sm font-medium text-gray-500">total équipe: <span className="font-bold text-black">{stats.NbAgents||0}</span></span>
+            <span className="text-sm font-medium text-gray-500">total équipe: <span className="font-bold text-black">{stats.NbAgents || 0}</span></span>
           </div>
           
 

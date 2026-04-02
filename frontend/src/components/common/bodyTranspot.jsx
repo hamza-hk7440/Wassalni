@@ -89,6 +89,7 @@ function BodyTransport({
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const isEditing = editingId !== null;
 
   const formRef = useRef(null);
   const idRef = useRef(null);
@@ -124,7 +125,7 @@ function BodyTransport({
   };
 
   const openEditForm = (item) => {
-    setEditingId(item[idKey]);
+    setEditingId(String(item[idKey]));
     setForm(toFormValues(item));
     withFormOpen();
   };
@@ -149,13 +150,13 @@ function BodyTransport({
       return;
     }
 
-    const exists = rows.some((item) => String(readField(item, idKey)).toLowerCase() === id.toLowerCase() && item[idKey] !== editingId);
+    const exists = rows.some((item) => String(readField(item, idKey)).toLowerCase() === id.toLowerCase() && String(item[idKey]) !== String(editingId));
     if (exists) {
       setError('Code deja utilise.');
       return;
     }
 
-    setRows((prev) => (editingId ? prev.map((item) => (item[idKey] === editingId ? nextItem : item)) : [...prev, nextItem]));
+    setRows((prev) => (isEditing ? prev.map((item) => (String(item[idKey]) === String(editingId) ? nextItem : item)) : [...prev, nextItem]));
     closeForm();
   };
 
@@ -166,7 +167,7 @@ function BodyTransport({
 
   return (
     <section
-      className="min-h-screen px-4 py-6 md:px-8 md:py-8"
+      className="min-h-screen px-4 pt-[88px] pb-6 md:px-8 md:pt-[92px] md:pb-8"
       style={{ background: `linear-gradient(180deg, ${palette.iceWhite} 0%, #eff8ff 48%, #f8fcff 100%)` }}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
@@ -285,7 +286,7 @@ function BodyTransport({
 
         {open ? (
           <div ref={formRef} className="rounded-2xl border bg-white p-4 md:p-5 shadow-sm" style={{ borderColor: palette.frostBlue }}>
-            <h2 className="mb-3 text-lg font-bold" style={{ color: palette.deepOcean }}>{editingId ? `Modifier un ${labels.entitySingular}` : `Ajouter un ${labels.entitySingular}`}</h2>
+            <h2 className="mb-3 text-lg font-bold" style={{ color: palette.deepOcean }}>{isEditing ? `Modifier un ${labels.entitySingular}` : `Ajouter un ${labels.entitySingular}`}</h2>
 
             <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <input
@@ -347,7 +348,7 @@ function BodyTransport({
                   className="rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
                   style={{ background: `linear-gradient(90deg, ${palette.deepOcean}, ${palette.classicBlue})` }}
                 >
-                  {editingId ? 'Enregistrer' : 'Ajouter'}
+                  {isEditing ? 'Enregistrer' : 'Ajouter'}
                 </button>
                 <button
                   type="button"

@@ -64,20 +64,32 @@ function Navbar() {
       )}
 
   
-      <div className='fixed top-0 left-0 right-0 h-16 bg-white/95 border-b z-30 flex items-center px-6 md:px-8 shadow-sm justify-between backdrop-blur-sm'
+      <div className='fixed top-0 left-0 right-0 h-[72px] bg-white/95 border-b z-30 flex items-center px-4 md:px-8 shadow-sm justify-between backdrop-blur-sm'
            style={{ borderColor: palette.frostBlue }}>
-        <h1 className="text-xl font-black tracking-tight ml-14 md:ml-16" style={{ color: palette.deepOcean }}>
-          WASSALNI<span className="font-light" style={{ color: palette.softTeal }}>ADMIN</span>
-        </h1>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="p-2.5 rounded-xl transition-all border shadow-sm cursor-pointer"
+            style={{ backgroundColor: isOpen ? '#fee2e2' : palette.iceWhite, borderColor: isOpen ? '#fecaca' : palette.frostBlue, color: isOpen ? '#b91c1c' : palette.deepOcean }}
+            onClick={() => setIsOpen((previous) => !previous)}
+            aria-label={isOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+          >
+            <span className="text-lg">{isOpen ? '✕' : '☰'}</span>
+          </button>
+
+          <h1 className="text-lg md:text-2xl font-extrabold tracking-tight" style={{ color: palette.deepOcean }}>
+            WASSALNI
+          </h1>
+        </div>
 
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           {/* Notification Bell */}
           <button
-            className="relative p-2 hover:bg-slate-100 rounded-lg transition-all"
+            className="relative p-2.5 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
             onClick={toggleNotifications}
           >
-            <span className="text-xl">🔔</span>
+            <span className="text-lg md:text-xl">🔔</span>
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
                     style={{ backgroundColor: palette.softTeal }}>
@@ -88,7 +100,7 @@ function Navbar() {
 
           {isNotifOpen && (
             <div
-              className="absolute top-16 right-20 md:right-28 w-80 bg-white rounded-2xl shadow-2xl p-4 z-40 border"
+              className="absolute top-[76px] right-16 md:right-24 w-[20rem] bg-white rounded-2xl shadow-2xl p-4 z-40 border"
               style={{ borderColor: palette.frostBlue }}
             >
               <div className="flex items-center justify-between mb-3">
@@ -104,7 +116,7 @@ function Navbar() {
                 {notifications.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 rounded-xl border bg-blue-50"
+                    className="p-3 rounded-xl border bg-blue-50/80"
                     style={{ borderColor: palette.frostBlue }}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -134,13 +146,13 @@ function Navbar() {
 
           {/* Profile Button */}
           <button onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-md border-2 border-white hover:scale-105 transition-transform"
+              className="w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-white font-bold shadow-md border-2 border-white hover:scale-105 transition-transform cursor-pointer"
                   style={{ backgroundColor: palette.deepOcean }}>
             {states.prenom.charAt(0).toUpperCase()}{states.nom.charAt(0).toUpperCase()}
           </button>
 
           {isProfileOpen && (
-            <div className="absolute top-16 right-6 md:right-8 w-64 bg-white rounded-2xl shadow-2xl p-5 z-40 border"
+            <div className="absolute top-[76px] right-4 md:right-8 w-[18rem] bg-white rounded-2xl shadow-2xl p-5 z-40 border"
                  style={{ borderColor: palette.frostBlue }}>
               {/* Profile Header */}
               <div className="flex items-center gap-3 mb-4 pb-4 border-b" style={{ borderColor: palette.frostBlue }}>
@@ -189,31 +201,17 @@ function Navbar() {
         </div>
       </div>
 
-      {/* Boutons d'ouverture/fermeture */}
-      {!isOpen ? (
-        <button className="fixed top-3.5 left-4 z-50 p-2 rounded-lg transition-all border" 
-                style={{ backgroundColor: palette.iceWhite, borderColor: palette.frostBlue, color: palette.deepOcean }}
-                onClick={() => setIsOpen(true)}>
-          <span className="">☰</span>
-        </button>
-      ) : (
-        <button className="fixed top-3.5 left-4 z-50 p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all border border-red-100" 
-                onClick={() => setIsOpen(false)}>
-          <span className="text-xl">✕</span>
-        </button>
-      )}   
-
-      {/* Sidebar latérale */}
-      <nav className={`fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-40 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      {/* Sidebar */}
+      <nav className={`fixed top-[72px] left-0 h-[calc(100vh-72px)] w-[18rem] bg-white shadow-2xl z-40 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
            style={{ borderRight: `1px solid ${palette.frostBlue}` }}>
         
-        <div className="flex flex-col h-full p-6 pt-24">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] mb-6" style={{ color: palette.deepOcean }}>Menu Principal</p>
+        <div className="flex flex-col h-full p-5 md:p-6">
+          <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-5" style={{ color: palette.deepOcean }}>Menu Principal</p>
           
           <ul className="flex flex-col space-y-1 flex-grow">
             <li>
               <Link to="/dashboard" onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
                 style={{ color: palette.deepOcean }}>
                 <span className="text-xl group-hover:scale-125 transition-transform">🏠</span> 
                 <span>Tableau de bord</span>
@@ -221,39 +219,33 @@ function Navbar() {
             </li>
             <li>
               <Link to="/client" onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
                 style={{ color: palette.deepOcean }}>
                 <span className="text-xl group-hover:scale-125 transition-transform">👤</span> 
                 <span>Client</span>
               </Link>
             </li>
+          
+           
             <li>
-              <Link to="/agents" onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
-                style={{ color: palette.deepOcean }}>
-                <span className="text-xl group-hover:scale-125 transition-transform">👨‍💼</span> 
-                <span>Personnel</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/superlog" onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
+              <Link to="/superlog?target=admin" onClick={() => setIsOpen(false)} 
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
                 style={{ color: palette.deepOcean }}>
                 <span className="text-xl group-hover:scale-125 transition-transform">⚙️</span> 
-                <span>Nouveau Admin</span>
+                <span>Gestion Admin</span>
               </Link>
             </li>
             <li>
-              <Link to="/superlog" onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
+              <Link to="/superlog?target=controller" onClick={() => setIsOpen(false)} 
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
                 style={{ color: palette.deepOcean }}>
                 <span className="text-xl group-hover:scale-125 transition-transform">🔍</span> 
-                <span>Nouveau contrôleur</span>
+                <span>Gestion Contrôleur</span>
               </Link>
             </li>
             <li>
               <Link to="/transport" onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
                 style={{ color: palette.deepOcean }}>
                 <span className="text-xl group-hover:scale-125 transition-transform">🚌</span> 
                 <span>Transport</span>
@@ -261,7 +253,7 @@ function Navbar() {
             </li>
             <li>
               <Link to="/ticket" onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95"
                 style={{ color: palette.deepOcean }}>
                 <span className="text-xl group-hover:scale-125 transition-transform">🎫</span> 
                 <span>Ticket</span>
