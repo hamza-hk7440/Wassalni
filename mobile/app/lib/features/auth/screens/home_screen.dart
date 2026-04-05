@@ -3,6 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:app/core/theme/colors_R.dart';
 import 'BusSchedule_screen.dart';
 import 'TrainSchedule_screen.dart';
+import 'recharge_screen.dart';
+import 'profile_screen.dart';
+import 'my_tickets_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -97,28 +100,35 @@ Widget build(BuildContext context) {
         ),
       ),
       
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        backgroundColor: Colors.white,
-        selectedItemColor: AppColors.colorA,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        items: [
-          BottomNavigationBarItem(
-            icon: Image.asset("assets/home.png", height: 22),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset("assets/tickett.png", height: 22),
-            label: "Tickets",
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset("assets/profile.png", height: 22),
-            label: "Profile",
-          ),
-        ],
-      ),
+  bottomNavigationBar: BottomNavigationBar(
+  currentIndex: _selectedIndex,
+  onTap: (index) {
+    setState(() => _selectedIndex = index);
+    if (index == 1) { 
+      Navigator.push(context, MaterialPageRoute(builder: (context) =>  MyTicketsPage()));
+    } else if (index == 2) { 
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
+    }
+  },
+  backgroundColor: Colors.white,
+  selectedItemColor: AppColors.colorA,
+  unselectedItemColor: Colors.grey,
+  type: BottomNavigationBarType.fixed,
+  items: [
+    BottomNavigationBarItem(
+      icon: Image.asset("assets/home.png", height: 22),
+      label: "Home",
+    ),
+    BottomNavigationBarItem(
+      icon: Image.asset("assets/tickett.png", height: 22),
+      label: "Tickets",
+    ),
+    BottomNavigationBarItem(
+      icon: Image.asset("assets/profile.png", height: 22),
+      label: "Profile",
+    ),
+  ],
+),
     );
   }
 
@@ -166,7 +176,7 @@ Widget _buildTransportButton({
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: Colors.black.withOpacity(0.8),
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -185,24 +195,24 @@ Widget _buildTransportButton({
           DrawerHeader(
             decoration: BoxDecoration(color: AppColors.colorA.withOpacity(0.05)),
             child: Row(
-              children: [
+            children: [
                 const CircleAvatar(radius: 30, backgroundImage: AssetImage("assets/profile.png")),
                 const SizedBox(width: 15),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Bienvenue,", style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey)),
-                    Text("Utilisateur", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+                Column(mainAxisAlignment: MainAxisAlignment.center,crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Welcome,", style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey)),
+                  Text("Wasalni user", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
                   ],
                 )
               ],
             ),
           ),
-          _drawerTile(Icons.person_outline, "Profile"),
-          _drawerTile(Icons.account_balance_wallet_outlined, "My Wallet"),
-          _drawerTile(Icons.history, "My Tickets"),
-          _drawerTile(Icons.notifications_none, "Notifications"),
+        _drawerTile(Icons.person_outline, "Profile", onTap: () {
+           Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));}),
+        _drawerTile(Icons.account_balance_wallet_outlined, "Recharge Tokens", onTap: () {
+           Navigator.push(context, MaterialPageRoute(builder: (context) => const RechargePage()));}),
+        _drawerTile(Icons.history, "My Tickets", onTap: () {
+           Navigator.push(context, MaterialPageRoute(builder: (context) =>  MyTicketsPage()));}),
           const Spacer(),
           const Divider(),
           _drawerTile(Icons.logout, "Logout", isExit: true),
@@ -211,14 +221,16 @@ Widget _buildTransportButton({
       ),
     );
   }
-
-  Widget _drawerTile(IconData icon, String title, {bool isExit = false}) {
-    return ListTile(
-      leading: Icon(icon, color: isExit ? Colors.red : AppColors.colorA),
-      title: Text(title, style: GoogleFonts.poppins(color: isExit ? Colors.red : AppColors.colorD)),
-      onTap: () {},
-    );
-  }
+  Widget _drawerTile(IconData icon, String title, {bool isExit = false, VoidCallback? onTap}) {
+  return ListTile(
+    leading: Icon(icon, color: isExit ? Colors.red : AppColors.colorA),
+    title: Text(
+      title, 
+      style: GoogleFonts.poppins(color: isExit ? Colors.red : AppColors.colorD)
+    ),
+    onTap: onTap, 
+  );
+}
   Widget _buildMainBanner() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -226,7 +238,7 @@ Widget _buildTransportButton({
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
         image: const DecorationImage(
-          image: AssetImage("assets/banner_image.jpeg"), // Remplace par ton image
+          image: AssetImage("assets/banner_image.jpeg"),
           fit: BoxFit.cover,
         ),
       ),
