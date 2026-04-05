@@ -1,6 +1,7 @@
 import 'package:app/features/auth/screens/home_screen.dart';
 import 'package:app/features/auth/screens/profile_screen.dart';
 import 'package:app/features/auth/screens/recharge_screen.dart';
+import 'package:app/features/auth/screens/controller_home_screen.dart';
 import 'package:app/features/auth/screens/splash_screen.dart';
 import 'package:app/features/auth/screens/login_page.dart';
 import 'package:app/features/auth/screens/home_test.dart';
@@ -48,7 +49,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Wasalni',
       // The app starts here, and since AuthController is already "put", it won't crash
-      home: const MyTicketsPage(),
+      home: const ControllerHomePage(),
       getPages: [
         GetPage(name: '/rolechoice', page: () => const RoleChoicePage()),
         GetPage(name: '/login', page: () => const LoginScreen()),

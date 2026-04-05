@@ -113,7 +113,7 @@ class ProfilePage extends StatelessWidget {
             _buildProfileItem(Icons.lock_outline, "Change password"),
             _buildProfileItem(Icons.person_outline, "Personal informations"),
             const SizedBox(height: 20),
-            _buildSectionTitle("Activités"),
+            _buildSectionTitle("Activities"),
             _buildProfileItem(Icons.confirmation_number_outlined, "Tickets history", 
               onTap: () {
                  Navigator.push(context, MaterialPageRoute(builder: (context) =>  MyTicketsPage()));

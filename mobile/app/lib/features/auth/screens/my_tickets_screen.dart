@@ -30,6 +30,7 @@ class MyTicketsPage extends StatelessWidget {
         children: [
           _buildTicketItem(
             context,
+            ticketId: "RNN-0111",
             type: "BUS",
             departure: "Monastir",
             arrival: "Bekalta",
@@ -42,6 +43,7 @@ class MyTicketsPage extends StatelessWidget {
           const SizedBox(height: 15),
           _buildTicketItem(
             context,
+            ticketId: "ABMT-000",
             type: "TRAIN",
             departure: "Mahdia",
             arrival: "Ksiba bannen",
@@ -54,6 +56,7 @@ class MyTicketsPage extends StatelessWidget {
           const SizedBox(height: 15),
           _buildTicketItem(
             context,
+            ticketId: "XXXX-10",
             type: "BUS",
             departure: "Monastir",
             arrival: "Moknin",
@@ -70,11 +73,12 @@ class MyTicketsPage extends StatelessWidget {
 
 Widget _buildTicketItem(
   BuildContext context, {
+  required String ticketId, // NOUVEAU PARAMÈTRE
   required String type,
   required String departure,
   required String arrival,
   required String date,
-  required String time, 
+  required String time,
   required String price,
   required bool isActive,
   required IconData icon,
@@ -83,7 +87,6 @@ Widget _buildTicketItem(
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(20),
-      // AJOUT : Bordure fine bleue
       border: Border.all(
         color: AppColors.colorA.withOpacity(0.3), 
         width: 1,
@@ -101,72 +104,53 @@ Widget _buildTicketItem(
         Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row( mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Icon(icon, color: AppColors.colorA, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        type,
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.colorA,
-                          letterSpacing: 1,
-                        ),
-                      ),
+                Row(children: [
+                    Icon(icon, color: AppColors.colorA, size: 16),
+                    const SizedBox(width: 6),
+                    Text(type, style: GoogleFonts.poppins(fontWeight: FontWeight.bold,color: AppColors.colorA,fontSize: 14,),),
                     ],
-                  ),
-                  Text(
-                    price,
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.colorD,
-                    ),
-                  ),
+                ),
+                Text("ID: #$ticketId", style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.grey[1000],), ),
                 ],
               ),
-              const Divider(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildStationColumn("Start", departure),
-                  Column(
-                    children: [
-                      Icon(Icons.trending_flat, color: AppColors.colorA.withOpacity(0.5)),
-                      Text(
-                        time, 
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.colorA,
-                        ),
-                      ),
+              Text(price, style: GoogleFonts.poppins( fontWeight: FontWeight.bold, color: AppColors.colorD, fontSize: 16,),),
+              ],
+            ),
+            const Divider(height: 25),
+            Row( mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildStationColumn("Departure", departure),
+                Column(
+                    children: [ Icon(Icons.trending_flat, color: AppColors.colorA.withOpacity(0.5)),
+                      Text(time, style: GoogleFonts.poppins( fontSize: 14,fontWeight: FontWeight.bold, color: AppColors.colorA,),),
                     ],
-                  ),
-                  _buildStationColumn("Arrival", arrival, isRight: true),
-                ],
-              ),
-              const SizedBox(height: 15),
-              Align(
-                alignment: Alignment.centerLeft,
+                ),
+                _buildStationColumn("Arrival", arrival, isRight: true),
+              ],
+            ),
+            const SizedBox(height: 15),
+            Align(alignment: Alignment.centerLeft,
                 child: Text(
-                  "Day : $date",
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                  "Day: $date",
+                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
                 ),
               ),
             ],
           ),
         ),
-        Container(
+
+      Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             color: isActive ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
             borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(19), // Légèrement moins pour épouser la bordure
+              bottomLeft: Radius.circular(19),
               bottomRight: Radius.circular(19),
             ),
           ),
