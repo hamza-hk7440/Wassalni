@@ -30,13 +30,11 @@ export async function createUser({
             },
           },
         });
-
         if (error) throw error;
         //if the case was a passenger the full data of this passenger will be returned
         console.log("passenger created successfully ", typeOne.user);
         return { user: typeOne.user };
       }
-
       case "admin": {
         let finalCode;
         let saved = false;
@@ -58,7 +56,6 @@ export async function createUser({
               },
             },
           });
-
           if (!error) {
             finalCode = code;
             saved = true;
@@ -72,7 +69,6 @@ export async function createUser({
         //if the  case is admin the unique code of the admin will be returned and as succeed msg
         return finalCode;
       }
-
       case "controller": {
         let finalCode;
         let saved = false;
@@ -108,7 +104,6 @@ export async function createUser({
         //if the  case is controller the unique code of the controller will be returned and as succeed msg
         return finalCode;
       }
-
       case "superAdmin": {
         let finalCode;
         let saved = false;
@@ -145,7 +140,6 @@ export async function createUser({
 
         return finalCode;
       }
-
       default:
         throw new Error(`Unknown role: ${role}`);
     }
@@ -376,7 +370,6 @@ export async function controllerLogin({ email, password }) {
     throw error;
   }
 }
-
 export async function getPendingSession(sessionId) {
   try {
     return pendingSessions[sessionId] || null;
@@ -390,6 +383,80 @@ export async function deletePendingSession(sessionId) {
     delete pendingSessions[sessionId];
   } catch (error) {
     console.error("Delete pending session error:", error.message);
+    throw error;
+  }
+}
+// this function will be used to handle the login for all roles(passenger,controller and super admin) in the mobile app
+export async function unifiedMobileLogin({ email, password }) {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      throw error;
+    }
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("role, first_name, last_name, token_balance")
+      .eq("user_id", data.user.id)
+      .single();
+    if (userError) {
+      throw userError;
+    }
+    const role = userData.role;
+    if (role === "passenger") {
+      return {
+        requiresCode: false,
+        token: data.session.access_token,
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          role,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          token_balance: userData.token_balance,
+        },
+      };
+    }
+    if (role === "controller" || role === "superAdmin") {
+      const tempSesionId = crypto.randomUUID();
+      console.log("🔍 data.user:", data.user);
+      console.log("🔍 data.user.id:", data.user.id);
+      pendingSessions[tempSesionId] = {
+        user_id: data.user.id,
+        token: data.session.access_token,
+        role: userData.role,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        email: data.user.email,
+      };
+      return {
+        requiresCode: true,
+        role,
+        session: tempSesionId,
+      };
+    }
+    throw new Error("Unsupported role for mobile login");
+  } catch (error) {
+    console.error("Unified mobile login error:", error.message);
+    throw error;
+  }
+}
+//verify super admin code like the  verifycontrollerCode function
+export async function verifySuperAdminCode({ user_id, code }) {
+  try {
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("super_admin_code")
+      .eq("user_id", user_id)
+      .single();
+    if (userError) {
+      throw userError;
+    }
+    return userData.super_admin_code === code;
+  } catch (error) {
+    console.error("verify super admin code error:", error.message);
     throw error;
   }
 }

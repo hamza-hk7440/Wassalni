@@ -5,6 +5,7 @@ import 'package:app/core/theme/colors_R.dart';
 import 'package:get/get.dart';
 import '../auth_controller.dart';
 import 'role_choice_screen.dart';
+import 'login_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,14 +26,10 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-
-    // Animation d'apparition (Fade)
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
-
-    // Animation de glissement (le train arrive de la gauche)
     _slideAnimation = Tween<Offset>(
       begin: const Offset(-0.5, 0),
       end: Offset.zero,
@@ -46,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (!authController.isAuthenticated.value) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const RoleChoicePage()),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       }
     });

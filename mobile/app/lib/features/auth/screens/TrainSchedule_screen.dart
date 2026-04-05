@@ -58,6 +58,10 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
         setState(() => _isExtended = true);
       }
     });
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (mounted) await _scheduleController.loadSchedules();
+      });
   }
 
   @override
@@ -112,6 +116,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                     )
                   : _scheduleController.errorMessage.isNotEmpty
                   ? _buildErrorView()
+                  
                   : RefreshIndicator(
                       onRefresh: () => _scheduleController.loadSchedules(),
                       child: ListView.builder(
