@@ -6,18 +6,20 @@ import 'TrainSchedule_screen.dart';
 import 'recharge_screen.dart';
 import 'profile_screen.dart';
 import 'my_tickets_screen.dart';
+import 'direction_choice.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   @override
   State<HomePage> createState() => _HomePageState();
 }
+
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
-Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     double squareSize = MediaQuery.of(context).size.width - 90;
     return Scaffold(
       key: _scaffoldKey,
@@ -25,7 +27,7 @@ Widget build(BuildContext context) {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leadingWidth: 250, 
+        leadingWidth: 250,
         leading: Padding(
           padding: const EdgeInsets.only(left: 20),
           child: Row(
@@ -68,12 +70,12 @@ Widget build(BuildContext context) {
         ],
       ),
       endDrawer: _buildUserDrawer(),
-      body: Center( 
+      body: Center(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, 
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _buildTransportButton(
                   title: "Bus",
@@ -81,7 +83,12 @@ Widget build(BuildContext context) {
                   assetPath: "assets/bus.png",
                   size: squareSize,
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const BusSchedulePage()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const BusSchedulePage(),
+                      ),
+                    );
                   },
                 ),
                 const SizedBox(height: 30),
@@ -91,7 +98,12 @@ Widget build(BuildContext context) {
                   assetPath: "assets/trainnn.png",
                   size: squareSize,
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const TrainSchedulePage()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DirectionChoice(),
+                      ),
+                    );
                   },
                 ),
               ],
@@ -99,43 +111,49 @@ Widget build(BuildContext context) {
           ),
         ),
       ),
-      
-  bottomNavigationBar: BottomNavigationBar(
-  currentIndex: _selectedIndex,
-  onTap: (index) {
-    setState(() => _selectedIndex = index);
-    if (index == 1) { 
-      Navigator.push(context, MaterialPageRoute(builder: (context) =>  MyTicketsPage()));
-    } else if (index == 2) { 
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
-    }
-  },
-  backgroundColor: Colors.white,
-  selectedItemColor: AppColors.colorA,
-  unselectedItemColor: Colors.grey,
-  type: BottomNavigationBarType.fixed,
-  items: [
-    BottomNavigationBarItem(
-      icon: Image.asset("assets/home.png", height: 22),
-      label: "Home",
-    ),
-    BottomNavigationBarItem(
-      icon: Image.asset("assets/tickett.png", height: 22),
-      label: "Tickets",
-    ),
-    BottomNavigationBarItem(
-      icon: Image.asset("assets/profile.png", height: 22),
-      label: "Profile",
-    ),
-  ],
-),
+
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() => _selectedIndex = index);
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => MyTicketsPage()),
+            );
+          } else if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfilePage()),
+            );
+          }
+        },
+        backgroundColor: Colors.white,
+        selectedItemColor: AppColors.colorA,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        items: [
+          BottomNavigationBarItem(
+            icon: Image.asset("assets/home.png", height: 22),
+            label: "Home",
+          ),
+          BottomNavigationBarItem(
+            icon: Image.asset("assets/tickett.png", height: 22),
+            label: "Tickets",
+          ),
+          BottomNavigationBarItem(
+            icon: Image.asset("assets/profile.png", height: 22),
+            label: "Profile",
+          ),
+        ],
+      ),
     );
   }
 
-Widget _buildTransportButton({
-    required String title, 
+  Widget _buildTransportButton({
+    required String title,
     required String subtitle,
-    required String assetPath, 
+    required String assetPath,
     required double size,
     required VoidCallback onTap,
   }) {
@@ -158,61 +176,104 @@ Widget _buildTransportButton({
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(assetPath, height: 80), 
+            Image.asset(assetPath, height: 80),
             const SizedBox(height: 20),
             Text(
-              title, 
+              title,
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: AppColors.colorD,
               ),
             ),
-         const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.black.withOpacity(0.8),
-                fontWeight: FontWeight.w400,
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.black.withOpacity(0.8),
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
- Widget _buildUserDrawer() {
+  Widget _buildUserDrawer() {
     return Drawer(
       backgroundColor: Colors.white,
       child: Column(
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(color: AppColors.colorA.withOpacity(0.05)),
+            decoration: BoxDecoration(
+              color: AppColors.colorA.withOpacity(0.05),
+            ),
             child: Row(
-            children: [
-                const CircleAvatar(radius: 30, backgroundImage: AssetImage("assets/profile.png")),
+              children: [
+                const CircleAvatar(
+                  radius: 30,
+                  backgroundImage: AssetImage("assets/profile.png"),
+                ),
                 const SizedBox(width: 15),
-                Column(mainAxisAlignment: MainAxisAlignment.center,crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Welcome,", style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey)),
-                  Text("Wasalni user", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Welcome,",
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    Text(
+                      "Wasalni user",
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
-        _drawerTile(Icons.person_outline, "Profile", onTap: () {
-           Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));}),
-        _drawerTile(Icons.account_balance_wallet_outlined, "Recharge Tokens", onTap: () {
-           Navigator.push(context, MaterialPageRoute(builder: (context) => const RechargePage()));}),
-        _drawerTile(Icons.history, "My Tickets", onTap: () {
-           Navigator.push(context, MaterialPageRoute(builder: (context) =>  MyTicketsPage()));}),
+          _drawerTile(
+            Icons.person_outline,
+            "Profile",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
+              );
+            },
+          ),
+          _drawerTile(
+            Icons.account_balance_wallet_outlined,
+            "Recharge Tokens",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const RechargePage()),
+              );
+            },
+          ),
+          _drawerTile(
+            Icons.history,
+            "My Tickets",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MyTicketsPage()),
+              );
+            },
+          ),
           const Spacer(),
           const Divider(),
           _drawerTile(Icons.logout, "Logout", isExit: true),
@@ -221,16 +282,25 @@ Widget _buildTransportButton({
       ),
     );
   }
-  Widget _drawerTile(IconData icon, String title, {bool isExit = false, VoidCallback? onTap}) {
-  return ListTile(
-    leading: Icon(icon, color: isExit ? Colors.red : AppColors.colorA),
-    title: Text(
-      title, 
-      style: GoogleFonts.poppins(color: isExit ? Colors.red : AppColors.colorD)
-    ),
-    onTap: onTap, 
-  );
-}
+
+  Widget _drawerTile(
+    IconData icon,
+    String title, {
+    bool isExit = false,
+    VoidCallback? onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: isExit ? Colors.red : AppColors.colorA),
+      title: Text(
+        title,
+        style: GoogleFonts.poppins(
+          color: isExit ? Colors.red : AppColors.colorD,
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
+
   Widget _buildMainBanner() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),

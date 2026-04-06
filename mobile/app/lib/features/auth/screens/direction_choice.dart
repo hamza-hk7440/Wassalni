@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:app/core/theme/colors_R.dart';
+import 'TrainSchedule_screen.dart';
 
 class DirectionChoice extends StatelessWidget {
   const DirectionChoice({super.key});
@@ -10,17 +11,14 @@ class DirectionChoice extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.colorL,
       body: SafeArea(
-      child: Align (alignment: AlignmentGeometry.center,
-      child: SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [ 
-                Image.asset(
-                  "assets/trainnn.png", 
-                  height: 100,
-                  colorBlendMode: BlendMode.srcIn,
-                ),
+        child: Align(
+          alignment: Alignment.center,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Image.asset("assets/trainnn.png", height: 100),
                 const SizedBox(height: 25),
                 Text(
                   "Which direction?",
@@ -41,23 +39,16 @@ class DirectionChoice extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 50),
-
                 _buildDirectionCard(
                   context,
-                  title: "Monastir    ➔    Mahdia", // Utilisation d'une flèche plus propre
-                  onTap: () {
-                    print("Vers Mahdia");
-                  },
+                  title: "Monastir    ➔    Mahdia",
+                  direction: "mahdia",
                 ),
-
                 const SizedBox(height: 20),
-
                 _buildDirectionCard(
                   context,
                   title: "Mahdia    ➔    Monastir",
-                  onTap: () {
-                    print("Vers Monastir");
-                  },
+                  direction: "monastir",
                 ),
                 const SizedBox(height: 30),
               ],
@@ -71,10 +62,17 @@ class DirectionChoice extends StatelessWidget {
   Widget _buildDirectionCard(
     BuildContext context, {
     required String title,
-    required VoidCallback onTap,
+    required String direction,
   }) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TrainSchedulePage(direction: direction),
+          ),
+        );
+      },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(25),
@@ -91,11 +89,11 @@ class DirectionChoice extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Expanded( 
+            Expanded(
               child: Text(
                 title,
                 style: GoogleFonts.poppins(
-                  fontSize: 20, 
+                  fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: AppColors.colorD,
                 ),

@@ -16,7 +16,9 @@ class BusSchedulePage extends StatefulWidget {
 class _BusSchedulePageState extends State<BusSchedulePage> {
   int _tokenCount = 50;
   final ScrollController _scrollController = ScrollController();
-  final ScheduleController _scheduleController = ScheduleController();
+  final ScheduleController _scheduleController = ScheduleController(
+    direction: 'bus',
+  );
   final ApiService _apiService = ApiService();
   bool _isExtended = true;
   String _formatTime(String raw) {

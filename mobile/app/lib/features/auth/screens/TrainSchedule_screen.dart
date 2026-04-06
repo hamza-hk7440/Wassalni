@@ -7,7 +7,8 @@ import '../../../data/models/schedule.dart';
 import '../../../data/models/schedule_slot.dart';
 
 class TrainSchedulePage extends StatefulWidget {
-  const TrainSchedulePage({super.key});
+  final String direction;
+  const TrainSchedulePage({super.key, required this.direction});
 
   @override
   State<TrainSchedulePage> createState() => _TrainSchedulePageState();
@@ -16,9 +17,12 @@ class TrainSchedulePage extends StatefulWidget {
 class _TrainSchedulePageState extends State<TrainSchedulePage> {
   int _tokenCount = 50;
   final ScrollController _scrollController = ScrollController();
-  final ScheduleController _scheduleController = ScheduleController();
+  late final ScheduleController _scheduleController;
   final ApiService _apiService = ApiService();
   bool _isExtended = true;
+
+  List<Schedule> get _filteredSchedules => _scheduleController.schedules;
+
   String _formatTime(String raw) {
     try {
       final dt = DateTime.parse(raw).toLocal();
@@ -43,13 +47,13 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
   void initState() {
     super.initState();
 
-    _scheduleController.loadSchedules();
+    _scheduleController = ScheduleController(direction: widget.direction);
+
     _scheduleController.addListener(() {
       if (mounted) setState(() {});
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _scheduleController.loadSchedules();
-    });
+
+    _scheduleController.loadSchedules();
 
     _scrollController.addListener(() {
       if (_scrollController.offset > 50 && _isExtended) {
@@ -58,10 +62,6 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
         setState(() => _isExtended = true);
       }
     });
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (mounted) await _scheduleController.loadSchedules();
-      });
   }
 
   @override
@@ -93,13 +93,27 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                         ),
                         onPressed: () => Navigator.pop(context),
                       ),
-                      Text(
-                        "Train Schedule",
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.colorA,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Train Schedule",
+                            style: GoogleFonts.poppins(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.colorA,
+                            ),
+                          ),
+                          Text(
+                            widget.direction == "mahdia"
+                                ? "Monastir ➔ Mahdia"
+                                : "Mahdia ➔ Monastir",
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -116,7 +130,27 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                     )
                   : _scheduleController.errorMessage.isNotEmpty
                   ? _buildErrorView()
-                  
+                  : _filteredSchedules.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.train_outlined,
+                            size: 60,
+                            color: Colors.grey[300],
+                          ),
+                          const SizedBox(height: 15),
+                          Text(
+                            "No schedules for this day",
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
                   : RefreshIndicator(
                       onRefresh: () => _scheduleController.loadSchedules(),
                       child: ListView.builder(
@@ -125,19 +159,9 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                           horizontal: 20,
                           vertical: 10,
                         ),
-                        itemCount: _scheduleController.schedules
-                            .where(
-                              (s) => s.transportType.toLowerCase() == 'metro',
-                            )
-                            .toList()
-                            .length,
+                        itemCount: _filteredSchedules.length,
                         itemBuilder: (context, index) {
-                          final trainSchedules = _scheduleController.schedules
-                              .where(
-                                (s) => s.transportType.toLowerCase() == 'metro',
-                              )
-                              .toList();
-                          return _buildScheduleCard(trainSchedules[index]);
+                          return _buildScheduleCard(_filteredSchedules[index]);
                         },
                       ),
                     ),
@@ -148,11 +172,8 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
       floatingActionButton: FloatingActionButton.extended(
         isExtended: _isExtended,
         onPressed: () {
-          final trainSchedules = _scheduleController.schedules
-              .where((s) => s.transportType.toLowerCase() == 'metro')
-              .toList();
-          if (trainSchedules.isNotEmpty) {
-            _showPurchaseDialog(trainSchedules.first);
+          if (_filteredSchedules.isNotEmpty) {
+            _showPurchaseDialog(_filteredSchedules.first);
           }
         },
         backgroundColor: AppColors.colorA,
@@ -629,7 +650,6 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // From
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -651,7 +671,6 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                   ],
                 ),
                 Icon(Icons.trending_flat, color: AppColors.colorA),
-                // To
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [

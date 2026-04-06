@@ -4,11 +4,15 @@ import '../data/models/schedule.dart';
 
 class ScheduleController extends ChangeNotifier {
   final ApiService _apiService = ApiService();
-  List<Schedule> schedules = [];
+  final String direction; // only need direction now
+
+  List<Schedule> _allSchedules = [];
   bool isLoading = false;
   String errorMessage = "";
   DateTime selectedDay = DateTime.now();
   bool _disposed = false;
+
+  ScheduleController({this.direction = ''});
 
   @override
   void dispose() {
@@ -20,25 +24,36 @@ class ScheduleController extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
+  List<Schedule> get schedules {
+    return _allSchedules.where((s) {
+      if (direction == 'bus') {
+        return s.transportType.toLowerCase() == 'bus';
+      }
+      if (direction.isNotEmpty) {
+        // train: filter by direction field
+        return s.transportType.toLowerCase() == 'metro' &&
+            s.direction.toLowerCase() == direction.toLowerCase();
+      }
+      return true;
+    }).toList();
+  }
+
   Future<void> loadSchedules({DateTime? day, int retries = 3}) async {
     isLoading = true;
     errorMessage = "";
     _safeNotify();
     try {
       final target = day ?? selectedDay;
-
       List<Schedule> result = [];
       for (int attempt = 1; attempt <= retries; attempt++) {
         result = await _apiService.fetchSchedules(date: target);
         if (result.isNotEmpty) break;
-
         if (attempt < retries) {
           print('⚠️ Empty result, retrying... ($attempt/$retries)');
           await Future.delayed(const Duration(seconds: 1));
         }
       }
-
-      schedules = result;
+      _allSchedules = result;
     } catch (e) {
       errorMessage = e.toString();
     } finally {
