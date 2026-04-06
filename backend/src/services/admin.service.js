@@ -86,6 +86,26 @@ export const deleteUser = async (userId) => {
     return data;
 
 }
-    
 
-        
+// w zedna fetch l transactions w tickets zeda
+export const getAllTransactions = async () => {
+    const { data, error } = await supabase
+        .from('transactions')
+        .select(`*`)
+        .order('created_at', { ascending: false });
+    
+    if (error) throw new Error(error.message);
+
+    return data;
+}
+
+export const getAllTickets = async () => {
+    const { data, error } = await supabase
+        .from('tickets')
+        .select(`*`)
+        .order('created_at', { ascending: false });
+    
+    if (error) throw new Error(error.message);
+
+    return data;
+}

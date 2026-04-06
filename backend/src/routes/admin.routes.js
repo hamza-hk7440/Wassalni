@@ -3,7 +3,14 @@ import express from "express";
 
 const router = express.Router();
 
-import { getDashboardStats, createController, getAllUsers, deleteUser} from "../controllers/admin.controller.js";
+import { 
+    getDashboardStats, 
+    createController, 
+    getAllUsers, 
+    deleteUser,
+    getAllTransactions,
+    getAllTickets
+} from "../controllers/admin.controller.js";
 
 import requireAdmin from "../middlewares/auth.middleware.js";
 
@@ -24,7 +31,11 @@ router.get("/users", getAllUsers);
 // delete a user (permanent)
 router.delete("/users/:userId", deleteUser);
 
+// get all transactions
+router.get("/transactions", getAllTransactions);
 
+// get all tickets
+router.get("/tickets", getAllTickets);
 
 export default router;
 

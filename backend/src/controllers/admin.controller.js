@@ -40,17 +40,39 @@ export const getAllUsers = async (req, res) => {
 // delete user (permanently)
 export const deleteUser = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { userId } = req.params;
         
-        if (!id) {
+        if (!userId) {
             return res.status(400).json({ error: 'User ID is required' });
         }
 
-        await adminService.deleteUser(id);
+        await adminService.deleteUser(userId);
         
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {
         console.error('Error deleting user:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+// fetch all transactions
+export const getAllTransactions = async (req, res) => {
+    try {
+        const transactions = await adminService.getAllTransactions();
+        res.status(200).json(transactions);
+    } catch (err) {
+        console.error('Error fetching transactions:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+// fetch all tickets
+export const getAllTickets = async (req, res) => {
+    try {
+        const tickets = await adminService.getAllTickets();
+        res.status(200).json(tickets);
+    } catch (err) {
+        console.error('Error fetching tickets:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
