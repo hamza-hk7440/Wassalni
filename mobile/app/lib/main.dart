@@ -4,6 +4,7 @@ import 'package:app/features/auth/screens/recharge_screen.dart';
 import 'package:app/features/auth/screens/splash_screen.dart';
 import 'package:app/features/auth/screens/login_page.dart';
 import 'package:app/features/auth/screens/home_test.dart';
+import 'package:app/features/auth/screens/payment_callback_screen.dart';
 import 'package:app/features/auth/screens/role_choice_screen.dart';
 import 'package:app/features/auth/auth_controller.dart'; // Import your controller
 import 'package:app_links/app_links.dart'; // Import app_links for deep linking
@@ -27,15 +28,52 @@ void main() async {
 /// Initializes deep link handling for Google OAuth redirects.
 /// Listens for incoming links matching myapp://auth/callback
 /// and forwards them to AuthController.handleGoogleCallback()
+void _handleIncomingDeepLink(Uri uri) {
+  if (uri.scheme != 'myapp') {
+    return;
+  }
+
+  if (uri.host == 'auth') {
+    final authController = Get.find<AuthController>();
+    authController.handleGoogleCallback(uri);
+    return;
+  }
+
+  if (uri.host == 'payment') {
+    final rawStatus =
+        uri.queryParameters['status'] ??
+        uri.queryParameters['payment_status'] ??
+        '';
+
+    final normalized = rawStatus.toLowerCase();
+    final isSuccess =
+        normalized == 'success' ||
+        normalized == 'completed' ||
+        normalized == 'true';
+
+    final transactionId = uri.queryParameters['transaction_id'];
+
+    Get.to(
+      () => PaymentCallbackScreen(
+        isSuccess: isSuccess,
+        transactionId: transactionId,
+      ),
+    );
+  }
+}
+
 void _initDeepLinks() {
   final appLinks = AppLinks();
 
+  appLinks.getInitialLink().then((uri) {
+    if (uri != null) {
+      _handleIncomingDeepLink(uri);
+    }
+  });
+
   // Handle deep link when the app is already open in the foreground/background
   appLinks.uriLinkStream.listen((uri) {
-    if (uri.scheme == 'myapp' && uri.host == 'auth') {
-      final authController = Get.find<AuthController>();
-      authController.handleGoogleCallback(uri);
-    }
+    _handleIncomingDeepLink(uri);
   });
 }
 

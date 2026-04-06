@@ -1,62 +1,57 @@
 import { supabase } from "../config/supabase.js";
-import {
-  getUserIdByTransactionId,
-  moneyToToken,
-  updateTokenBalance,
-} from "../services/payment.service.js";
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+import { completeRechargeTransactionById } from "../services/payment.service.js";
 export default async function paymeeWebhook(req, res) {
-  console.log("Supabase URL:", supabaseUrl);
-  console.log("Supabase Key:", supabaseKey);
   try {
     //so the variable payload will contain the data sent by Paymee in the webhook, we can use it to update the transaction status in our database
     const payload = req.body;
     console.log("Received Paymee webhook:", payload);
     //here we will extract the necessary information from the payload, such as order_id, payment_status, amount and check_sum, tha we will need it in security check
-    const { order_id, amount, check_sum } = payload;
+    const { order_id, amount, cost } = payload;
     const payment_status = payload.payment_status;
-    if (!order_id || !amount || !check_sum) {
+    if (!order_id) {
       return res.status(400).json({ error: "Invalid webhook payload" });
     }
 
+    const rawOrderId = String(order_id);
+    const extractedOrderId =
+      rawOrderId.match(
+        /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/,
+      )?.[0] || rawOrderId;
+
+    const normalizedPaymentStatus = String(payment_status).toLowerCase();
+    const isCompleted =
+      payment_status === true ||
+      normalizedPaymentStatus === "true" ||
+      normalizedPaymentStatus === "completed" ||
+      normalizedPaymentStatus === "success" ||
+      normalizedPaymentStatus === "1";
+
     //here the payment_status is a boolean value sent by Paymee, it will be true if the payment is successful, and false if it failed, so we will convert it to our transaction status values
-    const status = payment_status === "True" ? "completed" : "failed";
-    const { data: transaction, error } = await supabase
-      //update the transaction status in our database based on the order_id, which is the same as the transaction id that we used as reference when creating the payment
-      .from("transactions")
-      .update({ status })
-      .eq("transaction_id", order_id)
-      .select();
-    if (error) {
-      console.error("Database Update Error:", error.message);
-    }
+    const status = isCompleted ? "completed" : "failed";
 
-    if (!transaction || transaction.length === 0) {
-      console.error("no rows founded", order_id);
-    }
-    //so if the payment has been successfully done we will add the tokens to the user tokens ballance
     if (status === "completed") {
-      const userId = await getUserIdByTransactionId({
-        transaction_id: order_id,
-      });
-      const tokens_added = moneyToToken({
-        amount: parseFloat(amount),
+      const paidAmount = Number.parseFloat(String(amount ?? cost ?? "0"));
+
+      const completion = await completeRechargeTransactionById({
+        transaction_id: extractedOrderId,
+        paid_amount: Number.isNaN(paidAmount) ? 0 : paidAmount,
       });
 
-      await updateTokenBalance({ user_id: userId, amount: tokens_added });
-      console.log(
-        `Successfully added ${tokens_added} tokens to user ${userId}`,
-      );
+      console.log("Recharge completion result:", completion);
+    } else {
+      const { error } = await supabase
+        .from("transactions")
+        .update({ status: "failed" })
+        .eq("transaction_id", extractedOrderId);
+
+      if (error) {
+        console.error("Error updating transaction status:", error);
+        return res
+          .status(500)
+          .json({ error: "Failed to update transaction status" });
+      }
     }
 
-    if (error) {
-      console.error("Error updating transaction status:", error);
-      return res
-        .status(500)
-        .json({ error: "Failed to update transaction status" });
-    }
-    console.log("Transaction status updated successfully:", transaction);
     res.status(200).json({ message: "Webhook processed successfully" });
   } catch (error) {
     console.error("Error processing Paymee webhook:", error);

@@ -11,49 +11,65 @@ class DirectionChoice extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.colorL,
       body: SafeArea(
-        child: Align(
-          alignment: Alignment.center,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Image.asset("assets/trainnn.png", height: 100),
-                const SizedBox(height: 25),
-                Text(
-                  "Which direction?",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 27,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.colorD,
-                  ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              child: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios,
+                  color: AppColors.colorA,
+                  size: 22,
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  "Please select your direction to continue",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 50),
-                _buildDirectionCard(
-                  context,
-                  title: "Monastir    ➔    Mahdia",
-                  direction: "mahdia",
-                ),
-                const SizedBox(height: 20),
-                _buildDirectionCard(
-                  context,
-                  title: "Mahdia    ➔    Monastir",
-                  direction: "monastir",
-                ),
-                const SizedBox(height: 30),
-              ],
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
-          ),
+            Align(
+              alignment: Alignment.center,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Image.asset("assets/trainnn.png", height: 100),
+                    const SizedBox(height: 25),
+                    Text(
+                      "Which direction?",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 27,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.colorD,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Please select your direction to continue",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 50),
+                    _buildDirectionCard(
+                      context,
+                      title: "Monastir    ➔    Mahdia",
+                      direction: "mahdia",
+                    ),
+                    const SizedBox(height: 20),
+                    _buildDirectionCard(
+                      context,
+                      title: "Mahdia    ➔    Monastir",
+                      direction: "monastir",
+                    ),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

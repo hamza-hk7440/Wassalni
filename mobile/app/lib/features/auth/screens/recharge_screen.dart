@@ -1,9 +1,110 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:app/core/theme/colors_R.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../data/api/api_service.dart';
+import '../auth_controller.dart';
 
-class RechargePage extends StatelessWidget {
+class RechargePage extends StatefulWidget {
   const RechargePage({super.key});
+
+  @override
+  State<RechargePage> createState() => _RechargePageState();
+}
+
+class _RechargePageState extends State<RechargePage> {
+  final ApiService _apiService = ApiService();
+  final AuthController _authController = Get.find<AuthController>();
+  int _tokenBalance = 0;
+  String _loadingPack = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTokenBalance();
+  }
+
+  Future<void> _loadTokenBalance() async {
+    final userId = _authController.currentUser.value?.userId;
+    if (userId == null || userId.isEmpty) return;
+
+    try {
+      final balance = await _apiService.getTokensBalance(userId: userId);
+      if (!mounted) return;
+      setState(() => _tokenBalance = balance);
+
+      final current = _authController.currentUser.value;
+      if (current != null) {
+        _authController.currentUser.value = User(
+          userId: current.userId,
+          email: current.email,
+          firstName: current.firstName,
+          lastName: current.lastName,
+          role: current.role,
+          tokenBalance: balance.toDouble(),
+          timestamp: current.timestamp,
+        );
+      }
+    } catch (_) {
+      final fallback = _authController.currentUser.value?.tokenBalance ?? 0;
+      if (mounted) {
+        setState(() => _tokenBalance = fallback.toInt());
+      }
+    }
+  }
+
+  Future<void> _startRecharge({
+    required String tokenPack,
+    required String priceLabel,
+  }) async {
+    final userId = _authController.currentUser.value?.userId;
+    if (userId == null || userId.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('User not authenticated')));
+      return;
+    }
+
+    final amount = double.tryParse(priceLabel.replaceAll(' DT', ''));
+    if (amount == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Invalid recharge amount')));
+      return;
+    }
+
+    setState(() => _loadingPack = tokenPack);
+
+    try {
+      final paymentUrl = await _apiService.createRecharge(
+        userId: userId,
+        amount: amount,
+      );
+
+      final uri = Uri.parse(paymentUrl);
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to open Paymee form')),
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Recharge failed: $error')));
+    } finally {
+      if (mounted) {
+        setState(() => _loadingPack = '');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,17 +146,17 @@ class RechargePage extends StatelessWidget {
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2, 
+                crossAxisCount: 2,
                 crossAxisSpacing: 15,
                 mainAxisSpacing: 15,
-                childAspectRatio: 1.1, 
+                childAspectRatio: 1.1,
                 children: [
                   _buildTokenPack(context, "20", "2 DT"),
-                  _buildTokenPack(context, "50", "5 DT"),
-                  _buildTokenPack(context, "80", "10 DT"),
-                  _buildTokenPack(context, "150", "15 DT"),
-                  _buildTokenPack(context, "300", "25 DT"),
-                  _buildTokenPack(context, "500", "40 DT"),
+                  _buildTokenPack(context, "50", "4.5 DT"),
+                  _buildTokenPack(context, "80", "7 DT"),
+                  _buildTokenPack(context, "120", "10.5 DT"),
+                  _buildTokenPack(context, "200", "18 DT"),
+                  _buildTokenPack(context, "300", "27 DT"),
                 ],
               ),
               const SizedBox(height: 40),
@@ -68,7 +169,10 @@ class RechargePage extends StatelessWidget {
                 child: Text(
                   "Tokens allow you to buy your bus and train tickets instantly on Wasalni.",
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(fontSize: 13, color: AppColors.colorA),
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: AppColors.colorA,
+                  ),
                 ),
               ),
             ],
@@ -86,12 +190,19 @@ class RechargePage extends StatelessWidget {
         color: AppColors.colorA,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: AppColors.colorA.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
+          BoxShadow(
+            color: AppColors.colorA.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
       child: Column(
         children: [
-          Text("Current balance ", style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14)),
+          Text(
+            "Current balance ",
+            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
+          ),
           const SizedBox(height: 5),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -99,8 +210,12 @@ class RechargePage extends StatelessWidget {
               Image.asset("assets/token.png", height: 28), // Icône token
               const SizedBox(width: 10),
               Text(
-                "50", 
-                style: GoogleFonts.poppins(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                "$_tokenBalance",
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -110,27 +225,43 @@ class RechargePage extends StatelessWidget {
   }
 
   Widget _buildTokenPack(BuildContext context, String count, String price) {
+    final isLoading = _loadingPack == count;
+
     return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Pack of $count tokens selected")),
-        );
-      },
+      onTap: isLoading
+          ? null
+          : () => _startRecharge(tokenPack: count, priceLabel: price),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            if (isLoading)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.colorA,
+                  ),
+                ),
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset("assets/token.png", height: 22), 
+                Image.asset("assets/token.png", height: 22),
                 const SizedBox(width: 8),
                 Text(
                   count,
