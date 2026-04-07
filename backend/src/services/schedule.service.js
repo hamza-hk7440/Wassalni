@@ -30,7 +30,7 @@ class ScheduleService {
     //insert the schedule
     const finalScheduleData = {
       ...scheduleData,
-      availbl_seats: transport.capacity,
+      available_seats: transport.capacity,
       current_price: scheduleData.base_price || 0,
     };
     const { data, error } = await supabase

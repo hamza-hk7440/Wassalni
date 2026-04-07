@@ -1,4 +1,4 @@
-import * as stationService from "../services/stations.service.js";
+import stationService from "../services/stations.service.js";
 
 class StationController {
   async getAllStations(req, res) {

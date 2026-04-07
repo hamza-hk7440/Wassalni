@@ -92,7 +92,7 @@ export const getAllTransactions = async () => {
     const { data, error } = await supabase
         .from('transactions')
         .select(`*`)
-        .order('created_at', { ascending: false });
+        .order('timestamp', { ascending: false });
     
     if (error) throw new Error(error.message);
 
@@ -103,7 +103,7 @@ export const getAllTickets = async () => {
     const { data, error } = await supabase
         .from('tickets')
         .select(`*`)
-        .order('created_at', { ascending: false });
+        .order('purchase_date', { ascending: false });
     
     if (error) throw new Error(error.message);
 

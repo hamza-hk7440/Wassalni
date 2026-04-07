@@ -1,4 +1,4 @@
-import * as transportService from '../services/transport.service.js';
+import transportService from '../services/transport.service.js';
 class TransportController {
     async create(req, res){
         try {

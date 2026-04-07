@@ -1,4 +1,4 @@
-import * as scheduleService from "../services/schedule.service.js";
+import scheduleService from "../services/schedule.service.js";
 class ScheduleController {
   async create(req, res) {
     try {

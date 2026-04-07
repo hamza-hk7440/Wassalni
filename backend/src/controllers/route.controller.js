@@ -1,4 +1,4 @@
-import * as routeService from "../services/route.service.js";
+import routeService from "../services/route.service.js";
 class RouteController {
   async create(req, res) {
     try {
