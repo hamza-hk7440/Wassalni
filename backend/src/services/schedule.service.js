@@ -60,6 +60,7 @@ class ScheduleService {
       arrival_time,
       available_seats,
       current_price,
+      direction,
       routes (
         name,
         base_price,

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:app/core/theme/colors_R.dart';
 import '../../schedule_controller.dart';
 import '../../../data/api/api_service.dart';
 import '../../../data/models/schedule.dart';
 import '../../../data/models/schedule_slot.dart';
+import '../auth_controller.dart';
+import 'my_tickets_screen.dart';
+import 'recharge_screen.dart';
 
 class BusSchedulePage extends StatefulWidget {
   const BusSchedulePage({super.key});
@@ -16,8 +20,11 @@ class BusSchedulePage extends StatefulWidget {
 class _BusSchedulePageState extends State<BusSchedulePage> {
   int _tokenCount = 50;
   final ScrollController _scrollController = ScrollController();
-  final ScheduleController _scheduleController = ScheduleController();
+  final ScheduleController _scheduleController = ScheduleController(
+    direction: 'bus',
+  );
   final ApiService _apiService = ApiService();
+  final AuthController _authController = Get.find<AuthController>();
   bool _isExtended = true;
   String _formatTime(String raw) {
     try {
@@ -39,10 +46,23 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
     }
   }
 
+  bool _isScheduleOnSelectedDay(Schedule schedule) {
+    try {
+      final departure = DateTime.parse(schedule.departure).toLocal();
+      final selected = _scheduleController.selectedDay;
+      return departure.year == selected.year &&
+          departure.month == selected.month &&
+          departure.day == selected.day;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _scheduleController.loadSchedules();
+    _refreshTokenBalance();
     _scheduleController.addListener(() {
       if (mounted) setState(() {});
     });
@@ -62,6 +82,152 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
     });
   }
 
+  Future<void> _refreshTokenBalance() async {
+    final userId = _authController.currentUser.value?.userId;
+    if (userId == null || userId.isEmpty) {
+      return;
+    }
+
+    try {
+      final balance = await _apiService.getTokensBalance(userId: userId);
+      if (!mounted) return;
+
+      setState(() => _tokenCount = balance);
+
+      final current = _authController.currentUser.value;
+      if (current != null) {
+        _authController.currentUser.value = User(
+          userId: current.userId,
+          email: current.email,
+          firstName: current.firstName,
+          lastName: current.lastName,
+          role: current.role,
+          tokenBalance: balance.toDouble(),
+          timestamp: current.timestamp,
+        );
+      }
+    } catch (_) {
+      // keep local value if request fails
+    }
+  }
+
+  void _showPurchaseSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green),
+            const SizedBox(width: 8),
+            Text(
+              "Purchase Successful",
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.green[700],
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          "Your ticket is confirmed. You will find it in My Tickets.",
+          style: GoogleFonts.poppins(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => MyTicketsPage()),
+              );
+            },
+            child: const Text("Go to My Tickets"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Close"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showInsufficientTokensDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.error, color: Colors.redAccent),
+            const SizedBox(width: 8),
+            Text(
+              "Insufficient Tokens",
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.redAccent,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          "You don't have enough tokens to complete this purchase.",
+          style: GoogleFonts.poppins(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const RechargePage()),
+              );
+            },
+            child: const Text("Recharge Now"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _processPurchase({
+    required ScheduleSlot selectedSlot,
+    required int quantity,
+  }) async {
+    final userId = _authController.currentUser.value?.userId;
+    if (userId == null || userId.isEmpty) {
+      throw Exception('User not authenticated');
+    }
+
+    final total = selectedSlot.price * quantity;
+    final hasEnough = await _apiService.verifyTokensNumber(
+      userId: userId,
+      amount: total,
+    );
+
+    if (!hasEnough) {
+      _showInsufficientTokensDialog();
+      return;
+    }
+
+    for (int index = 0; index < quantity; index++) {
+      await _apiService.createTicket(
+        userId: userId,
+        scheduleId: selectedSlot.scheduleId,
+        price: selectedSlot.price,
+      );
+    }
+
+    await _apiService.redeemTokensFromUser(userId: userId, amount: total);
+    await _refreshTokenBalance();
+    _showPurchaseSuccessDialog();
+  }
+
   @override
   void dispose() {
     _scheduleController.dispose();
@@ -74,6 +240,21 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
     final busSchedules = _scheduleController.schedules
         .where((s) => s.transportType.toLowerCase() == 'bus')
         .toList();
+
+    final schedulesForSelectedDay = busSchedules
+        .where(_isScheduleOnSelectedDay)
+        .toList();
+
+    final routeMap = <String, Schedule>{};
+    for (final schedule in schedulesForSelectedDay) {
+      final key = schedule.routeId.isNotEmpty
+          ? schedule.routeId
+          : '${schedule.from}-${schedule.to}';
+      routeMap.putIfAbsent(key, () => schedule);
+    }
+
+    final uniqueRouteSchedules = routeMap.values.toList();
+
     return Scaffold(
       backgroundColor: AppColors.colorL,
       body: SafeArea(
@@ -117,7 +298,7 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                     )
                   : _scheduleController.errorMessage.isNotEmpty
                   ? _buildErrorView()
-                  : busSchedules.isEmpty
+                  : uniqueRouteSchedules.isEmpty
                   ? Center(
                       child: Text(
                         "No bus schedules available",
@@ -132,9 +313,11 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                           horizontal: 20,
                           vertical: 10,
                         ),
-                        itemCount: busSchedules.length,
+                        itemCount: uniqueRouteSchedules.length,
                         itemBuilder: (context, index) {
-                          return _buildScheduleCard(busSchedules[index]);
+                          return _buildScheduleCard(
+                            uniqueRouteSchedules[index],
+                          );
                         },
                       ),
                     ),
@@ -145,12 +328,7 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
       floatingActionButton: FloatingActionButton.extended(
         isExtended: _isExtended,
         onPressed: () {
-          final busSchedules = _scheduleController.schedules
-              .where((s) => s.transportType.toLowerCase() == 'bus')
-              .toList();
-          if (busSchedules.isNotEmpty) {
-            _showPurchaseDialog(busSchedules.first);
-          }
+          _showQuickBuyRouteDialog();
         },
         backgroundColor: AppColors.colorA,
         icon: const Icon(
@@ -334,23 +512,6 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                     ),
                   ),
                 ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.event_seat_rounded,
-                      size: 14,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${schedule.availableSeats} seats",
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
             const SizedBox(height: 10),
@@ -377,11 +538,147 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
     );
   }
 
+  void _showQuickBuyRouteDialog() {
+    final busSchedules = _scheduleController.schedules
+        .where((s) => s.transportType.toLowerCase() == 'bus')
+        .where(_isScheduleOnSelectedDay)
+        .toList();
+
+    final routeMap = <String, Schedule>{};
+    for (final schedule in busSchedules) {
+      final key = schedule.routeId.isNotEmpty
+          ? schedule.routeId
+          : '${schedule.from}-${schedule.to}';
+      routeMap.putIfAbsent(key, () => schedule);
+    }
+
+    final routeOptions = routeMap.values.toList();
+
+    if (routeOptions.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No routes available for quick buy")),
+      );
+      return;
+    }
+
+    Schedule selectedRoute = routeOptions.first;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 50,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Quick Buy",
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.colorA,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    "Select route (From → To)",
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: AppColors.colorA.withOpacity(0.3),
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<Schedule>(
+                        isExpanded: true,
+                        value: selectedRoute,
+                        items: routeOptions.map((schedule) {
+                          return DropdownMenuItem<Schedule>(
+                            value: schedule,
+                            child: Text(
+                              '${schedule.from} → ${schedule.to}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setModalState(() => selectedRoute = value);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Future.delayed(
+                          Duration.zero,
+                          () => _showPurchaseDialog(selectedRoute),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.colorA,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Text(
+                        "Choose Time",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showPurchaseDialog(Schedule schedule) {
     int quantity = 1;
     List<ScheduleSlot> slots = [];
     ScheduleSlot? selectedSlot;
     bool loadingSlots = true;
+    bool isProcessingPurchase = false;
 
     showModalBottomSheet(
       context: context,
@@ -404,6 +701,10 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                     setModalState(() => loadingSlots = false);
                   });
             }
+
+            final seatCount = selectedSlot?.availableSeats ?? 0;
+            final hasEnoughSeats =
+                selectedSlot != null && seatCount >= quantity;
 
             return Container(
               padding: const EdgeInsets.all(30),
@@ -535,11 +836,53 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                                   ),
                                 );
                               }).toList(),
-                              onChanged: (val) =>
-                                  setModalState(() => selectedSlot = val),
+                              onChanged: (val) => setModalState(() {
+                                selectedSlot = val;
+                                if (selectedSlot != null &&
+                                    quantity > selectedSlot!.availableSeats) {
+                                  quantity = selectedSlot!.availableSeats > 0
+                                      ? selectedSlot!.availableSeats
+                                      : 1;
+                                }
+                              }),
                             ),
                           ),
                         ),
+                  if (!loadingSlots && selectedSlot != null) ...[
+                    const SizedBox(height: 14),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.event_seat_rounded,
+                              size: 16,
+                              color: Colors.grey[700],
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              "Available seats",
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          "$seatCount",
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: seatCount > 0
+                                ? AppColors.colorA
+                                : Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -563,10 +906,12 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                               ),
                             ),
                           ),
-                          _quantityBtn(
-                            Icons.add,
-                            () => setModalState(() => quantity++),
-                          ),
+                          _quantityBtn(Icons.add, () {
+                            if (selectedSlot == null) return;
+                            if (quantity < selectedSlot!.availableSeats) {
+                              setModalState(() => quantity++);
+                            }
+                          }),
                         ],
                       ),
                     ],
@@ -609,23 +954,28 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: selectedSlot == null
+                      onPressed: (selectedSlot == null || !hasEnoughSeats)
                           ? null
-                          : () {
-                              setState(
-                                () => _tokenCount -=
-                                    (selectedSlot!.price * quantity),
-                              );
+                          : () async {
+                              setModalState(() => isProcessingPurchase = true);
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  backgroundColor: AppColors.colorA,
-                                  content: Text(
-                                    "Bus ticket reserved!",
-                                    style: GoogleFonts.poppins(),
+                              try {
+                                await _processPurchase(
+                                  selectedSlot: selectedSlot!,
+                                  quantity: quantity,
+                                );
+                              } catch (error) {
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Purchase failed: $error"),
                                   ),
-                                ),
-                              );
+                                );
+                              } finally {
+                                if (mounted) {
+                                  setState(() {});
+                                }
+                              }
                             },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.colorA,
@@ -633,13 +983,24 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                           borderRadius: BorderRadius.circular(15),
                         ),
                       ),
-                      child: Text(
-                        "Confirm Purchase",
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: isProcessingPurchase
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              "Confirm Purchase",
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                 ],

@@ -1,11 +1,23 @@
-import { supabase } from "../config/supabase.js";
+import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 dotenv.config();
 import { TICKET_STATUS } from "../models/ticket.model.js";
 import QRCode from "qrcode";
+
+const adminSupabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  },
+);
+
 export async function createTicket({ user_id, schedule_id, price }) {
   try {
-    const { data: ticket, error: ticketError } = await supabase
+    const { data: ticket, error: ticketError } = await adminSupabase
       .from("tickets")
       .insert([
         {
@@ -24,7 +36,7 @@ export async function createTicket({ user_id, schedule_id, price }) {
     const ticketId = ticket.ticket_id;
     const base = await QRCode.toDataURL(ticketId);
     const qrData = base.replace("data:image/png;base64,", "");
-    const { data: qrdata, error: qrError } = await supabase
+    const { data: qrdata, error: qrError } = await adminSupabase
       .from("tickets")
       .update({ qr_data: qrData })
       .eq("ticket_id", ticketId);
@@ -41,7 +53,7 @@ export async function createTicket({ user_id, schedule_id, price }) {
 }
 export async function getQrDataByTicketId({ ticket_id }) {
   try {
-    const { data: qrData, error: qrDataError } = await supabase
+    const { data: qrData, error: qrDataError } = await adminSupabase
       .from("tickets")
       .select("qr_data")
       .eq("ticket_id", ticket_id)
@@ -57,7 +69,7 @@ export async function getQrDataByTicketId({ ticket_id }) {
 }
 export async function getTicketStatusByQrData({ qr_data }) {
   try {
-    const { data: ticket, error: ticketError } = await supabase
+    const { data: ticket, error: ticketError } = await adminSupabase
       .from("tickets")
       .select("status")
       .eq("qr_data", qr_data)

@@ -427,7 +427,7 @@ class AuthController extends GetxController {
     await _deleteUserData();
     currentUser.value = null;
     isAuthenticated.value = false;
-    Get.offAllNamed('/rolechoice');
+    Get.offAllNamed('/login');
   }
 
   void _navigateBasedOnRole(User user) {
