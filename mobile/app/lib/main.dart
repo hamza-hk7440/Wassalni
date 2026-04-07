@@ -1,15 +1,17 @@
 import 'package:app/features/auth/screens/home_screen.dart';
 import 'package:app/features/auth/screens/profile_screen.dart';
 import 'package:app/features/auth/screens/recharge_screen.dart';
+import 'package:app/features/auth/screens/controller_home_screen.dart';
 import 'package:app/features/auth/screens/splash_screen.dart';
 import 'package:app/features/auth/screens/login_page.dart';
 import 'package:app/features/auth/screens/home_test.dart';
-import 'package:app/features/auth/screens/payment_callback_screen.dart';
-import 'package:app/features/auth/auth_controller.dart';
-import 'package:app_links/app_links.dart';
+import 'package:app/features/auth/screens/my_tickets_screen.dart';
+import 'package:app/features/auth/auth_controller.dart'; // Import your controller
+import 'package:app_links/app_links.dart'; // Import app_links for deep linking
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:app/features/auth/screens/super_admin_home.dart';
+import 'package:app/features/auth/screens/payment_callback_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,7 +83,8 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Wasalni',
-      home: const SplashScreen(),
+      // The app starts here, and since AuthController is already "put", it won't crash
+      home: const ControllerHomePage(),
       getPages: [
         GetPage(name: '/login', page: () => const LoginScreen()),
         GetPage(name: '/home', page: () => const HomePage()),
