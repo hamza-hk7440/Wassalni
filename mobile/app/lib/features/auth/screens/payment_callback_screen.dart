@@ -10,11 +10,13 @@ import 'recharge_screen.dart';
 class PaymentCallbackScreen extends StatefulWidget {
   final bool isSuccess;
   final String? transactionId;
+  final int? newBalance; // new
 
   const PaymentCallbackScreen({
     super.key,
     required this.isSuccess,
     this.transactionId,
+    this.newBalance, // new
   });
 
   @override
@@ -31,7 +33,31 @@ class _PaymentCallbackScreenState extends State<PaymentCallbackScreen> {
   void initState() {
     super.initState();
     if (widget.isSuccess) {
-      _refreshBalanceAfterPayment();
+      if (widget.newBalance != null) {
+        // balance came directly from the deep link — apply instantly
+        _applyNewBalance(widget.newBalance!);
+      } else {
+        // fallback: poll the server
+        _refreshBalanceAfterPayment();
+      }
+    }
+  }
+
+  void _applyNewBalance(int balance) {
+    if (!mounted) return;
+    setState(() => _updatedBalance = balance);
+
+    final current = _authController.currentUser.value;
+    if (current != null) {
+      _authController.currentUser.value = User(
+        userId: current.userId,
+        email: current.email,
+        firstName: current.firstName,
+        lastName: current.lastName,
+        role: current.role,
+        tokenBalance: balance.toDouble(),
+        timestamp: current.timestamp,
+      );
     }
   }
 
@@ -41,37 +67,28 @@ class _PaymentCallbackScreenState extends State<PaymentCallbackScreen> {
 
     setState(() => _isRefreshing = true);
 
+    // wait for server to finish writing before polling
+    await Future.delayed(const Duration(seconds: 3));
+
+    final balanceBefore =
+        _authController.currentUser.value?.tokenBalance?.toInt() ?? 0;
+
     for (int attempt = 0; attempt < 15; attempt++) {
       try {
         final balance = await _apiService.getTokensBalance(userId: userId);
         if (!mounted) return;
 
-        setState(() {
-          _updatedBalance = balance;
-          _isRefreshing = false;
-        });
-
-        final current = _authController.currentUser.value;
-        if (current != null) {
-          _authController.currentUser.value = User(
-            userId: current.userId,
-            email: current.email,
-            firstName: current.firstName,
-            lastName: current.lastName,
-            role: current.role,
-            tokenBalance: balance.toDouble(),
-            timestamp: current.timestamp,
-          );
+        // only accept if balance actually increased
+        if (balance > balanceBefore) {
+          _applyNewBalance(balance);
+          setState(() => _isRefreshing = false);
+          return;
         }
-        return;
-      } catch (_) {
-        await Future.delayed(const Duration(seconds: 2));
-      }
+      } catch (_) {}
+      await Future.delayed(const Duration(seconds: 2));
     }
 
-    if (mounted) {
-      setState(() => _isRefreshing = false);
-    }
+    if (mounted) setState(() => _isRefreshing = false);
   }
 
   @override
@@ -103,8 +120,8 @@ class _PaymentCallbackScreenState extends State<PaymentCallbackScreen> {
                 const SizedBox(height: 8),
                 Text(
                   widget.isSuccess
-                      ? 'Your recharge request is received. Your token balance will update after confirmation.'
-                      : 'The payment was cancelled or failed. You can retry your recharge.',
+                      ? 'Your tokens have been added to your wallet.'
+                      : 'The payment was cancelled or failed. You can retry.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
@@ -128,13 +145,30 @@ class _PaymentCallbackScreenState extends State<PaymentCallbackScreen> {
                   ),
                 ],
                 if (_updatedBalance != null) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    'New balance: $_updatedBalance tokens',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.green[700],
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.token, color: Colors.green),
+                        const SizedBox(width: 8),
+                        Text(
+                          'New balance: $_updatedBalance tokens',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.green[700],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -166,9 +200,7 @@ class _PaymentCallbackScreenState extends State<PaymentCallbackScreen> {
                       ),
                     ),
                     child: Text(
-                      widget.isSuccess
-                          ? 'Back to Recharge'
-                          : 'Try Recharge Again',
+                      widget.isSuccess ? 'Back to Recharge' : 'Try Again',
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

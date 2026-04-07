@@ -8,7 +8,6 @@ import scheduleRoutes from "./src/routes/schedule.routes.js";
 import stationsRoutes from "./src/routes/station.routes.js";
 import routeRoutes from "./src/routes/route.routes.js";
 import transportRoutes from "./src/routes/transport.routes.js";
-import { completeRechargeTransactionById } from "./src/services/payment.service.js";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); //we add this bcz paymee don't use json it use a format called :application/x-www-form-urlencoded
@@ -41,13 +40,17 @@ app.get("/", (req, res) => {
   res.send("Backend API is running");
 });
 
-function renderPaymentCallbackPage({ status, transactionId }) {
+function renderPaymentCallbackPage({
+  status,
+  transactionId,
+  extraParams = "",
+}) {
   const isSuccess = status === "success";
   const title = isSuccess ? "Payment Confirmed" : "Payment Cancelled";
   const message = isSuccess
     ? "Your payment was received. You can return to Wasalni now."
     : "Your payment was not completed. You can return to Wasalni and try again.";
-  const deepLink = `myapp://payment/callback?status=${status}&transaction_id=${encodeURIComponent(transactionId || "")}`;
+  const deepLink = `myapp://payment/callback?status=${status}&transaction_id=${encodeURIComponent(transactionId || "")}${extraParams}`;
 
   return `
 <!DOCTYPE html>
@@ -122,25 +125,16 @@ app.get("/payment-success", async (req, res) => {
   const transactionId = extractTransactionId(
     req.query.transaction_id || req.query.order_id || "",
   );
-
-  let finalizeResult = null;
-  if (transactionId) {
-    try {
-      finalizeResult = await completeRechargeTransactionById({
-        transaction_id: transactionId,
-      });
-      console.log("payment-success finalize result:", finalizeResult);
-    } catch (error) {
-      console.error(
-        "Failed to finalize transaction on /payment-success:",
-        error.message,
-      );
-    }
-  }
-
-  res
-    .status(200)
-    .send(renderPaymentCallbackPage({ status: "success", transactionId }));
+  // Important: do not finalize here. Webhook is the single source of truth
+  // for marking recharge completed and crediting balance.
+  const deepLinkExtra = "";
+  res.status(200).send(
+    renderPaymentCallbackPage({
+      status: "success",
+      transactionId,
+      extraParams: deepLinkExtra,
+    }),
+  );
 });
 
 app.get("/payment-error", (req, res) => {

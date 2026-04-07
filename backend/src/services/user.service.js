@@ -1,8 +1,37 @@
 import { supabase } from "../config/supabase.js";
+import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import dotenv from "dotenv";
 dotenv.config();
 const pendingSessions = {};
+
+function createAuthClient() {
+  return createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY ||
+      process.env.SUPABASE_KEY ||
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    },
+  );
+}
+
+function createAdminClient() {
+  return createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    },
+  );
+}
 //in this function we will create a user by role,we will use the signUP supabase function
 //the user when he created her will be inserted in the auth and users table by the function written on sql in supabase the function in supabase is called : handle_new_user
 export async function createUser({
@@ -15,7 +44,7 @@ export async function createUser({
   try {
     switch (role) {
       case "passenger": {
-        const { data: typeOne, error } = await supabase.auth.signUp({
+        const { data: typeOne, error } = await createAuthClient().auth.signUp({
           email,
           password,
           options: {
@@ -41,21 +70,23 @@ export async function createUser({
 
         while (!saved) {
           const code = crypto.randomInt(100000, 999999).toString();
-          const { data: typeTwo, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                role,
-                first_name,
-                last_name,
-                token_balance: 0,
-                controller_code: null,
-                super_admin_code: null,
-                admin_code: code,
+          const { data: typeTwo, error } = await createAuthClient().auth.signUp(
+            {
+              email,
+              password,
+              options: {
+                data: {
+                  role,
+                  first_name,
+                  last_name,
+                  token_balance: 0,
+                  controller_code: null,
+                  super_admin_code: null,
+                  admin_code: code,
+                },
               },
             },
-          });
+          );
           if (!error) {
             finalCode = code;
             saved = true;
@@ -75,21 +106,22 @@ export async function createUser({
 
         while (!saved) {
           const code = crypto.randomInt(100000, 999999).toString();
-          const { data: typeThree, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                role,
-                first_name,
-                last_name,
-                token_balance: 0,
-                controller_code: code,
-                super_admin_code: null,
-                admin_code: null,
+          const { data: typeThree, error } =
+            await createAuthClient().auth.signUp({
+              email,
+              password,
+              options: {
+                data: {
+                  role,
+                  first_name,
+                  last_name,
+                  token_balance: 0,
+                  controller_code: code,
+                  super_admin_code: null,
+                  admin_code: null,
+                },
               },
-            },
-          });
+            });
 
           if (!error) {
             finalCode = code;
@@ -111,21 +143,22 @@ export async function createUser({
         while (!saved) {
           const code1 = crypto.randomInt(100000, 999999).toString();
           const code2 = crypto.randomInt(1000, 9999).toString();
-          const { data: typeFour, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                role,
-                first_name,
-                last_name,
-                token_balance: 0,
-                controller_code: null,
-                super_admin_code: code2,
-                admin_code: code1,
+          const { data: typeFour, error } =
+            await createAuthClient().auth.signUp({
+              email,
+              password,
+              options: {
+                data: {
+                  role,
+                  first_name,
+                  last_name,
+                  token_balance: 0,
+                  controller_code: null,
+                  super_admin_code: code2,
+                  admin_code: code1,
+                },
               },
-            },
-          });
+            });
 
           if (!error) {
             finalCode = code1;
@@ -187,7 +220,7 @@ export async function redeemTokensFromUser({ user_id, amount }) {
 //this function will be used to sign in with google and it will return the user data if the sign in was successful
 export async function signUpWithGoogle() {
   try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await createAuthClient().auth.signInWithOAuth({
       provider: "google",
       options: {
         //this where the user will be redirected after the sign in process is done
@@ -206,7 +239,8 @@ export async function signUpWithGoogle() {
 //this function will be used to handle the callback from google after the user sign in and it will return the session data if the sign in was successful
 export async function handleAuthCallback(code) {
   try {
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } =
+      await createAuthClient().auth.exchangeCodeForSession(code);
     if (error) {
       throw error;
     }
@@ -218,7 +252,7 @@ export async function handleAuthCallback(code) {
 }
 export async function userLoginForMobile({ email, password }) {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await createAuthClient().auth.signInWithPassword({
       email,
       password,
     });
@@ -289,7 +323,7 @@ export async function verifycontrollerCode({ user_id, code }) {
 }
 export async function loginForPassengerAdminAndSuperAdmin({ email, password }) {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await createAuthClient().auth.signInWithPassword({
       email,
       password,
     });
@@ -340,7 +374,7 @@ export async function loginForPassengerAdminAndSuperAdmin({ email, password }) {
 }
 export async function controllerLogin({ email, password }) {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await createAuthClient().auth.signInWithPassword({
       email,
       password,
     });
@@ -389,7 +423,7 @@ export async function deletePendingSession(sessionId) {
 // this function will be used to handle the login for all roles(passenger,controller and super admin) in the mobile app
 export async function unifiedMobileLogin({ email, password }) {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await createAuthClient().auth.signInWithPassword({
       email,
       password,
     });
@@ -457,6 +491,22 @@ export async function verifySuperAdminCode({ user_id, code }) {
     return userData.super_admin_code === code;
   } catch (error) {
     console.error("verify super admin code error:", error.message);
+    throw error;
+  }
+}
+
+export async function changeUserPassword({ user_id, new_password }) {
+  try {
+    const adminClient = createAdminClient();
+    const { error } = await adminClient.auth.admin.updateUserById(user_id, {
+      password: new_password,
+    });
+
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    console.error("change password error:", error.message);
     throw error;
   }
 }

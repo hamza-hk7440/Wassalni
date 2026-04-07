@@ -11,7 +11,7 @@ import axios from "axios";
 import https from "https";
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 function extractTransactionId(rawValue) {
   const raw = String(rawValue || "");
@@ -129,16 +129,27 @@ export async function updateTokenBalance({ user_id, amount }) {
   console.log("user_id:", user_id, "amount:", amount);
 
   try {
+    const delta = Number(amount);
+    if (!Number.isFinite(delta)) {
+      throw new Error("Invalid amount for token balance update");
+    }
+
     const { data: user, error } = await supabase
       .from("users")
       .select("token_balance")
       .eq("user_id", user_id)
       .single();
     if (error) throw error;
+
+    const currentBalance = Number(user?.token_balance ?? 0);
+    const nextBalance = currentBalance + delta;
+
     const { error: dbError } = await supabase
       .from("users")
-      .update({ token_balance: user.token_balance + amount })
-      .eq("user_id", user_id);
+      .update({ token_balance: nextBalance })
+      .eq("user_id", user_id)
+      .select("token_balance");
+
     if (dbError) throw dbError;
 
     const { data: updatedUser, error: readError } = await supabase
@@ -220,85 +231,41 @@ export async function completeRechargeTransactionById({
     throw new Error("transaction_id is required to complete recharge");
   }
 
-  const { data: updatedTx, error: updateStatusError } = await supabase
+  const { data: existingTx, error: existingTxError } = await supabase
     .from("transactions")
-    .update({ status: TRANSACTION_STATUS.COMPLETED, credited: true })
-    .eq("transaction_id", cleanTransactionId)
-    .eq("credited", false)
     .select("transaction_id, user_id, amount, status, credited")
+    .eq("transaction_id", cleanTransactionId)
     .maybeSingle();
 
-  if (updateStatusError) {
-    throw updateStatusError;
+  if (existingTxError) {
+    throw existingTxError;
   }
 
-  if (!updatedTx) {
-    const { data: existingTx, error: existingTxError } = await supabase
-      .from("transactions")
-      .select("transaction_id, user_id, amount, status, credited")
-      .eq("transaction_id", cleanTransactionId)
-      .maybeSingle();
+  if (!existingTx) {
+    return {
+      transaction_id: cleanTransactionId,
+      credited: false,
+      reason: "not_found",
+    };
+  }
 
-    if (existingTxError) {
-      throw existingTxError;
+  if (existingTx.status === TRANSACTION_STATUS.COMPLETED) {
+    const { data: userData, error: userDataError } = await supabase
+      .from("users")
+      .select("token_balance")
+      .eq("user_id", existingTx.user_id)
+      .single();
+
+    if (userDataError) {
+      throw userDataError;
     }
-
-    if (!existingTx) {
-      return {
-        transaction_id: cleanTransactionId,
-        credited: false,
-        reason: "not_found",
-      };
-    }
-
-    if (existingTx.credited === true) {
-      return {
-        transaction_id: cleanTransactionId,
-        credited: false,
-        reason: "already_credited",
-      };
-    }
-
-    const { data: forceUpdatedTx, error: forceUpdateError } = await supabase
-      .from("transactions")
-      .update({ status: TRANSACTION_STATUS.COMPLETED, credited: true })
-      .eq("transaction_id", cleanTransactionId)
-      .eq("credited", false)
-      .select("transaction_id, user_id, amount, status, credited")
-      .maybeSingle();
-
-    if (forceUpdateError) {
-      throw forceUpdateError;
-    }
-
-    if (!forceUpdatedTx) {
-      return {
-        transaction_id: cleanTransactionId,
-        credited: false,
-        reason: "already_credited",
-      };
-    }
-
-    const forcedBaseAmount =
-      typeof paid_amount === "number" &&
-      !Number.isNaN(paid_amount) &&
-      paid_amount > 0
-        ? paid_amount
-        : Number(forceUpdatedTx.amount || 0);
-
-    const forcedTokensAdded = moneyToToken({ amount: forcedBaseAmount });
-
-    const forcedNewBalance = await updateTokenBalance({
-      user_id: forceUpdatedTx.user_id,
-      amount: forcedTokensAdded,
-    });
 
     return {
       transaction_id: cleanTransactionId,
-      user_id: forceUpdatedTx.user_id,
-      tokens_added: forcedTokensAdded,
-      new_balance: forcedNewBalance,
-      credited: true,
+      user_id: existingTx.user_id,
+      new_balance: userData?.token_balance ?? null,
+      credited: false,
+      reason: "already_completed",
     };
   }
 
@@ -307,18 +274,30 @@ export async function completeRechargeTransactionById({
     !Number.isNaN(paid_amount) &&
     paid_amount > 0
       ? paid_amount
-      : Number(updatedTx.amount || 0);
+      : Number(existingTx.amount || 0);
 
   const tokensAdded = moneyToToken({ amount: baseAmount });
 
   const newBalance = await updateTokenBalance({
-    user_id: updatedTx.user_id,
+    user_id: existingTx.user_id,
     amount: tokensAdded,
   });
 
+  const { error: finalizeError } = await supabase
+    .from("transactions")
+    .update({ status: TRANSACTION_STATUS.COMPLETED, credited: true })
+    .eq("transaction_id", cleanTransactionId);
+
+  if (finalizeError) {
+    console.error(
+      "Failed to set transaction completed:",
+      finalizeError.message,
+    );
+  }
+
   return {
     transaction_id: cleanTransactionId,
-    user_id: updatedTx.user_id,
+    user_id: existingTx.user_id,
     tokens_added: tokensAdded,
     new_balance: newBalance,
     credited: true,

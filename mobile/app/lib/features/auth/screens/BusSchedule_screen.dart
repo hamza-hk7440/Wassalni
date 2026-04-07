@@ -240,6 +240,21 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
     final busSchedules = _scheduleController.schedules
         .where((s) => s.transportType.toLowerCase() == 'bus')
         .toList();
+
+    final schedulesForSelectedDay = busSchedules
+        .where(_isScheduleOnSelectedDay)
+        .toList();
+
+    final routeMap = <String, Schedule>{};
+    for (final schedule in schedulesForSelectedDay) {
+      final key = schedule.routeId.isNotEmpty
+          ? schedule.routeId
+          : '${schedule.from}-${schedule.to}';
+      routeMap.putIfAbsent(key, () => schedule);
+    }
+
+    final uniqueRouteSchedules = routeMap.values.toList();
+
     return Scaffold(
       backgroundColor: AppColors.colorL,
       body: SafeArea(
@@ -283,7 +298,7 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                     )
                   : _scheduleController.errorMessage.isNotEmpty
                   ? _buildErrorView()
-                  : busSchedules.isEmpty
+                  : uniqueRouteSchedules.isEmpty
                   ? Center(
                       child: Text(
                         "No bus schedules available",
@@ -298,9 +313,11 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                           horizontal: 20,
                           vertical: 10,
                         ),
-                        itemCount: busSchedules.length,
+                        itemCount: uniqueRouteSchedules.length,
                         itemBuilder: (context, index) {
-                          return _buildScheduleCard(busSchedules[index]);
+                          return _buildScheduleCard(
+                            uniqueRouteSchedules[index],
+                          );
                         },
                       ),
                     ),
@@ -495,23 +512,6 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                     ),
                   ),
                 ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.event_seat_rounded,
-                      size: 14,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${schedule.availableSeats} seats",
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
             const SizedBox(height: 10),
@@ -702,6 +702,10 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                   });
             }
 
+            final seatCount = selectedSlot?.availableSeats ?? 0;
+            final hasEnoughSeats =
+                selectedSlot != null && seatCount >= quantity;
+
             return Container(
               padding: const EdgeInsets.all(30),
               decoration: const BoxDecoration(
@@ -832,11 +836,53 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                                   ),
                                 );
                               }).toList(),
-                              onChanged: (val) =>
-                                  setModalState(() => selectedSlot = val),
+                              onChanged: (val) => setModalState(() {
+                                selectedSlot = val;
+                                if (selectedSlot != null &&
+                                    quantity > selectedSlot!.availableSeats) {
+                                  quantity = selectedSlot!.availableSeats > 0
+                                      ? selectedSlot!.availableSeats
+                                      : 1;
+                                }
+                              }),
                             ),
                           ),
                         ),
+                  if (!loadingSlots && selectedSlot != null) ...[
+                    const SizedBox(height: 14),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.event_seat_rounded,
+                              size: 16,
+                              color: Colors.grey[700],
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              "Available seats",
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          "$seatCount",
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: seatCount > 0
+                                ? AppColors.colorA
+                                : Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -860,10 +906,12 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                               ),
                             ),
                           ),
-                          _quantityBtn(
-                            Icons.add,
-                            () => setModalState(() => quantity++),
-                          ),
+                          _quantityBtn(Icons.add, () {
+                            if (selectedSlot == null) return;
+                            if (quantity < selectedSlot!.availableSeats) {
+                              setModalState(() => quantity++);
+                            }
+                          }),
                         ],
                       ),
                     ],
@@ -906,7 +954,7 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: selectedSlot == null
+                      onPressed: (selectedSlot == null || !hasEnoughSeats)
                           ? null
                           : () async {
                               setModalState(() => isProcessingPurchase = true);

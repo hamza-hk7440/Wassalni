@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:app/core/theme/colors_R.dart';
+import '../../home_screen_controller.dart';
 import 'BusSchedule_screen.dart';
 import 'TrainSchedule_screen.dart';
 import 'recharge_screen.dart';
@@ -17,6 +19,23 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  late final HomeScreenController _homeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _homeController = Get.isRegistered<HomeScreenController>()
+        ? Get.find<HomeScreenController>()
+        : Get.put(HomeScreenController());
+  }
+
+  @override
+  void dispose() {
+    if (Get.isRegistered<HomeScreenController>()) {
+      Get.delete<HomeScreenController>();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,12 +64,14 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Image.asset("assets/token.png", height: 16),
                   const SizedBox(width: 5),
-                  Text(
-                    "50",
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.colorD,
+                  Obx(
+                    () => Text(
+                      "${_homeController.tokenBalance.value}",
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.colorD,
+                      ),
                     ),
                   ),
                 ],
@@ -60,8 +81,8 @@ class _HomePageState extends State<HomePage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.search, color: AppColors.colorA),
-            onPressed: () {},
+            icon: Icon(Icons.refresh, color: AppColors.colorA),
+            onPressed: () => _homeController.loadHomeInfo(),
           ),
           IconButton(
             icon: Icon(Icons.menu, color: AppColors.colorD),
@@ -232,11 +253,22 @@ class _HomePageState extends State<HomePage> {
                         color: Colors.grey,
                       ),
                     ),
-                    Text(
-                      "Wasalni user",
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    Obx(
+                      () => Text(
+                        _homeController.displayName.value,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Obx(
+                      () => Text(
+                        "${_homeController.tokenBalance.value} tokens",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
                   ],

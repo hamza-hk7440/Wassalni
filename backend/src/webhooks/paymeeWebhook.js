@@ -1,5 +1,8 @@
 import { supabase } from "../config/supabase.js";
 import { completeRechargeTransactionById } from "../services/payment.service.js";
+
+const processingTransactions = new Set();
+
 export default async function paymeeWebhook(req, res) {
   try {
     //so the variable payload will contain the data sent by Paymee in the webhook, we can use it to update the transaction status in our database
@@ -18,6 +21,12 @@ export default async function paymeeWebhook(req, res) {
         /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/,
       )?.[0] || rawOrderId;
 
+    if (processingTransactions.has(extractedOrderId)) {
+      return res.status(200).json({ message: "Webhook already processing" });
+    }
+
+    processingTransactions.add(extractedOrderId);
+
     const normalizedPaymentStatus = String(payment_status).toLowerCase();
     const isCompleted =
       payment_status === true ||
@@ -29,27 +38,31 @@ export default async function paymeeWebhook(req, res) {
     //here the payment_status is a boolean value sent by Paymee, it will be true if the payment is successful, and false if it failed, so we will convert it to our transaction status values
     const status = isCompleted ? "completed" : "failed";
 
-    if (status === "completed") {
-      const paidAmount = Number.parseFloat(String(amount ?? cost ?? "0"));
+    try {
+      if (status === "completed") {
+        const paidAmount = Number.parseFloat(String(amount ?? cost ?? "0"));
 
-      const completion = await completeRechargeTransactionById({
-        transaction_id: extractedOrderId,
-        paid_amount: Number.isNaN(paidAmount) ? 0 : paidAmount,
-      });
+        const completion = await completeRechargeTransactionById({
+          transaction_id: extractedOrderId,
+          paid_amount: Number.isNaN(paidAmount) ? 0 : paidAmount,
+        });
 
-      console.log("Recharge completion result:", completion);
-    } else {
-      const { error } = await supabase
-        .from("transactions")
-        .update({ status: "failed" })
-        .eq("transaction_id", extractedOrderId);
+        console.log("Recharge completion result:", completion);
+      } else {
+        const { error } = await supabase
+          .from("transactions")
+          .update({ status: "failed" })
+          .eq("transaction_id", extractedOrderId);
 
-      if (error) {
-        console.error("Error updating transaction status:", error);
-        return res
-          .status(500)
-          .json({ error: "Failed to update transaction status" });
+        if (error) {
+          console.error("Error updating transaction status:", error);
+          return res
+            .status(500)
+            .json({ error: "Failed to update transaction status" });
+        }
       }
+    } finally {
+      processingTransactions.delete(extractedOrderId);
     }
 
     res.status(200).json({ message: "Webhook processed successfully" });

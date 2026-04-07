@@ -38,22 +38,13 @@ class ScheduleController extends ChangeNotifier {
     }).toList();
   }
 
-  Future<void> loadSchedules({DateTime? day, int retries = 3}) async {
+  Future<void> loadSchedules({DateTime? day}) async {
     isLoading = true;
     errorMessage = "";
     _safeNotify();
     try {
       final target = day ?? selectedDay;
-      List<Schedule> result = [];
-      for (int attempt = 1; attempt <= retries; attempt++) {
-        result = await _apiService.fetchSchedules(date: target);
-        if (result.isNotEmpty) break;
-        if (attempt < retries) {
-          print('⚠️ Empty result, retrying... ($attempt/$retries)');
-          await Future.delayed(const Duration(seconds: 1));
-        }
-      }
-      _allSchedules = result;
+      _allSchedules = await _apiService.fetchSchedules(date: target);
     } catch (e) {
       errorMessage = e.toString();
     } finally {

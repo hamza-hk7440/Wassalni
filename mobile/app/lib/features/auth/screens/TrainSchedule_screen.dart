@@ -237,6 +237,20 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
 
   @override
   Widget build(BuildContext context) {
+    final schedulesForSelectedDay = _filteredSchedules
+        .where(_isScheduleOnSelectedDay)
+        .toList();
+
+    final routeMap = <String, Schedule>{};
+    for (final schedule in schedulesForSelectedDay) {
+      final key = schedule.routeId.isNotEmpty
+          ? schedule.routeId
+          : '${schedule.from}-${schedule.to}';
+      routeMap.putIfAbsent(key, () => schedule);
+    }
+
+    final uniqueRouteSchedules = routeMap.values.toList();
+
     return Scaffold(
       backgroundColor: AppColors.colorL,
       body: SafeArea(
@@ -294,7 +308,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                     )
                   : _scheduleController.errorMessage.isNotEmpty
                   ? _buildErrorView()
-                  : _filteredSchedules.isEmpty
+                  : uniqueRouteSchedules.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -323,9 +337,9 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                           horizontal: 20,
                           vertical: 10,
                         ),
-                        itemCount: _filteredSchedules.length,
+                        itemCount: uniqueRouteSchedules.length,
                         itemBuilder: (context, index) {
-                          return _buildScheduleCard(_filteredSchedules[index]);
+                          return _buildScheduleCard(uniqueRouteSchedules[index]);
                         },
                       ),
                     ),
@@ -537,6 +551,10 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                   });
             }
 
+            final seatCount = selectedSlot?.availableSeats ?? 0;
+            final hasEnoughSeats =
+                selectedSlot != null && seatCount >= quantity;
+
             return Container(
               padding: const EdgeInsets.all(30),
               decoration: const BoxDecoration(
@@ -667,11 +685,51 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                                   ),
                                 );
                               }).toList(),
-                              onChanged: (val) =>
-                                  setModalState(() => selectedSlot = val),
+                              onChanged: (val) => setModalState(() {
+                                selectedSlot = val;
+                                if (selectedSlot != null &&
+                                    quantity > selectedSlot!.availableSeats) {
+                                  quantity = selectedSlot!.availableSeats > 0
+                                      ? selectedSlot!.availableSeats
+                                      : 1;
+                                }
+                              }),
                             ),
                           ),
                         ),
+                  if (!loadingSlots && selectedSlot != null) ...[
+                    const SizedBox(height: 14),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.event_seat_rounded,
+                              size: 16,
+                              color: Colors.grey[700],
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              "Available seats",
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          "$seatCount",
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: seatCount > 0 ? AppColors.colorA : Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -697,7 +755,12 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                           ),
                           _quantityBtn(
                             Icons.add,
-                            () => setModalState(() => quantity++),
+                            () {
+                              if (selectedSlot == null) return;
+                              if (quantity < selectedSlot!.availableSeats) {
+                                setModalState(() => quantity++);
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -741,7 +804,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: selectedSlot == null
+                      onPressed: (selectedSlot == null || !hasEnoughSeats)
                           ? null
                           : () async {
                               setModalState(() => isProcessingPurchase = true);
@@ -1029,23 +1092,6 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                       color: AppColors.colorA,
                     ),
                   ),
-                ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.event_seat_rounded,
-                      size: 14,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${schedule.availableSeats} seats",
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
