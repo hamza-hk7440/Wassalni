@@ -1,6 +1,6 @@
 import React from 'react';
-import Navbar from '../../components/layout/Navbar';
-import MainLayout from '../../components/layout/Main';
+import Navbar from '../../components/layout/NavbarRa';
+import MainLayout from '../../components/layout/MainRa';
 import '../../App.css';
 
 function Dashboard() {

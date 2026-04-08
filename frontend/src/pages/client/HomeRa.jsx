@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../../components/layout/Navbar';
+import Navbar from '../../components/layout/NavbarRa';
 import palette from '../../components/common/pallette';
 
 const initialClients = [
-	{ clientId: 'CL-001', nom: 'Ali Ben Salah', ticketId: 'TK-1023', ticketDate: '2026-04-05', transport: 'Bus', statut: 'Actif' },
-	{ clientId: 'CL-002', nom: 'Nour Trabelsi', ticketId: 'TK-1024', ticketDate: '2026-04-06', transport: 'Metro', statut: 'Actif' },
-	{ clientId: 'CL-003', nom: 'Sami Jebali', ticketId: 'TK-1025', ticketDate: '2026-04-09', transport: 'Bus', statut: 'Inactif' },
+	{ clientId: 'CL-001', nom: 'Ali Ben Salah', ticketId: 'TK-1023', ticketDate: '2026-04-05', transport: 'Bus', statut: 'Actif', token: 120 },
+	{ clientId: 'CL-002', nom: 'Nour Trabelsi', ticketId: 'TK-1024', ticketDate: '2026-04-06', transport: 'Metro', statut: 'Actif', token: 85 },
+	{ clientId: 'CL-003', nom: 'Sami Jebali', ticketId: 'TK-1025', ticketDate: '2026-04-09', transport: 'Bus', statut: 'Inactif', token: 40 },
 ];
 
-const EMPTY_FORM = { nom: '', ticketId: '', ticketDate: '', transport: 'Bus', statut: 'Actif' };
+const EMPTY_FORM = { nom: '', ticketId: '', ticketDate: '', transport: 'Bus', statut: 'Actif', token: 0 };
 
 function Home() {
 	const [clients, setClients] = useState(initialClients);
@@ -25,6 +25,7 @@ function Home() {
 			ticketDate: client.ticketDate,
 			transport: client.transport,
 			statut: client.statut,
+			token: client.token,
 		});
 	};
 
@@ -59,9 +60,12 @@ function Home() {
 			client.nom.toLowerCase().includes(text) ||
 			client.ticketId.toLowerCase().includes(text) ||
 			client.ticketDate.toLowerCase().includes(text) ||
-			client.transport.toLowerCase().includes(text)
+			client.transport.toLowerCase().includes(text) ||
+			String(client.token).includes(text)
 		);
 	});
+
+	const totalTokens = filteredClients.reduce((sum, client) => sum + Number(client.token || 0), 0);
 
 	return (
 		<div>
@@ -86,6 +90,7 @@ function Home() {
 					</header>
 
 					<div className="mt-6 rounded-3xl border bg-white p-6 md:p-8 shadow-lg" style={{ borderColor: palette.frostBlue }}>
+						<div>
 						<label className="mb-2 block text-sm font-bold" style={{ color: palette.deepOcean }}>
 							Recherche client
 						</label>
@@ -93,10 +98,11 @@ function Home() {
 							type="text"
 							value={query}
 							onChange={(event) => setQuery(event.target.value)}
-							placeholder="ID client, nom, ID ticket ou type"
+							placeholder="ID client, nom, ID ticket, type ou token"
 							className="w-full rounded-2xl border px-4 py-3 text-sm outline-none"
 							style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite, color: palette.deepOcean }}
 						/>
+						</div>
 
 						<div className="mt-4 rounded-2xl border px-4 py-3 text-sm font-bold" style={{ borderColor: palette.frostBlue, color: palette.deepOcean, backgroundColor: palette.iceWhite }}>
 							{filteredClients.length} client(s)
@@ -119,8 +125,14 @@ function Home() {
 													{client.clientId}
 												</h2>
 											</div>
-											<div className="inline-flex rounded-full px-3 py-1 text-xs font-bold" style={{ backgroundColor: palette.deepOcean, color: palette.pureWhite }}>
-												{client.statut}
+											<div className="flex items-center gap-2">
+												<div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold" style={{ borderColor: '#fde68a', color: palette.deepOcean, backgroundColor: '#fef9c3' }}>
+													<span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: '#facc15' }}></span>
+													{client.token}
+												</div>
+												<div className="inline-flex rounded-full px-3 py-1 text-xs font-bold" style={{ backgroundColor: palette.deepOcean, color: palette.pureWhite }}>
+													{client.statut}
+												</div>
 											</div>
 										</div>
 
@@ -226,6 +238,16 @@ function Home() {
 														<option value="Actif">Actif</option>
 														<option value="Inactif">Inactif</option>
 													</select>
+													<input
+														name="token"
+														type="number"
+														min="0"
+														value={form.token}
+														onChange={(event) => setForm((previous) => ({ ...previous, token: Number(event.target.value) || 0 }))}
+														placeholder="Solde token"
+														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none md:col-span-2"
+														style={{ borderColor: palette.frostBlue }}
+													/>
 												</div>
 
 												<div className="mt-3 flex gap-2">

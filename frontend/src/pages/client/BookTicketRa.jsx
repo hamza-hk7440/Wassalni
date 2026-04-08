@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Navbar from '../../components/layout/Navbar';
+import Navbar from '../../components/layout/NavbarRa';
 import palette from '../../components/common/pallette';
 
 const initialTickets = [

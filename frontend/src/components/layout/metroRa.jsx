@@ -1,5 +1,5 @@
 import React from 'react';
-import BodyTransport from '../common/bodyTranspot';
+import BodyTransport from '../common/bodyTranspotRa';
 
 function Metro() {
   const metroData = [

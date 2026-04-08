@@ -1,4 +1,4 @@
-import EmployeeManagementPage from '../../components/common/EmployeeManagementPage';
+import EmployeeManagementPage from '../../components/common/EmployeeManagementPageRa';
 
 const initialEmployees = [
   { id: 'CTR-001', nom: 'Karim Jebali', email: 'karim@transportpro.com', role: 'controller' },

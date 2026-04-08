@@ -1,4 +1,4 @@
-import BodyTransport from "../common/bodyTranspot";
+import BodyTransport from '../common/bodyTranspotRa';
 
 function Bus() {
   

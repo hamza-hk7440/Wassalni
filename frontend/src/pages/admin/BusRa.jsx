@@ -1,7 +1,7 @@
 
 import React from 'react';
-import Navbar from '../../components/layout/Navbar';
-import BusLayout from '../../components/layout/bus';
+import Navbar from '../../components/layout/NavbarRa';
+import BusLayout from '../../components/layout/busRa';
 
 function Bus() {
   return (

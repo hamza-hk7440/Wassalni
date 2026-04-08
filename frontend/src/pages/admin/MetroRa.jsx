@@ -1,6 +1,6 @@
 import React from 'react';
-import Navbar from '../../components/layout/Navbar';
-import MetroLayout from '../../components/layout/metro';
+import Navbar from '../../components/layout/NavbarRa';
+import MetroLayout from '../../components/layout/metroRa';
 
 function Metro() {
   return (

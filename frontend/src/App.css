@@ -20,4 +20,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+a,
+button,
+[role='button'],
+input[type='button'],
+input[type='submit'] {
+  cursor: pointer;
+}
+
+button:disabled,
+a[aria-disabled='true'],
+[role='button'][aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
 

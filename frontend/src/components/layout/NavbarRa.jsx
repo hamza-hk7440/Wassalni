@@ -183,7 +183,7 @@ function Navbar() {
                 <button className="w-full text-left px-3 py-2 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-all"
                         style={{ color: palette.deepOcean }}
                         onClick={() => {
-                          navigator('/parametre');
+                          navigator('parametreRa');
                           setIsProfileOpen(false);
                         }}>
                   ⚙️ Paramètres
