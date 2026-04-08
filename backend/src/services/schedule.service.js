@@ -2,6 +2,26 @@ import { supabase } from "../config/supabase.js";
 import dotenv from "dotenv";
 dotenv.config();
 class ScheduleService {
+  async getCancelledScheduleIds(scheduleIds = []) {
+    const cleanedIds = [...new Set((scheduleIds ?? []).filter(Boolean))];
+    if (cleanedIds.length === 0) {
+      return new Set();
+    }
+
+    const { data, error } = await supabase
+      .from("ticket_announcements")
+      .select("schedule_id")
+      .eq("type", "cancellation")
+      .eq("is_active", true)
+      .in("schedule_id", cleanedIds);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return new Set((data ?? []).map((row) => row.schedule_id));
+  }
+
   //create schedule
   async createSchedule(scheduleData) {
     const { transport_id, departure_time, arrival_time } = scheduleData;
@@ -78,7 +98,14 @@ class ScheduleService {
       .order("departure_time", { ascending: true });
 
     if (error) throw new Error(error.message);
-    return data;
+
+    const cancelledIds = await this.getCancelledScheduleIds(
+      (data ?? []).map((schedule) => schedule.schedule_id),
+    );
+
+    return (data ?? []).filter(
+      (schedule) => !cancelledIds.has(schedule.schedule_id),
+    );
   }
   //delete schedule
   async deleteSchedule(id) {
@@ -108,7 +135,14 @@ class ScheduleService {
       .order("departure_time", { ascending: true });
 
     if (error) throw new Error(error.message);
-    return data;
+
+    const cancelledIds = await this.getCancelledScheduleIds(
+      (data ?? []).map((schedule) => schedule.schedule_id),
+    );
+
+    return (data ?? []).filter(
+      (schedule) => !cancelledIds.has(schedule.schedule_id),
+    );
   }
 }
 export default new ScheduleService();
