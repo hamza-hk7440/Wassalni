@@ -5,7 +5,7 @@ import '../models/schedule.dart';
 import '../models/schedule_slot.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:3000';
+  static const String baseUrl = 'http://192.168.1.8:3000';
 
   Future<Map<String, String>> _getAuthHeaders() async {
     final prefs = await SharedPreferences.getInstance();
@@ -168,5 +168,155 @@ class ApiService {
     }
 
     return paymentUrl.toString();
+  }
+
+  Future<List<Map<String, dynamic>>> fetchMyActiveTickets() async {
+    final uri = Uri.parse('$baseUrl/ticket/mytickets/active');
+    final headers = await _getAuthHeaders();
+
+    final response = await http.get(uri, headers: headers);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch active tickets: ${response.body}');
+    }
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final tickets = decoded['tickets'];
+    if (tickets is List) {
+      return tickets
+          .whereType<Map>()
+          .map((item) => item.map((k, v) => MapEntry(k.toString(), v)))
+          .toList();
+    }
+    return const [];
+  }
+
+  Future<List<Map<String, dynamic>>> fetchMyTicketHistory() async {
+    final uri = Uri.parse('$baseUrl/ticket/mytickets/history');
+    final headers = await _getAuthHeaders();
+
+    final response = await http.get(uri, headers: headers);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch ticket history: ${response.body}');
+    }
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final tickets = decoded['tickets'];
+    if (tickets is List) {
+      return tickets
+          .whereType<Map>()
+          .map((item) => item.map((k, v) => MapEntry(k.toString(), v)))
+          .toList();
+    }
+    return const [];
+  }
+
+  Future<String> getQrDataByTicketId({required String ticketId}) async {
+    final uri = Uri.parse('$baseUrl/ticket/getqrdatabyticketid');
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode({'ticket_id': ticketId}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch qr data: ${response.body}');
+    }
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return decoded['qrData']?.toString() ?? '';
+  }
+
+  Future<Map<String, dynamic>> getTicketStatusByIdSuffix({
+    required String ticketSuffix,
+  }) async {
+    final uri = Uri.parse('$baseUrl/ticket/getticketstatusbyidsuffix');
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode({'ticket_suffix': ticketSuffix}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to verify ticket: ${response.body}');
+    }
+
+    return (jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<Map<String, dynamic>> getTicketDetailsByInput({
+    required String ticketInput,
+  }) async {
+    final uri = Uri.parse('$baseUrl/ticket/getticketdetailsbyinput');
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode({'ticket_input': ticketInput}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch ticket details: ${response.body}');
+    }
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> markTicketAsUsed({
+    required String ticketId,
+  }) async {
+    final uri = Uri.parse('$baseUrl/ticket/markticketasused');
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode({'ticket_id': ticketId}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to mark ticket as used: ${response.body}');
+    }
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<void> requestTicketRefund({required String ticketId}) async {
+    final uri = Uri.parse('$baseUrl/ticket/requestrefund');
+    final headers = await _getAuthHeaders();
+
+    final response = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode({'ticket_id': ticketId}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to request refund: ${response.body}');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchRefundRequests() async {
+    final uri = Uri.parse('$baseUrl/ticket/refundrequests');
+    final headers = await _getAuthHeaders();
+
+    final response = await http.get(uri, headers: headers);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch refund requests: ${response.body}');
+    }
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final requests = decoded['refund_requests'];
+    if (requests is List) {
+      return requests
+          .whereType<Map>()
+          .map((item) => item.map((k, v) => MapEntry(k.toString(), v)))
+          .toList();
+    }
+    return const [];
   }
 }

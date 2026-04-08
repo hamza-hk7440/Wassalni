@@ -5,6 +5,7 @@ import 'package:app/core/theme/colors_R.dart';
 import '../../profile_screen_controller.dart';
 import 'recharge_screen.dart';
 import 'my_tickets_screen.dart';
+import 'refund_requests_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -160,7 +161,7 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          "My Profil",
+          "My Profile",
           style: GoogleFonts.poppins(
             color: AppColors.colorD,
             fontWeight: FontWeight.bold,
@@ -291,14 +292,29 @@ class _ProfilePageState extends State<ProfilePage> {
               onTap: _showPersonalInfoDialog,
             ),
             const SizedBox(height: 20),
-            _buildSectionTitle("Activités"),
+            _buildSectionTitle("Activities"),
             _buildProfileItem(
               Icons.confirmation_number_outlined,
               "Tickets history",
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MyTicketsPage()),
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const MyTicketsPage(showHistory: true),
+                  ),
+                );
+              },
+            ),
+            _buildProfileItem(
+              Icons.request_page_outlined,
+              "Refund requests",
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RefundRequestsPage(),
+                  ),
                 );
               },
             ),

@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:async';
 
 class ApiException implements Exception {
-  final String message; 
+  final String message;
   final String? errorCode;
   final int? statusCode;
   final dynamic originalError;
@@ -63,7 +63,7 @@ class NetworkException extends ApiException {
 }
 
 class ApiClient {
-  static const String baseUrl = 'http://10.0.2.2:3000';
+  static const String baseUrl = 'http://192.168.1.8:3000';
   static const int timeoutSeconds = 10;
   static const String authTokenKey = 'auth_token';
   static final ApiClient _instance = ApiClient._internal();

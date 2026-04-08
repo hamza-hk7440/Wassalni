@@ -204,6 +204,12 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
       throw Exception('User not authenticated');
     }
 
+    if (selectedSlot.availableSeats < quantity) {
+      throw Exception(
+        'Only ${selectedSlot.availableSeats} seats are available for this trip.',
+      );
+    }
+
     final total = selectedSlot.price * quantity;
     final hasEnough = await _apiService.verifyTokensNumber(
       userId: userId,
@@ -225,6 +231,9 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
 
     await _apiService.redeemTokensFromUser(userId: userId, amount: total);
     await _refreshTokenBalance();
+    await _scheduleController.loadSchedules(
+      day: _scheduleController.selectedDay,
+    );
     _showPurchaseSuccessDialog();
   }
 
@@ -339,7 +348,9 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                         ),
                         itemCount: uniqueRouteSchedules.length,
                         itemBuilder: (context, index) {
-                          return _buildScheduleCard(uniqueRouteSchedules[index]);
+                          return _buildScheduleCard(
+                            uniqueRouteSchedules[index],
+                          );
                         },
                       ),
                     ),
@@ -724,7 +735,9 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: seatCount > 0 ? AppColors.colorA : Colors.red,
+                            color: seatCount > 0
+                                ? AppColors.colorA
+                                : Colors.red,
                           ),
                         ),
                       ],
@@ -753,15 +766,12 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                               ),
                             ),
                           ),
-                          _quantityBtn(
-                            Icons.add,
-                            () {
-                              if (selectedSlot == null) return;
-                              if (quantity < selectedSlot!.availableSeats) {
-                                setModalState(() => quantity++);
-                              }
-                            },
-                          ),
+                          _quantityBtn(Icons.add, () {
+                            if (selectedSlot == null) return;
+                            if (quantity < selectedSlot!.availableSeats) {
+                              setModalState(() => quantity++);
+                            }
+                          }),
                         ],
                       ),
                     ],

@@ -8,7 +8,9 @@ import 'TrainSchedule_screen.dart';
 import 'recharge_screen.dart';
 import 'profile_screen.dart';
 import 'my_tickets_screen.dart';
+import 'refund_requests_screen.dart';
 import 'direction_choice.dart';
+import '../auth_controller.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,10 +22,12 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late final HomeScreenController _homeController;
+  late final AuthController _authController;
 
   @override
   void initState() {
     super.initState();
+    _authController = Get.find<AuthController>();
     _homeController = Get.isRegistered<HomeScreenController>()
         ? Get.find<HomeScreenController>()
         : Get.put(HomeScreenController());
@@ -160,7 +164,7 @@ class _HomePageState extends State<HomePage> {
           ),
           BottomNavigationBarItem(
             icon: Image.asset("assets/tickett.png", height: 22),
-            label: "Tickets",
+            label: "My Tickets",
           ),
           BottomNavigationBarItem(
             icon: Image.asset("assets/profile.png", height: 22),
@@ -306,9 +310,29 @@ class _HomePageState extends State<HomePage> {
               );
             },
           ),
+          _drawerTile(
+            Icons.request_page_outlined,
+            "Refund Requests",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const RefundRequestsPage(),
+                ),
+              );
+            },
+          ),
           const Spacer(),
           const Divider(),
-          _drawerTile(Icons.logout, "Logout", isExit: true),
+          _drawerTile(
+            Icons.logout,
+            "Logout",
+            isExit: true,
+            onTap: () {
+              Navigator.of(context).pop();
+              _authController.logout();
+            },
+          ),
           const SizedBox(height: 20),
         ],
       ),
