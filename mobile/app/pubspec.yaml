@@ -30,6 +30,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  mobile_scanner: ^5.0.0
+  http: ^1.1.0
+  qr_flutter: ^4.0.0
+  webview_flutter: ^4.2.1
   #firebase_core: ^2.10.0
   firebase_core: ^2.11.0
   #firebase_auth: ^4.14.0
@@ -41,6 +45,11 @@ dependencies:
   firebase_messaging: ^14.7.11 # For push notifications
   firebase_analytics: ^10.9.0 # For analytics
   firebase_crashlytics: ^3.3.0 # For crash reporting
+  google_fonts: ^6.1.0
+  shared_preferences: ^2.0.15
+  get: ^4.6.5
+  url_launcher: ^6.3.0
+  app_links: ^6.3.4
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -65,7 +74,24 @@ flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
-  uses-material-design: true
+    uses-material-design: true
+
+    assets:
+      - assets/logoApp.png
+      - assets/token.png
+      - assets/AppIcon.png
+      - assets/Image1.png
+      - assets/logoGoogle.png
+      - assets/icon.png
+      - assets/users.png
+      - assets/controller.png
+      - assets/bus.png
+      - assets/trainn.png
+      - assets/trainnn.png
+      - assets/home.png
+      - assets/profile.png
+      - assets/tickett.png
+      
 
   # To add assets to your application, add an assets section, like this:
   # assets:
