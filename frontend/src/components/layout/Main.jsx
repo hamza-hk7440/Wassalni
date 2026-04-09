@@ -52,17 +52,17 @@ function MainLayout() {
         >
           <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr] lg:gap-6">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] sm:text-[11px]" style={{ color: palette.classicBlue }}>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] sm:text-[11px] text-classicBlue">
                 Tableau de bord
               </p>
-              <h1 className="mt-2 text-2xl font-black leading-tight sm:text-3xl md:text-5xl" style={{ color: palette.deepOcean }}>
+              <h1 className="mt-2 text-2xl font-black leading-tight sm:text-3xl md:text-5xl text-deepOcean">
                 Performance transport
               </h1>
 
               <div className="mt-5 flex flex-wrap items-end gap-3 sm:gap-4">
-                <p className="text-3xl font-black leading-none sm:text-4xl md:text-6xl" style={{ color: palette.deepOcean }}>
+                <p className="text-3xl font-black leading-none sm:text-4xl md:text-6xl text-deepOcean">
                   {totalRevenue.toFixed(2)}
-                  <span className="ml-1 text-base sm:text-xl md:text-2xl" style={{ color: palette.softTeal }}>
+                  <span className="ml-1 text-base sm:text-xl md:text-2xl text-softTeal">
                     DT
                   </span>
                 </p>
@@ -71,43 +71,43 @@ function MainLayout() {
                 </span>
               </div>
 
-              <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: palette.textGray }}>
+              <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.12em] text-textGray">
                 Revenus du {new Date().toLocaleDateString('fr-FR')} | {totalPlaces} transactions
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border p-3 shadow-sm sm:p-4" style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}>
-                <p className="mt-1 text-xs font-black uppercase tracking-[0.08em]" style={{ color: palette.classicBlue }}>Transactions</p>
-                <p className="mt-1 text-xl font-black sm:text-2xl" style={{ color: palette.deepOcean }}>{totalPlaces}</p>
+              <div className="rounded-2xl border p-3 shadow-sm sm:p-4 border-frostBlue bg-pureWhite">
+                <p className="mt-1 text-xs font-black uppercase tracking-[0.08em] text-classicBlue">Transactions</p>
+                <p className="mt-1 text-xl font-black sm:text-2xl text-deepOcean">{totalPlaces}</p>
               </div>
-              <div className="rounded-2xl border p-3 shadow-sm sm:p-4" style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}>
-                <p className="mt-1 text-xs font-black uppercase tracking-[0.08em]" style={{ color: palette.classicBlue }}>Variation</p>
+              <div className="rounded-2xl border p-3 shadow-sm sm:p-4 border-frostBlue bg-pureWhite">
+                <p className="mt-1 text-xs font-black uppercase tracking-[0.08em] text-classicBlue">Variation</p>
                 <p className="mt-1 text-xl font-black sm:text-2xl" style={{ color: isPositive ? '#166534' : '#b91c1c' }}>
                   {isPositive ? '+' : '-'}{Math.abs(difference).toFixed(1)}%
                 </p>
               </div>
-              <div className="rounded-2xl border p-3 shadow-sm sm:p-4" style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}>
-                <p className="mt-1 text-xs font-black uppercase tracking-[0.08em]" style={{ color: palette.classicBlue }}>Revenu metro</p>
-                <p className="mt-1 text-xl font-black sm:text-2xl" style={{ color: palette.deepOcean }}>{totalRevenueMet.toFixed(2)} DT</p>
+              <div className="rounded-2xl border p-3 shadow-sm sm:p-4 border-frostBlue bg-pureWhite">
+                <p className="mt-1 text-xs font-black uppercase tracking-[0.08em] text-classicBlue">Revenu metro</p>
+                <p className="mt-1 text-xl font-black sm:text-2xl text-deepOcean">{totalRevenueMet.toFixed(2)} DT</p>
               </div>
-              <div className="rounded-2xl border p-3 shadow-sm sm:p-4" style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}>
-                <p className="mt-1 text-xs font-black uppercase tracking-[0.08em]" style={{ color: palette.classicBlue }}>Revenu bus</p>
-                <p className="mt-1 text-xl font-black sm:text-2xl" style={{ color: palette.deepOcean }}>{totalRevenueBus.toFixed(2)} DT</p>
+              <div className="rounded-2xl border p-3 shadow-sm sm:p-4 border-frostBlue bg-pureWhite">
+                <p className="mt-1 text-xs font-black uppercase tracking-[0.08em] text-classicBlue">Revenu bus</p>
+                <p className="mt-1 text-xl font-black sm:text-2xl text-deepOcean">{totalRevenueBus.toFixed(2)} DT</p>
               </div>
             </div>
           </div>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
-          <div className="rounded-[22px] border bg-white p-4 shadow-xl sm:p-5 md:p-6" style={{ borderColor: palette.frostBlue }}>
-            <h2 className="text-[11px] font-black uppercase tracking-[0.18em] sm:text-xs" style={{ color: palette.deepOcean }}>
+          <div className="rounded-[22px] border bg-white p-4 shadow-xl sm:p-5 md:p-6 border-frostBlue">
+            <h2 className="text-[11px] font-black uppercase tracking-[0.18em] sm:text-xs text-deepOcean">
               Tendances revenus
             </h2>
 
             <div className="mt-4 space-y-4">
               <div>
-                <div className="mb-1.5 flex items-center justify-between text-[11px] font-bold sm:text-xs" style={{ color: palette.deepOcean }}>
+                <div className="mb-1.5 flex items-center justify-between text-[11px] font-bold sm:text-xs text-deepOcean">
                   <span>{todayLabel} (Aujourd hui)</span>
                   <span>{totalRevenue.toFixed(2)} DT</span>
                 </div>
@@ -117,7 +117,7 @@ function MainLayout() {
               </div>
 
               <div>
-                <div className="mb-1.5 flex items-center justify-between text-[11px] font-bold sm:text-xs" style={{ color: palette.deepOcean }}>
+                <div className="mb-1.5 flex items-center justify-between text-[11px] font-bold sm:text-xs text-deepOcean">
                   <span>{yesterdayLabel} (Hier)</span>
                   <span>{stats.revenuHier.toFixed(2)} DT</span>
                 </div>
@@ -127,23 +127,22 @@ function MainLayout() {
               </div>
             </div>
 
-            <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: palette.textGray }}>
+            <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.1em] text-textGray">
               Objectif: {dailyGoal} DT
             </p>
           </div>
 
-          <div className="rounded-[22px] border bg-white p-4 shadow-xl sm:p-5 md:p-6" style={{ borderColor: palette.frostBlue }}>
-            <h2 className="text-[11px] font-black uppercase tracking-[0.18em] sm:text-xs" style={{ color: palette.deepOcean }}>
+          <div className="rounded-[22px] border bg-white p-4 shadow-xl sm:p-5 md:p-6 border-frostBlue">
+            <h2 className="text-[11px] font-black uppercase tracking-[0.18em] sm:text-xs text-deepOcean">
               Actions rapides
             </h2>
             <div className="mt-4 grid gap-3">
               <button
                 type="button"
                 onClick={() => navigate('/metro')}
-                className="rounded-2xl border px-4 py-3 text-left transition-all hover:-translate-y-0.5"
-                style={{ borderColor: palette.frostBlue, backgroundColor: '#f6fbff' }}
+                className="rounded-2xl border px-4 py-3 text-left transition-all hover:-translate-y-0.5 border-frostBlue" style={{ backgroundColor: '#f6fbff' }}
               >
-                <p className="text-xs font-black uppercase tracking-[0.1em]" style={{ color: palette.deepOcean }}>
+                <p className="text-xs font-black uppercase tracking-[0.1em] text-deepOcean">
                   Gestion metro
                 </p>
               </button>
@@ -151,10 +150,9 @@ function MainLayout() {
               <button
                 type="button"
                 onClick={() => navigate('/bus')}
-                className="rounded-2xl border px-4 py-3 text-left transition-all hover:-translate-y-0.5"
-                style={{ borderColor: palette.frostBlue, backgroundColor: '#f6fbff' }}
+                className="rounded-2xl border px-4 py-3 text-left transition-all hover:-translate-y-0.5 border-frostBlue" style={{ backgroundColor: '#f6fbff' }}
               >
-                <p className="text-xs font-black uppercase tracking-[0.1em]" style={{ color: palette.deepOcean }}>
+                <p className="text-xs font-black uppercase tracking-[0.1em] text-deepOcean">
                   Gestion bus
                 </p>
               </button>
@@ -165,18 +163,17 @@ function MainLayout() {
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <article
             onClick={() => navigate('/metro')}
-            className="group cursor-pointer rounded-[22px] border bg-white p-4 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl sm:p-5 md:p-6"
-            style={{ borderColor: palette.frostBlue }}
+            className="group cursor-pointer rounded-[22px] border bg-white p-4 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl sm:p-5 md:p-6 border-frostBlue"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.16em]" style={{ color: palette.textGray }}>
+                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-textGray">
                   Metro en service
                 </p>
-                <p className="mt-1 text-3xl font-black sm:text-4xl" style={{ color: palette.deepOcean }}>
+                <p className="mt-1 text-3xl font-black sm:text-4xl text-deepOcean">
                   {stats.metroEnService}
                 </p>
-                <p className="text-xs font-semibold" style={{ color: palette.textGray }}>{stats.nbMetro} rames</p>
+                <p className="text-xs font-semibold text-textGray">{stats.nbMetro} rames</p>
               </div>
               <span className="text-3xl transition-transform group-hover:scale-110 sm:text-4xl">🚈</span>
             </div>
@@ -187,18 +184,17 @@ function MainLayout() {
 
           <article
             onClick={() => navigate('/bus')}
-            className="group cursor-pointer rounded-[22px] border bg-white p-4 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl sm:p-5 md:p-6"
-            style={{ borderColor: palette.frostBlue }}
+            className="group cursor-pointer rounded-[22px] border bg-white p-4 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl sm:p-5 md:p-6 border-frostBlue"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.16em]" style={{ color: palette.textGray }}>
+                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-textGray">
                   Bus en service
                 </p>
-                <p className="mt-1 text-3xl font-black sm:text-4xl" style={{ color: palette.deepOcean }}>
+                <p className="mt-1 text-3xl font-black sm:text-4xl text-deepOcean">
                   {stats.busEnService}
                 </p>
-                <p className="text-xs font-semibold" style={{ color: palette.textGray }}>{stats.nbBus} bus</p>
+                <p className="text-xs font-semibold text-textGray">{stats.nbBus} bus</p>
               </div>
               <span className="text-3xl transition-transform group-hover:scale-110 sm:text-4xl">🚌</span>
             </div>

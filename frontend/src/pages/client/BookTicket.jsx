@@ -91,21 +91,21 @@ function BookTicket() {
 				}}
 			>
 				<div className="max-w-5xl mx-auto">
-					<header className="rounded-3xl border bg-white/95 shadow-xl p-6 md:p-8" style={{ borderColor: palette.frostBlue }}>
-						<p className="text-xs font-bold uppercase tracking-[0.22em]" style={{ color: palette.skyBlue }}>
+					<header className="rounded-3xl border bg-white/95 shadow-xl p-6 md:p-8 border-frostBlue">
+						<p className="text-xs font-bold uppercase tracking-[0.22em] text-skyBlue">
 							Module Ticket
 						</p>
-						<h1 className="text-2xl md:text-4xl font-black mt-2" style={{ color: palette.deepOcean }}>
+						<h1 className="text-2xl md:text-4xl font-black mt-2 text-deepOcean">
 							Tickets vendus
 						</h1>
-						<p className="text-sm mt-2" style={{ color: palette.classicBlue }}>
+						<p className="text-sm mt-2 text-classicBlue">
 							Affichez les tickets vendus et filtrez-les selon vos critères.
 						</p>
 					</header>
 
-					<div className="mt-6 rounded-3xl border bg-white p-6 md:p-8 shadow-lg" style={{ borderColor: palette.frostBlue }}>
+					<div className="mt-6 rounded-3xl border bg-white p-6 md:p-8 shadow-lg border-frostBlue">
 						<div>
-							<label className="mb-2 block text-sm font-bold" style={{ color: palette.deepOcean }}>
+							<label className="mb-2 block text-sm font-bold text-deepOcean">
 								Recherche simple
 							</label>
 							<div className="mb-3 flex flex-wrap gap-2">
@@ -159,13 +159,13 @@ function BookTicket() {
 							</div>
 						</div>
 
-						<div className="mt-4 rounded-2xl border px-4 py-3 text-sm font-bold" style={{ borderColor: palette.frostBlue, color: palette.deepOcean, backgroundColor: palette.iceWhite }}>
+						<div className="mt-4 rounded-2xl border px-4 py-3 text-sm font-bold border-frostBlue text-deepOcean bg-iceWhite">
 							{filteredTickets.length} ticket(s)
 						</div>
 
 						<div className="mt-5 grid gap-4">
 							{filteredTickets.length === 0 ? (
-								<div className="rounded-2xl border border-dashed p-6 text-center text-sm" style={{ borderColor: palette.frostBlue, color: palette.textGray, backgroundColor: palette.iceWhite }}>
+								<div className="rounded-2xl border border-dashed p-6 text-center text-sm border-frostBlue text-textGray bg-iceWhite">
 									Aucun ticket trouve.
 								</div>
 							) : (
@@ -173,13 +173,13 @@ function BookTicket() {
 									<div key={ticket.id} className="rounded-2xl border p-5 shadow-sm" style={ticketCardStyle}>
 										<div className="flex flex-wrap items-center justify-between gap-3">
 											<div>
-												<p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: palette.skyBlue }}>
+												<p className="text-xs font-bold uppercase tracking-[0.2em] text-skyBlue">
 													Ticket vendu
 												</p>
-												<h2 className="mt-2 text-xl font-black" style={{ color: palette.deepOcean }}>
+												<h2 className="mt-2 text-xl font-black text-deepOcean">
 													{ticket.id}
 												</h2>
-												<p className="mt-1 text-xs font-bold uppercase" style={{ color: palette.textGray }}>
+												<p className="mt-1 text-xs font-bold uppercase text-textGray">
 													Type: {ticket.transport === 'metro' ? 'Metro' : 'Bus'}
 												</p>
 											</div>
@@ -188,10 +188,10 @@ function BookTicket() {
 											</div>
 										</div>
 
-										<p className="mt-3 text-sm font-medium" style={{ color: palette.classicBlue }}>
+										<p className="mt-3 text-sm font-medium text-classicBlue">
 											{ticket.trajet}
 										</p>
-										<p className="mt-2 text-xs" style={{ color: palette.textGray }}>
+										<p className="mt-2 text-xs text-textGray">
 											Date de voyage: {ticket.date}
 										</p>
 
@@ -199,8 +199,7 @@ function BookTicket() {
 											<button
 												type="button"
 												onClick={() => startEdit(ticket)}
-												className="rounded-full border px-3 py-1.5 text-xs font-bold"
-												style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
+												className="rounded-full border px-3 py-1.5 text-xs font-bold border-frostBlue text-deepOcean"
 											>
 												Modifier
 											</button>
@@ -215,8 +214,8 @@ function BookTicket() {
 										</div>
 
 										{isEditing && editingId === ticket.id && (
-											<form className="mt-4 rounded-2xl border p-4" onSubmit={saveEdit} style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}>
-												<p className="text-sm font-bold" style={{ color: palette.deepOcean }}>
+											<form className="mt-4 rounded-2xl border p-4 border-frostBlue bg-pureWhite" onSubmit={saveEdit}>
+												<p className="text-sm font-bold text-deepOcean">
 													Modifier ce ticket
 												</p>
 												<div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -224,23 +223,20 @@ function BookTicket() {
 														name="trajet"
 														value={editForm.trajet}
 														onChange={handleEditChange}
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none"
-														style={{ borderColor: palette.frostBlue }}
+														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
 													/>
 													<input
 														name="date"
 														type="date"
 														value={editForm.date}
 														onChange={handleEditChange}
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none"
-														style={{ borderColor: palette.frostBlue }}
+														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
 													/>
 													<select
 														name="statut"
 														value={editForm.statut}
 														onChange={handleEditChange}
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none md:col-span-2"
-														style={{ borderColor: palette.frostBlue }}
+														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none md:col-span-2 border-frostBlue"
 													>
 														<option value="Vendu">Vendu</option>
 													</select>
@@ -249,16 +245,14 @@ function BookTicket() {
 												<div className="mt-3 flex gap-2">
 													<button
 														type="submit"
-														className="rounded-full px-4 py-2 text-xs font-bold"
-														style={{ backgroundColor: palette.classicBlue, color: palette.pureWhite }}
+														className="rounded-full px-4 py-2 text-xs font-bold bg-classicBlue text-pureWhite"
 													>
 														Enregistrer
 													</button>
 													<button
 														type="button"
 														onClick={cancelEdit}
-														className="rounded-full border px-4 py-2 text-xs font-bold"
-														style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
+														className="rounded-full border px-4 py-2 text-xs font-bold border-frostBlue text-deepOcean"
 													>
 														Annuler
 													</button>

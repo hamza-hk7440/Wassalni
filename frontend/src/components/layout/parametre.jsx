@@ -81,7 +81,7 @@ function Parametre() {
     const InputField = ({ label, type, value, onChange, placeholder, isEditing, onToggle, inputRef }) => (
         <div className="space-y-2">
             <div className="flex items-center justify-between">
-                <label style={{ color: palette.deepOcean }} className="block text-sm font-semibold">{label}</label>
+                <label className="text-deepOcean block text-sm font-semibold">{label}</label>
                 <button
                     type="button"
                     onClick={onToggle}
@@ -99,12 +99,8 @@ function Parametre() {
                 onChange={onChange}
                 placeholder={placeholder}
                 readOnly={!isEditing}
-                style={{
-                    borderColor: isEditing ? palette.softTeal : palette.frostBlue,
-                    color: palette.deepOcean,
-                    backgroundColor: isEditing ? '#FFFFFF' : '#F8FAFC'
-                }}
-                className="w-full px-4 py-3 border rounded-md focus:outline-none bg-white"
+                className="w-full px-4 py-3 border rounded-md focus:outline-none bg-white text-deepOcean"
+                style={{ borderColor: isEditing ? palette.softTeal : palette.frostBlue, backgroundColor: isEditing ? '#FFFFFF' : '#F8FAFC' }}
             />
         </div>
     );
@@ -126,11 +122,11 @@ function Parametre() {
                     >
                         Paramètres du Compte
                     </h1>
-                    <p style={{ color: palette.skyBlue }} className="text-sm">Gérez vos informations personnelles</p>
+                    <p className="text-skyBlue text-sm">Gérez vos informations personnelles</p>
                 </div>
 
                 {/* Card */}
-                <div className="bg-white rounded-xl shadow-md overflow-hidden border" style={{ borderColor: palette.frostBlue }}>
+                <div className="bg-white rounded-xl shadow-md overflow-hidden border border-frostBlue">
                     <div 
                         className="h-1"
                         style={{ background: `linear-gradient(to right, ${palette.deepOcean}, ${palette.softTeal})` }}
@@ -139,8 +135,8 @@ function Parametre() {
                     <div className="p-6 sm:p-8">
                         {/* Messages */}
                         {error && (
-                            <div className="mb-6 p-3 rounded-md border-l-4" style={{ backgroundColor: palette.iceWhite, borderColor: palette.classicBlue }}>
-                                <p className="font-medium flex items-center" style={{ color: palette.deepOcean }}>
+                            <div className="mb-6 p-3 rounded-md border-l-4 bg-iceWhite border-classicBlue">
+                                <p className="font-medium flex items-center text-deepOcean">
                                     <span className="text-xl mr-2">⚠️</span>
                                     {error}
                                 </p>
@@ -148,8 +144,8 @@ function Parametre() {
                         )}
 
                         {message && (
-                            <div className="mb-6 p-3 rounded-md border-l-4" style={{ backgroundColor: palette.iceWhite, borderColor: palette.softTeal }}>
-                                <p className="font-medium flex items-center" style={{ color: palette.deepOcean }}>
+                            <div className="mb-6 p-3 rounded-md border-l-4 bg-iceWhite border-softTeal">
+                                <p className="font-medium flex items-center text-deepOcean">
                                     <span className="text-xl mr-2">✓</span>
                                     {message}
                                 </p>
@@ -223,7 +219,7 @@ function Parametre() {
                             </div>
 
                             {/* Info */}
-                            <p style={{ color: palette.classicBlue }} className="text-center text-sm pt-2 font-semibold">
+                            <p className="text-classicBlue text-center text-sm pt-2 font-semibold">
                                 ✓ Vos informations restent confidentielles et sécurisées
                             </p>
                         </form>

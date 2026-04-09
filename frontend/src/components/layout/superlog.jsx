@@ -52,8 +52,8 @@ function Superlog() {
                     >
                         Accès Super Admin
                     </h1>
-                    <p style={{ color: palette.skyBlue }} className="text-sm font-semibold">Zone réservée aux administrateurs</p>
-                    <p className="mt-1 text-xs font-bold uppercase tracking-wider" style={{ color: palette.classicBlue }}>
+                    <p className="text-skyBlue text-sm font-semibold">Zone réservée aux administrateurs</p>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-wider text-classicBlue">
                         Destination: {isController ? 'Contrôleurs' : 'Admins'}
                     </p>
                 </div>
@@ -62,8 +62,7 @@ function Superlog() {
                     <button
                         type="button"
                         onClick={() => window.history.back()}
-                        className="absolute top-4 right-4 z-10 flex items-center justify-center w-10 h-10 rounded-full transition duration-200 transform hover:scale-110"
-                        style={{ backgroundColor: palette.dangerText, color: palette.pureWhite }}
+                        className="absolute top-4 right-4 z-10 flex items-center justify-center w-10 h-10 rounded-full transition duration-200 transform hover:scale-110 bg-dangerText text-pureWhite"
                         title="Fermer"
                     >
                         <span className="text-2xl font-bold">×</span>
@@ -95,7 +94,7 @@ function Superlog() {
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
-                                <label style={{ color: palette.deepOcean }} className="block text-sm font-semibold">
+                                <label className="text-deepOcean block text-sm font-semibold">
                                     Mot de passe super admin
                                 </label>
                                 <input
@@ -103,8 +102,7 @@ function Superlog() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Entrez le mot de passe"
-                                    style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
-                                    className="w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition duration-200 bg-white shadow-sm"
+                                    className="border-frostBlue text-deepOcean w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition duration-200 bg-white shadow-sm"
                                 />
                             </div>
 
@@ -118,8 +116,7 @@ function Superlog() {
                         </form>
 
                         <p 
-                            className="text-center text-xs pt-4 border-t-2 mt-6 font-semibold"
-                            style={{ borderColor: palette.frostBlue, color: palette.classicBlue }}
+                            className="text-center text-xs pt-4 border-t-2 mt-6 font-semibold border-frostBlue text-classicBlue"
                         >
                             ⚠️ Tentatives d'accès non autorisées sont enregistrées
                         </p>

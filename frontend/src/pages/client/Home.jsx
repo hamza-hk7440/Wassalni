@@ -77,21 +77,21 @@ function Home() {
 				}}
 			>
 				<div className="max-w-5xl mx-auto">
-					<header className="rounded-3xl border bg-white/95 shadow-xl p-6 md:p-8" style={{ borderColor: palette.frostBlue }}>
-						<p className="text-xs font-bold uppercase tracking-[0.22em]" style={{ color: palette.skyBlue }}>
+					<header className="rounded-3xl border bg-white/95 shadow-xl p-6 md:p-8 border-frostBlue">
+						<p className="text-xs font-bold uppercase tracking-[0.22em] text-skyBlue">
 							Module Client
 						</p>
-						<h1 className="text-2xl md:text-4xl font-black mt-2" style={{ color: palette.deepOcean }}>
+						<h1 className="text-2xl md:text-4xl font-black mt-2 text-deepOcean">
 							Contrôle des clients
 						</h1>
-						<p className="text-sm mt-2" style={{ color: palette.classicBlue }}>
+						<p className="text-sm mt-2 text-classicBlue">
 							Gérer les clients et leurs IDs ticket rapidement.
 						</p>
 					</header>
 
-					<div className="mt-6 rounded-3xl border bg-white p-6 md:p-8 shadow-lg" style={{ borderColor: palette.frostBlue }}>
+					<div className="mt-6 rounded-3xl border bg-white p-6 md:p-8 shadow-lg border-frostBlue">
 						<div>
-						<label className="mb-2 block text-sm font-bold" style={{ color: palette.deepOcean }}>
+						<label className="mb-2 block text-sm font-bold text-deepOcean">
 							Recherche client
 						</label>
 						<input
@@ -99,98 +99,94 @@ function Home() {
 							value={query}
 							onChange={(event) => setQuery(event.target.value)}
 							placeholder="ID client, nom, ID ticket, type ou token"
-							className="w-full rounded-2xl border px-4 py-3 text-sm outline-none"
-							style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite, color: palette.deepOcean }}
+							className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue bg-pureWhite text-deepOcean"
 						/>
 						</div>
 
-						<div className="mt-4 rounded-2xl border px-4 py-3 text-sm font-bold" style={{ borderColor: palette.frostBlue, color: palette.deepOcean, backgroundColor: palette.iceWhite }}>
+						<div className="mt-4 rounded-2xl border px-4 py-3 text-sm font-bold border-frostBlue text-deepOcean bg-iceWhite">
 							{filteredClients.length} client(s)
 						</div>
 
 						<div className="mt-5 grid gap-4">
 							{filteredClients.length === 0 ? (
-								<div className="rounded-2xl border border-dashed p-6 text-center text-sm" style={{ borderColor: palette.frostBlue, color: palette.textGray, backgroundColor: palette.iceWhite }}>
+								<div className="rounded-2xl border border-dashed p-6 text-center text-sm border-frostBlue text-textGray bg-iceWhite">
 									Aucun client trouvé.
 								</div>
 							) : (
 								filteredClients.map((client) => (
-									<div key={client.clientId} className="rounded-2xl border p-5 shadow-sm" style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}>
+									<div key={client.clientId} className="rounded-2xl border p-5 shadow-sm border-frostBlue bg-pureWhite">
 										<div className="flex flex-wrap items-center justify-between gap-3">
 											<div>
-												<p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: palette.skyBlue }}>
+												<p className="text-xs font-bold uppercase tracking-[0.2em] text-skyBlue">
 													Client
 												</p>
-												<h2 className="mt-2 text-xl font-black" style={{ color: palette.deepOcean }}>
+												<h2 className="mt-2 text-xl font-black text-deepOcean">
 													{client.clientId}
 												</h2>
 											</div>
 											<div className="flex items-center gap-2">
-												<div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold" style={{ borderColor: '#fde68a', color: palette.deepOcean, backgroundColor: '#fef9c3' }}>
+												<div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold text-deepOcean" style={{ borderColor: '#fde68a', backgroundColor: '#fef9c3' }}>
 													<span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: '#facc15' }}></span>
 													{client.token}
 												</div>
-												<div className="inline-flex rounded-full px-3 py-1 text-xs font-bold" style={{ backgroundColor: palette.deepOcean, color: palette.pureWhite }}>
+												<div className="inline-flex rounded-full px-3 py-1 text-xs font-bold bg-deepOcean text-pureWhite">
 													{client.statut}
 												</div>
 											</div>
 										</div>
 
-										<p className="mt-3 text-sm font-medium" style={{ color: palette.classicBlue }}>
+										<p className="mt-3 text-sm font-medium text-classicBlue">
 											{client.nom}
 										</p>
 										<div className="mt-3 grid gap-2 md:grid-cols-2">
-											<div className="rounded-xl border px-3 py-2" style={{ borderColor: palette.frostBlue, backgroundColor: palette.iceWhite }}>
-												<p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: palette.textGray }}>
+											<div className="rounded-xl border px-3 py-2 border-frostBlue bg-iceWhite">
+												<p className="text-[11px] font-bold uppercase tracking-wider text-textGray">
 													ID Ticket
 												</p>
-												<p className="text-base font-black" style={{ color: palette.deepOcean }}>
+												<p className="text-base font-black text-deepOcean">
 													{client.ticketId}
 												</p>
 											</div>
-											<div className="rounded-xl border px-3 py-2" style={{ borderColor: palette.frostBlue, backgroundColor: palette.iceWhite }}>
-												<p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: palette.textGray }}>
+											<div className="rounded-xl border px-3 py-2 border-frostBlue bg-iceWhite">
+												<p className="text-[11px] font-bold uppercase tracking-wider text-textGray">
 													Date Ticket
 												</p>
-												<p className="text-base font-black" style={{ color: palette.deepOcean }}>
+												<p className="text-base font-black text-deepOcean">
 													{client.ticketDate}
 												</p>
 											</div>
 										</div>
 
-										<p className="mt-2 text-xs" style={{ color: palette.textGray }}>
+										<p className="mt-2 text-xs text-textGray">
 											Type: {client.transport}
 										</p>
 
 										<div className="mt-4 flex gap-2">
 											<Link
 												to={`/ticket?ticketId=${encodeURIComponent(client.ticketId)}`}
-												className="rounded-full border px-3 py-1.5 text-xs font-bold"
-												style={{ borderColor: palette.classicBlue, color: palette.classicBlue }}
+												className="rounded-full border px-3 py-1.5 text-xs font-bold border-classicBlue text-classicBlue"
 											>
 												Voir ticket
 											</Link>
 											<button
 												type="button"
 												onClick={() => startEdit(client)}
-												className="rounded-full border px-3 py-1.5 text-xs font-bold"
-												style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
+												className="rounded-full border px-3 py-1.5 text-xs font-bold border-frostBlue text-deepOcean"
 											>
 												Modifier
 											</button>
 											<button
 												type="button"
 												onClick={() => deleteClient(client.clientId)}
-												className="rounded-full border px-3 py-1.5 text-xs font-bold"
-												style={{ borderColor: palette.dangerSoft, color: palette.dangerText }}
+												className="rounded-full border px-3 py-1.5 text-xs font-bold border-dangerSoft text-dangerText"
 											>
 												Supprimer
 											</button>
 										</div>
 
 										{editingId === client.clientId && (
-											<form className="mt-4 rounded-2xl border p-4" onSubmit={saveEdit} style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}>
-												<p className="text-sm font-bold" style={{ color: palette.deepOcean }}>
+											<form className="mt-4 rounded-2xl border p-4" onSubmit={saveEdit} className="border-frostBlue bg-pureWhite">
+												<p className="text-sm font-bold text-deepOcean">
 													Modifier ce client
 												</p>
 												<div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -199,31 +195,27 @@ function Home() {
 														value={form.nom}
 														onChange={(event) => setForm((previous) => ({ ...previous, nom: event.target.value }))}
 														placeholder="Nom"
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none"
-														style={{ borderColor: palette.frostBlue }}
+														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
 													/>
 													<input
 														name="ticketId"
 														value={form.ticketId}
 														onChange={(event) => setForm((previous) => ({ ...previous, ticketId: event.target.value }))}
 														placeholder="ID ticket"
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none"
-														style={{ borderColor: palette.frostBlue }}
+														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
 													/>
 													<input
 														name="ticketDate"
 														type="date"
 														value={form.ticketDate}
 														onChange={(event) => setForm((previous) => ({ ...previous, ticketDate: event.target.value }))}
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none"
-														style={{ borderColor: palette.frostBlue }}
+														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
 													/>
 													<select
 														name="transport"
 														value={form.transport}
 														onChange={(event) => setForm((previous) => ({ ...previous, transport: event.target.value }))}
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none"
-														style={{ borderColor: palette.frostBlue }}
+														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
 													>
 														<option value="Bus">Bus</option>
 														<option value="Metro">Metro</option>
@@ -232,8 +224,7 @@ function Home() {
 														name="statut"
 														value={form.statut}
 														onChange={(event) => setForm((previous) => ({ ...previous, statut: event.target.value }))}
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none"
-														style={{ borderColor: palette.frostBlue }}
+														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
 													>
 														<option value="Actif">Actif</option>
 														<option value="Inactif">Inactif</option>
@@ -245,24 +236,21 @@ function Home() {
 														value={form.token}
 														onChange={(event) => setForm((previous) => ({ ...previous, token: Number(event.target.value) || 0 }))}
 														placeholder="Solde token"
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none md:col-span-2"
-														style={{ borderColor: palette.frostBlue }}
+														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none md:col-span-2 border-frostBlue"
 													/>
 												</div>
 
 												<div className="mt-3 flex gap-2">
 													<button
 														type="submit"
-														className="rounded-full px-4 py-2 text-xs font-bold"
-														style={{ backgroundColor: palette.classicBlue, color: palette.pureWhite }}
+														className="rounded-full px-4 py-2 text-xs font-bold bg-classicBlue text-pureWhite"
 													>
 														Enregistrer
 													</button>
 													<button
 														type="button"
 														onClick={cancelEdit}
-														className="rounded-full border px-4 py-2 text-xs font-bold"
-														style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
+														className="rounded-full border px-4 py-2 text-xs font-bold border-frostBlue text-deepOcean"
 													>
 														Annuler
 													</button>

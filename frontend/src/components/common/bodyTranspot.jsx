@@ -1,7 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import palette from './pallette';
-
+import palette from "./pallette";
 const DEFAULT_STATUS_LIST = ['En ligne', 'Maintenance', 'Retard'];
 const DEFAULT_EMPTY_FORM = {
   id: '',
@@ -171,16 +170,16 @@ function BodyTransport({
       style={{ background: `linear-gradient(180deg, ${palette.iceWhite} 0%, #eff8ff 48%, #f8fcff 100%)` }}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-        <header className="rounded-2xl border bg-white p-5 shadow-sm" style={{ borderColor: palette.frostBlue }}>
+        <header className="rounded-2xl border bg-white p-5 shadow-sm border-frostBlue">
           <div className="h-1.5 w-28 rounded-full mb-4" style={{ background: `linear-gradient(90deg, ${palette.deepOcean}, ${palette.softTeal})` }}></div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: palette.skyBlue }}>Module Transport</p>
-              <h1 className="text-2xl md:text-3xl font-black" style={{ color: palette.deepOcean }}>{nom}</h1>
-              <p className="text-sm mt-1" style={{ color: palette.textGray }}>Suivi des {labels.entityPlural} et opérations</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-skyBlue">Module Transport</p>
+              <h1 className="text-2xl md:text-3xl font-black text-deepOcean">{nom}</h1>
+              <p className="text-sm mt-1 text-textGray">Suivi des {labels.entityPlural} et opérations</p>
             </div>
             {objetAdmin ? (
-              <p className="text-xs" style={{ color: palette.textGray }}>
+              <p className="text-xs text-textGray">
                 Admin: {objetAdmin.prenom || ''} {objetAdmin.nom || ''}
               </p>
             ) : null}
@@ -188,12 +187,12 @@ function BodyTransport({
         </header>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor: palette.frostBlue }}>
+          <div className="rounded-2xl border bg-white p-4 shadow-sm border-frostBlue">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: palette.textGray }}>Total</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-textGray">Total</p>
               <span className="text-lg">#</span>
             </div>
-            <p className="text-3xl font-black mt-1" style={{ color: palette.deepOcean }}>{summary.total}</p>
+            <p className="text-3xl font-black mt-1 text-deepOcean">{summary.total}</p>
           </div>
           <div className="rounded-2xl border p-4 shadow-sm" style={{ borderColor: '#BAEAD7', backgroundColor: '#F0FDF7' }}>
             <div className="flex items-center justify-between">
@@ -211,9 +210,9 @@ function BodyTransport({
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-white p-4 md:p-5 shadow-sm" style={{ borderColor: palette.frostBlue }}>
+        <div className="rounded-2xl border bg-white p-4 md:p-5 shadow-sm border-frostBlue">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-bold" style={{ color: palette.deepOcean }}>Liste</h2>
+            <h2 className="text-lg font-bold text-deepOcean">Liste</h2>
             <button
               type="button"
               onClick={open ? closeForm : openCreateForm}
@@ -224,10 +223,10 @@ function BodyTransport({
             </button>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border" style={{ borderColor: palette.frostBlue }}>
+          <div className="overflow-x-auto rounded-xl border border-frostBlue">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="border-b text-left text-xs uppercase bg-slate-50" style={{ color: palette.textGray, borderColor: palette.frostBlue }}>
+                <tr className="border-b text-left text-xs uppercase bg-slate-50 text-textGray border-frostBlue">
                   <th className="px-3 py-3">{labels.id}</th>
                   <th className="px-3 py-3">{labels.line}</th>
                   <th className="px-3 py-3">{labels.operator}</th>
@@ -239,22 +238,22 @@ function BodyTransport({
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-3 py-10 text-center text-sm font-semibold" style={{ color: palette.textGray }}>
+                    <td colSpan="6" className="px-3 py-10 text-center text-sm font-semibold text-textGray">
                       Aucun élément disponible. Cliquez sur Ajouter pour commencer.
                     </td>
                   </tr>
                 ) : null}
                 {rows.map((item) => (
-                  <tr key={item[idKey]} className="border-b last:border-b-0 hover:bg-slate-50/80 transition" style={{ borderColor: palette.frostBlue }}>
-                    <td className="px-3 py-3 font-semibold" style={{ color: palette.deepOcean }}>{item[idKey]}</td>
-                    <td className="px-3 py-3" style={{ color: palette.textGray }}>{item[lineKey]}</td>
-                    <td className="px-3 py-3" style={{ color: palette.textGray }}>{item[operatorKey]}</td>
+                  <tr key={item[idKey]} className="border-b last:border-b-0 hover:bg-slate-50/80 transition border-frostBlue">
+                    <td className="px-3 py-3 font-semibold text-deepOcean">{item[idKey]}</td>
+                    <td className="px-3 py-3 text-textGray">{item[lineKey]}</td>
+                    <td className="px-3 py-3 text-textGray">{item[operatorKey]}</td>
                     <td className="px-3 py-3">
                       <div className="w-28">
                         <div className="h-2 rounded-full bg-slate-100">
                           <div className="h-2 rounded-full" style={{ width: `${item[occupancyKey]}%`, backgroundColor: getLoadColor(item[occupancyKey]) }} />
                         </div>
-                        <p className="mt-1 text-[11px] font-semibold" style={{ color: palette.textGray }}>{item[occupancyKey]}%</p>
+                        <p className="mt-1 text-[11px] font-semibold text-textGray">{item[occupancyKey]}%</p>
                       </div>
                     </td>
                     <td className="px-3 py-3">
@@ -267,8 +266,7 @@ function BodyTransport({
                         <button
                           type="button"
                           onClick={() => openEditForm(item)}
-                          className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90"
-                          style={{ backgroundColor: palette.classicBlue }}
+                          className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 bg-classicBlue"
                         >
                           Modifier
                         </button>
@@ -285,8 +283,8 @@ function BodyTransport({
         </div>
 
         {open ? (
-          <div ref={formRef} className="rounded-2xl border bg-white p-4 md:p-5 shadow-sm" style={{ borderColor: palette.frostBlue }}>
-            <h2 className="mb-3 text-lg font-bold" style={{ color: palette.deepOcean }}>{isEditing ? `Modifier un ${labels.entitySingular}` : `Ajouter un ${labels.entitySingular}`}</h2>
+          <div ref={formRef} className="rounded-2xl border bg-white p-4 md:p-5 shadow-sm border-frostBlue">
+            <h2 className="mb-3 text-lg font-bold text-deepOcean">{isEditing ? `Modifier un ${labels.entitySingular}` : `Ajouter un ${labels.entitySingular}`}</h2>
 
             <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <input
@@ -295,24 +293,21 @@ function BodyTransport({
                 value={form[idKey] || ''}
                 onChange={(e) => setFormField(idKey, e.target.value)}
                 placeholder={`${labels.id} (ex: T-150)`}
-                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2"
-                style={{ borderColor: palette.frostBlue }}
+                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 border-frostBlue"
               />
               <input
                 name={lineKey}
                 value={form[lineKey] || ''}
                 onChange={(e) => setFormField(lineKey, e.target.value)}
                 placeholder={labels.line}
-                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2"
-                style={{ borderColor: palette.frostBlue }}
+                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 border-frostBlue"
               />
               <input
                 name={operatorKey}
                 value={form[operatorKey] || ''}
                 onChange={(e) => setFormField(operatorKey, e.target.value)}
                 placeholder={labels.operator}
-                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2"
-                style={{ borderColor: palette.frostBlue }}
+                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 border-frostBlue"
               />
               <input
                 type="number"
@@ -322,16 +317,14 @@ function BodyTransport({
                 min="0"
                 max="100"
                 placeholder={`${labels.occupancy} (0-100)`}
-                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2"
-                style={{ borderColor: palette.frostBlue }}
+                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 border-frostBlue"
               />
 
               <select
                 name={statusKey}
                 value={form[statusKey] || statusList[0]}
                 onChange={(e) => setFormField(statusKey, e.target.value)}
-                className="rounded-lg border px-3 py-2.5 text-sm md:col-span-2 outline-none focus:ring-2"
-                style={{ borderColor: palette.frostBlue }}
+                className="rounded-lg border px-3 py-2.5 text-sm md:col-span-2 outline-none focus:ring-2 border-frostBlue"
               >
                 {statusList.map((item) => (
                   <option key={item} value={item}>
@@ -353,8 +346,7 @@ function BodyTransport({
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="rounded-lg border px-4 py-2.5 text-sm font-semibold transition hover:bg-slate-100"
-                  style={{ borderColor: palette.frostBlue, color: palette.textGray }}
+                  className="rounded-lg border px-4 py-2.5 text-sm font-semibold transition hover:bg-slate-100 border-frostBlue text-textGray"
                 >
                   Annuler
                 </button>

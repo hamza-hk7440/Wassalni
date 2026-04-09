@@ -14,14 +14,14 @@ function Transport() {
         }}
       >
         <div className="max-w-5xl mx-auto">
-          <header className="rounded-3xl border bg-white/95 shadow-xl p-6 md:p-8" style={{ borderColor: palette.frostBlue }}>
-            <p className="text-xs font-bold uppercase tracking-[0.22em]" style={{ color: palette.skyBlue }}>
+          <header className="rounded-3xl border bg-white/95 shadow-xl p-6 md:p-8 border-frostBlue">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-skyBlue">
               Module Transport
             </p>
-            <h1 className="text-2xl md:text-4xl font-black mt-2" style={{ color: palette.deepOcean }}>
+            <h1 className="text-2xl md:text-4xl font-black mt-2 text-deepOcean">
               Choisir le type de transport
             </h1>
-            <p className="text-sm mt-2" style={{ color: palette.classicBlue }}>
+            <p className="text-sm mt-2 text-classicBlue">
               Accédez à la gestion des bus ou à la gestion du métro.
             </p>
           </header>
@@ -29,34 +29,32 @@ function Transport() {
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
             <Link
               to="/bus"
-              className="group rounded-3xl border bg-white p-6 md:p-7 shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl"
-              style={{ borderColor: palette.frostBlue }}
+              className="group rounded-3xl border bg-white p-6 md:p-7 shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl border-frostBlue"
             >
               <div className="text-5xl">🚌</div>
-              <h2 className="mt-4 text-2xl font-black" style={{ color: palette.deepOcean }}>
+              <h2 className="mt-4 text-2xl font-black text-deepOcean">
                 Bus
               </h2>
-              <p className="mt-2 text-sm" style={{ color: palette.classicBlue }}>
+              <p className="mt-2 text-sm text-classicBlue">
                 Parc, lignes, chauffeurs et statut opérationnel des bus.
               </p>
-              <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold" style={{ color: palette.softTeal }}>
+              <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-softTeal">
                 Ouvrir la gestion bus <span className="group-hover:translate-x-1 transition-transform">→</span>
               </span>
             </Link>
 
             <Link
               to="/metro"
-              className="group rounded-3xl border bg-white p-6 md:p-7 shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl"
-              style={{ borderColor: palette.frostBlue }}
+              className="group rounded-3xl border bg-white p-6 md:p-7 shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl border-frostBlue"
             >
               <div className="text-5xl">🚈</div>
-              <h2 className="mt-4 text-2xl font-black" style={{ color: palette.deepOcean }}>
+              <h2 className="mt-4 text-2xl font-black text-deepOcean">
                 Métro
               </h2>
-              <p className="mt-2 text-sm" style={{ color: palette.classicBlue }}>
+              <p className="mt-2 text-sm text-classicBlue">
                 Lignes, conducteurs et suivi des rames métro en service.
               </p>
-              <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold" style={{ color: palette.warmAccent }}>
+              <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-warmAccent">
                 Ouvrir la gestion métro <span className="group-hover:translate-x-1 transition-transform">→</span>
               </span>
             </Link>
