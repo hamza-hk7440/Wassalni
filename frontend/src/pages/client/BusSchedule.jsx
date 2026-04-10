@@ -1,134 +1,120 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../../hooks/useAuth';
-import '../../App.css';
+import Button from '../../components/common/Button';
 
 const BusSchedule = () => {
     const navigate = useNavigate();
-    const { user, tokens } = useAuth(); 
+    const [selectedDate, setSelectedDate] = useState(10);
+    const [showModal, setShowModal] = useState(false);
 
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedTicket, setSelectedTicket] = useState(null);
-    const [bookingSuccess, setBookingSuccess] = useState(false);
-    const mockSchedules = [
-        { id: 1, from: 'Monastir City', to: 'Ksar Hellal', departure: '08:00 AM', arrival: '08:45 AM', price: 15, seats: 12 },
-        { id: 2, from: 'Monastir City', to: 'Moknine', departure: '09:30 AM', arrival: '10:15 AM', price: 20, seats: 4 },
-        { id: 3, from: 'Sahline', to: 'Jemmal', departure: '11:00 AM', arrival: '11:50 AM', price: 25, seats: 0 },
-        { id: 4, from: 'Monastir Airport', to: 'Teboulba', departure: '01:15 PM', arrival: '02:00 PM', price: 18, seats: 30 },
-        { id: 5, from: 'Ksar Hellal', to: 'Monastir City', departure: '04:00 PM', arrival: '04:45 PM', price: 15, seats: 2 },
+    const days = [
+        { name: 'FRI', date: 10 }, { name: 'SAT', date: 11 }, { name: 'SUN', date: 12 },
+        { name: 'MON', date: 13 }, { name: 'TUE', date: 14 }, { name: 'WED', date: 15 }
     ];
-    const filteredSchedules = mockSchedules.filter(route => 
-        route.from.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        route.to.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    const handleBookClick = (route) => {
-        setSelectedTicket(route);
-        setBookingSuccess(false);
-    };
-    const confirmBooking = () => {
-        setBookingSuccess(true);
-        setTimeout(() => {
-            setSelectedTicket(null);
-            setBookingSuccess(false);
-        }, 2500);
-    };
-
-    const closeModal = () => {
-        setSelectedTicket(null);
-        setBookingSuccess(false);
-    };
 
     return (
-        <div className="history-page">
-            <div className="history-card-container">
-                <div className="history-header">
-                    <button className="back-btn" onClick={() => navigate(-1)}>
-                        &#8592; Back
+        <div className="min-h-screen bg-[#f4f7f9] px-5 py-10 font-sans">
+            <div className="mx-auto max-w-[850px] rounded-[25px] bg-white p-6 md:p-12 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+                
+                {/* Header Section */}
+                <div className="mb-6 flex items-center gap-5 border-b border-[#dee2e6] pb-5">
+                    <button 
+                        onClick={() => navigate(-1)} 
+                        className="flex items-center text-base font-semibold text-[#1E5470] transition-opacity hover:opacity-70"
+                    >
+                        ← Back
                     </button>
-                    <h2>Bus Schedule</h2>
+                    <h1 className="text-2xl font-bold text-[#1a3a4a]">Bus Schedule</h1>
                 </div>
+                <input 
+                    type="text" 
+                    placeholder="Search for a station..." 
+                    className="mb-5 w-full rounded-xl border border-[#cbd5e0] p-3.5 outline-none focus:border-[#6ec1d1]"
+                />
 
-                <div className="filter-bar">
-                    <input 
-                        type="text" 
-                        placeholder="Search destination or departure..." 
-                        className="input filter-input"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                <div className="no-scrollbar mb-[30px] flex gap-4 overflow-x-auto py-2.5">
+                    {days.map((day) => (
+                        <div 
+                            key={day.date}
+                            onClick={() => setSelectedDate(day.date)}
+                            className={`flex min-w-[75px] cursor-pointer flex-col items-center rounded-2xl border p-4 transition-all duration-200 ${
+                                selectedDate === day.date 
+                                ? 'border-[#1a3a4a] bg-[#1a3a4a] text-white shadow-md' 
+                                : 'border-[#e0e6ed] bg-white text-gray-600 hover:border-[#6ec1d1]'
+                            }`}
+                        >
+                            <span className="text-[0.8rem] font-semibold opacity-80">{day.name}</span>
+                            <span className="text-xl font-bold">{day.date}</span>
+                        </div>
+                    ))}
                 </div>
-
-                <div className="schedule-list">
-                    {filteredSchedules.length > 0 ? (
-                        filteredSchedules.map(route => (
-                            <div key={route.id} className="schedule-card">
-                                <div className="schedule-route-info">
-                                    <div className="station">
-                                        <label>From</label>
-                                        <span className="station-name">{route.from}</span>
-                                    </div>
-                                    <div className="route-arrow">→</div>
-                                    <div className="station">
-                                        <label>To</label>
-                                        <span className="station-name">{route.to}</span>
-                                    </div>
+                <div className="flex flex-col gap-4">
+                    {[1, 2].map((item) => (
+                        <div key={item} className="group flex flex-col md:flex-row items-center justify-between rounded-[18px] border-l-[6px] border-[#6ec1d1] bg-white p-6 shadow-[0_4px_6px_rgba(0,0,0,0.02)] transition-transform hover:-translate-y-1">
+                            
+                            <div className="flex flex-1 items-center gap-5">
+                                <div className="text-left">
+                                    <label className="block text-[0.7rem] font-bold uppercase text-gray-500">From</label>
+                                    <span className="text-lg font-bold text-[#1a3a4a]">Sfax</span>
                                 </div>
-                                <div className="schedule-time-info">
-                                    <div className="detail">
-                                        <label>Departure</label>
-                                        <span>{route.departure}</span>
-                                    </div>
-                                    <div className="detail">
-                                        <label>Arrival</label>
-                                        <span>{route.arrival}</span>
-                                    </div>
-                                    <div className="detail">
-                                        <label>Seats Left</label>
-                                        <span style={{ color: route.seats === 0 ? '#d35400' : '#27ae60', fontWeight: 'bold' }}>
-                                            {route.seats === 0 ? 'Full' : route.seats}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="schedule-action">
-                                    <span className="route-price">{route.price} Tokens</span>
-                                    <button 
-                                        className="custom-btn book-btn" 
-                                        onClick={() => handleBookClick(route)}
-                                        disabled={route.seats === 0}
-                                        style={{ opacity: route.seats === 0 ? 0.5 : 1, cursor: route.seats === 0 ? 'not-allowed' : 'pointer' }}
-                                    >
-                                        {route.seats === 0 ? 'Sold Out' : 'Book Ticket'}
-                                    </button>
+                                <div className="text-xl font-bold text-[#6ec1d1]">→</div>
+                                <div className="text-left">
+                                    <label className="block text-[0.7rem] font-bold uppercase text-gray-500">To</label>
+                                    <span className="text-lg font-bold text-[#1a3a4a]">Tunis</span>
                                 </div>
                             </div>
-                        ))
-                    ) : (
-                        <div className="empty-history">
-                            <p>No bus routes found matching your search.</p>
+
+                            <div className="my-4 flex flex-1 justify-center gap-10 md:my-0">
+                                <div className="text-center">
+                                    <label className="block text-[0.7rem] font-bold uppercase text-gray-500">Time</label>
+                                    <span className="font-semibold text-gray-700">08:30 AM</span>
+                                </div>
+                                <div className="text-center">
+                                    <label className="block text-[0.7rem] font-bold uppercase text-gray-500">Seats</label>
+                                    <span className="font-extrabold text-[#38a169]">12 Available</span>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-1 flex-col items-end gap-2 text-right">
+                                <span className="text-xl font-extrabold text-[#1a3a4a]">20 Tokens</span>
+                                <Button 
+                                    className="!w-fit px-6 py-2 text-sm" 
+                                    onClick={() => setShowModal(true)}
+                                >
+                                    Book Seat
+                                </Button>
+                            </div>
                         </div>
-                    )}
+                    ))}
                 </div>
             </div>
-            {selectedTicket && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        {!bookingSuccess ? (
-                            <>
-                                <h3>Confirm Booking</h3>
-                                <p>Are you sure you want to book a ticket from <strong>{selectedTicket.from}</strong> to <strong>{selectedTicket.to}</strong>?</p>
-                                <p className="modal-price">Total Cost: <strong>{selectedTicket.price} Tokens</strong></p>
-                                <div className="modal-actions">
-                                    <button className="custom-btn cancel-btn" onClick={closeModal}>Cancel</button>
-                                    <button className="custom-btn confirm-btn" onClick={confirmBooking}>Confirm Purchase</button>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <h3 className="success-text">Booking Successful! 🎉</h3>
-                                <p>Your ticket has been added to your account.</p>
-                                <button className="custom-btn" onClick={closeModal} style={{ marginTop: '20px' }}>Done</button>
-                            </>
-                        )}
+            {showModal && (
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="w-[90%] max-w-[420px] rounded-[25px] bg-white p-10 text-center shadow-2xl animate-in zoom-in duration-300">
+                        <h2 className="text-2xl font-bold text-[#1a3a4a]">Confirm Booking</h2>
+                        <p className="mt-4 text-gray-600">You are about to book a seat from <strong>Sfax</strong> to <strong>Tunis</strong>.</p>
+                        
+                        <div className="my-5 rounded-xl bg-[#f7fafc] p-4 text-lg font-bold text-[#1E5470]">
+                            Total Price: 20 Tokens
+                        </div>
+
+                        <div className="flex gap-3 justify-center">
+                            <button 
+                                onClick={() => setShowModal(false)}
+                                className="flex-1 rounded-xl bg-gray-100 py-3 font-bold text-gray-600 transition-colors hover:bg-gray-200"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    alert("Successfully booked!");
+                                    setShowModal(false);
+                                }}
+                                className="flex-1 rounded-xl bg-[#6ec1d1] py-3 font-bold text-white transition-all hover:bg-[#5bb0c0] shadow-md"
+                            >
+                                Confirm
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

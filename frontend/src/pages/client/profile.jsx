@@ -1,21 +1,19 @@
-import React, { useState } from 'react';
-import useAuth from '../../hooks/useAuth';
-import tokenLogo from '../../assets/token_logo.png';
-import avatar from '../../assets/default_pfp.png'
-import '../../App.css';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
+import avatar from '../../assets/default_pfp.png';
+import tokenLogo from '../../assets/token_logo.png';
+import Button from '../../components/common/Button';
 
 const Profile = () => {
-    const { user, tokens, logout } = useAuth();
     const navigate = useNavigate();
+    const { user, tokens, logout } = useAuth();
     const [showPopup, setShowPopup] = useState(false);
-
-    // Local state to simulate profile updates since there is no backend hooked up
     const [localUser, setLocalUser] = useState(user);
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState({ name: '', email: '' });
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (user) setLocalUser(user);
     }, [user]);
 
@@ -25,7 +23,10 @@ const Profile = () => {
     };
 
     const handleEditClick = () => {
-        setEditData({ name: localUser?.name || '', email: localUser?.email || '' });
+        setEditData({ 
+            name: localUser?.name || '', 
+            email: localUser?.email || '' 
+        });
         setIsEditing(true);
     };
 
@@ -35,113 +36,105 @@ const Profile = () => {
     };
 
     return (
-        <div className="profile-page">
-            <div className="profile-container">
-                {/*information*/}
-                <div className="profile-card info-section">
-                    <div className="profile-pic-wrapper">
-                        <img src={avatar} alt="avatar" className="profile-avatar" />
+        <div className="min-h-screen bg-[#f4f9fc] px-[5%] py-[50px] font-sans">
+            <div className="flex flex-wrap justify-center gap-[30px]">
+                
+                <div className="w-full max-w-[450px] rounded-[20px] border border-[#D1ECFF] bg-white p-10 shadow-[0_15px_35px_rgba(30,84,112,0.1)] transition-transform hover:-translate-y-1">
+                    <div className="relative mx-auto mb-4 h-[120px] w-[120px] overflow-hidden rounded-full border-4 border-[#D1ECFF] shadow-[0_4px_15px_rgba(52,114,156,0.2)]">
+                        <img src={avatar} alt="avatar" className="h-full w-full object-cover" />
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <h2 style={{ color: '#1E5470', margin: 0 }}>Personal Information</h2>
+                    <div className="mb-6 flex items-center justify-between border-b border-[#f0f7ff] pb-2">
+                        <h2 className="text-xl font-bold text-[#1E5470]">Personal Information</h2>
                         {!isEditing && (
-                            <button className="back-btn" style={{ position: 'relative', fontSize: '0.9rem', color: '#3b759f' }} onClick={handleEditClick}>
+                            <button onClick={handleEditClick} className="text-sm font-semibold text-[#34729c] hover:underline">
                                 ✎ Edit
                             </button>
                         )}
                     </div>
 
                     {isEditing ? (
-                        <div className="edit-profile-form" style={{ marginBottom: '20px' }}>
-                            <div className="form-group" style={{ marginBottom: '15px' }}>
-                                <label style={{ color: '#1E5470', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '5px' }}>Full Name</label>
-                                <input
-                                    className="input"
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[0.9rem] font-bold text-[#1E5470]">Full Name</label>
+                                <input 
                                     type="text"
+                                    className="rounded-xl border-2 border-[#e1e9f5] bg-[#f9fbff] px-4 py-2.5 outline-none transition-all focus:border-[#6EC1D1] focus:bg-white"
                                     value={editData.name}
-                                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                                />
+                                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}/>
                             </div>
-                            <div className="form-group" style={{ marginBottom: '15px' }}>
-                                <label style={{ color: '#1E5470', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '5px' }}>Email Address</label>
-                                <input
-                                    className="input"
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[0.9rem] font-bold text-[#1E5470]">Email Address</label>
+                                <input 
                                     type="email"
+                                    className="rounded-xl border-2 border-[#e1e9f5] bg-[#f9fbff] px-4 py-2.5 outline-none transition-all focus:border-[#6EC1D1] focus:bg-white"
                                     value={editData.email}
-                                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                                />
+                                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}/>
                             </div>
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
-                                <button className="custom-btn cancel-btn" style={{ flex: 1, padding: '8px' }} onClick={() => setIsEditing(false)}>Cancel</button>
-                                <button className="custom-btn" style={{ flex: 1, padding: '8px' }} onClick={handleSave}>Save</button>
+                            <div className="mt-4 flex gap-3">
+                                <button onClick={() => setIsEditing(false)} className="flex-1 rounded-xl bg-gray-100 py-3 font-bold text-gray-600 transition-colors hover:bg-gray-200">Cancel</button>
+                                <button onClick={handleSave} className="flex-1 rounded-xl bg-[#1E5470] py-3 font-bold text-white transition-all hover:bg-[#2c7da8] shadow-md">Save</button>
                             </div>
                         </div>
                     ) : (
-                        <>
-                            <div className="info-group">
-                                <label>Full Name</label>
-                                <p>{localUser?.name || "User Unavailable"}</p>
+                        <div className="flex flex-col gap-5">
+                            <div>
+                                <label className="mb-1 block text-sm font-bold text-[#1E5470]">Full Name</label>
+                                <p className="text-[#555]">{localUser?.name || "User Unavailable"}</p>
                             </div>
-
-                            <div className="info-group">
-                                <label>Email Address</label>
-                                <p>{localUser?.email || "Email Unavailable"}</p>
+                            <div>
+                                <label className="mb-1 block text-sm font-bold text-[#1E5470]">Email Address</label>
+                                <p className="text-[#555]">{localUser?.email || "Email Unavailable"}</p>
                             </div>
-                        </>
+                            <div className="mt-4 flex flex-col gap-3">
+                                <button 
+                                    onClick={() => navigate('/active-tickets')}
+                                    className="w-full rounded-xl border-2 border-[#1E5470] py-3 font-bold text-[#1E5470] transition-all hover:bg-[#1E5470] hover:text-white">
+                                    View Active Tickets
+                                </button>
+                                <button 
+                                    onClick={() => navigate('/history')}
+                                    className="w-full rounded-xl border-2 border-[#1E5470] py-3 font-bold text-[#1E5470] transition-all hover:bg-[#1E5470] hover:text-white">
+                                    Ticket History
+                                </button>
+                                <button 
+                                    onClick={() => setShowPopup(true)}
+                                    className="mt-2 text-sm font-bold text-red-500 hover:text-red-700">
+                                    Log out
+                                </button>
+                            </div>
+                        </div>
                     )}
-
-                    <div className="ticket-button-group">
-                        <button
-                            className="custom-btn ticket-btn"
-                            onClick={() => navigate('/active-tickets')}
-                        >
-                            View Active Tickets
-                        </button>
-                        <button
-                            className="custom-btn ticket-btn"
-                            onClick={() => navigate('/TicketHistory')}
-                        >
-                            Ticket History
-                        </button>
-                    </div>
-
-                    <button className="custom-btn cancel-btn" style={{ width: '100%', marginTop: '10px' }} onClick={() => setShowPopup(true)}>
-                        Log out
-                    </button>
                 </div>
-
-                {/*wallet*/}
-                <div className="profile-card wallet-section">
-                    <h2 style={{ color: '#1E5470', marginBottom: '20px', textAlign: 'center' }}>Wasalni Wallet</h2>
-
-                    <div className="wallet-display">
-                        <img src={tokenLogo} alt="token" className="token-icon" style={{ clipPath: 'none', objectFit: 'contain' }} />
-                        <div className="balance-info">
-                            <span className="balance-amount">{tokens?.toLocaleString() || 0}</span>
-                            <span style={{ display: 'block', fontSize: '0.9rem', color: '#7f8c8d' }}>Available Tokens</span>
+                <div className="flex h-fit w-full max-w-[450px] flex-col justify-between rounded-[20px] border border-[#D1ECFF] bg-white p-10 shadow-[0_15px_35px_rgba(30,84,112,0.1)] transition-transform hover:-translate-y-1">
+                    <h2 className="mb-6 border-b border-[#f0f7ff] pb-2 text-xl font-bold text-[#1E5470]">Wasalni Wallet</h2>
+                    
+                    <div className="my-4 flex items-center justify-center rounded-[15px] bg-[#f0f8ff] p-6">
+                        <img src={tokenLogo} alt="token" className="mr-4 h-[50px] w-[50px] object-cover [clip-path:circle(46%)]" />
+                        <div className="flex flex-col">
+                            <span className="text-[2rem] font-extrabold leading-none text-[#1E5470]">
+                                {tokens?.toLocaleString() || 0}
+                            </span>
+                            <span className="text-sm font-semibold text-[#34729c]">Available Tokens</span>
                         </div>
                     </div>
 
-                    <button className="custom-btn" style={{ width: '100%', padding: '12px', fontSize: '1.1rem' }} onClick={() => navigate('/packages')}>
+                    <button 
+                        onClick={() => navigate('/packages')}
+                        className="mt-6 w-full rounded-xl bg-[#6EC1D1] py-4 font-bold text-white shadow-lg transition-all hover:bg-[#5bb0c0] hover:shadow-xl"
+                    >
                         Add Tokens
                     </button>
                 </div>
             </div>
-
-            {/*popup*/}
             {showPopup && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h3>Sign Out</h3>
-                        <p>Are you sure you want to disconnect from your Wasalni account?</p>
-                        <div className="modal-actions" style={{ marginTop: '25px' }}>
-                            <button className="custom-btn cancel-btn" onClick={() => setShowPopup(false)}>
-                                Cancel
-                            </button>
-                            <button className="custom-btn confirm-btn" style={{ background: '#d9534f' }} onClick={handleLogout}>
-                                Disconnect
-                            </button>
+                <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 px-4">
+                    <div className="w-full max-w-[400px] rounded-[20px] bg-white p-8 shadow-2xl animate-in fade-in zoom-in duration-200">
+                        <h3 className="mb-2 text-2xl font-bold text-[#1E5470]">Sign Out</h3>
+                        <p className="mb-8 text-[#718096]">Are you sure you want to disconnect from your Wasalni account?</p>
+                        <div className="flex gap-4">
+                            <button onClick={() => setShowPopup(false)} className="flex-1 rounded-xl bg-gray-100 py-3 font-bold text-gray-600 hover:bg-gray-200">Cancel</button>
+                            <button onClick={handleLogout} className="flex-1 rounded-xl bg-red-500 py-3 font-bold text-white hover:bg-red-600 shadow-md">Disconnect</button>
                         </div>
                     </div>
                 </div>
