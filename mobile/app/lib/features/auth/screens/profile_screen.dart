@@ -34,6 +34,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _openChangePasswordDialog() async {
+    final currentPasswordController = TextEditingController();
     final passwordController = TextEditingController();
     final confirmController = TextEditingController();
     String? errorText;
@@ -48,6 +49,14 @@ class _ProfilePageState extends State<ProfilePage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  TextField(
+                    controller: currentPasswordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: "Current password",
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   TextField(
                     controller: passwordController,
                     obscureText: true,
@@ -79,14 +88,26 @@ class _ProfilePageState extends State<ProfilePage> {
                     onPressed: _controller.isChangingPassword.value
                         ? null
                         : () async {
+                            final currentPassword = currentPasswordController
+                                .text
+                                .trim();
                             final newPassword = passwordController.text.trim();
                             final confirmPassword = confirmController.text
                                 .trim();
 
-                            if (newPassword.isEmpty ||
+                            if (currentPassword.isEmpty ||
+                                newPassword.isEmpty ||
                                 confirmPassword.isEmpty) {
                               setDialogState(
                                 () => errorText = "All fields are required",
+                              );
+                              return;
+                            }
+
+                            if (newPassword == currentPassword) {
+                              setDialogState(
+                                () => errorText =
+                                    "New password must be different from current password",
                               );
                               return;
                             }
@@ -100,6 +121,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                             try {
                               await _controller.changePassword(
+                                oldPassword: currentPassword,
                                 newPassword: newPassword,
                               );
                               if (!mounted) return;

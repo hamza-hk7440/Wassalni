@@ -59,6 +59,49 @@ class ApiService {
     }
   }
 
+  Future<List<Map<String, dynamic>>> fetchRouteStations(String routeId) async {
+    final uri = Uri.parse('$baseUrl/routes/$routeId');
+    try {
+      final response = await http.get(uri);
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Server error ${response.statusCode}: ${response.body}',
+        );
+      }
+
+      final decoded = json.decode(response.body) as Map<String, dynamic>;
+      final route = decoded['route'];
+      if (route is! Map<String, dynamic>) {
+        return const [];
+      }
+
+      final stops = route['route_stations'];
+      if (stops is! List) {
+        return const [];
+      }
+
+      final mapped = stops
+          .whereType<Map>()
+          .map((item) => item.map((k, v) => MapEntry(k.toString(), v)))
+          .toList();
+
+      mapped.sort((a, b) {
+        final aOrder = (a['sequence_order'] is num)
+            ? (a['sequence_order'] as num).toInt()
+            : int.tryParse(a['sequence_order']?.toString() ?? '') ?? 0;
+        final bOrder = (b['sequence_order'] is num)
+            ? (b['sequence_order'] as num).toInt()
+            : int.tryParse(b['sequence_order']?.toString() ?? '') ?? 0;
+        return aOrder.compareTo(bOrder);
+      });
+
+      return mapped;
+    } catch (e) {
+      print('fetchRouteStations error: $e');
+      rethrow;
+    }
+  }
+
   Future<bool> verifyTokensNumber({
     required String userId,
     required int amount,
@@ -121,18 +164,26 @@ class ApiService {
     required String userId,
     required String scheduleId,
     required int price,
+    String? boardingStationId,
+    String? alightingStationId,
   }) async {
     final uri = Uri.parse('$baseUrl/ticket/createticket');
     final headers = await _getAuthHeaders();
 
+    final requestBody = {
+      'user_id': userId,
+      'schedule_id': scheduleId,
+      'price': price,
+      if (boardingStationId != null && alightingStationId != null) ...{
+        'boarding_station_id': boardingStationId,
+        'alighting_station_id': alightingStationId,
+      },
+    };
+
     final response = await http.post(
       uri,
       headers: headers,
-      body: jsonEncode({
-        'user_id': userId,
-        'schedule_id': scheduleId,
-        'price': price,
-      }),
+      body: jsonEncode(requestBody),
     );
 
     if (response.statusCode != 200) {
