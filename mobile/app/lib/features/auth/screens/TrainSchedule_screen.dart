@@ -198,6 +198,8 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
   Future<void> _processPurchase({
     required ScheduleSlot selectedSlot,
     required int quantity,
+    String? boardingStationId,
+    String? alightingStationId,
   }) async {
     final userId = _authController.currentUser.value?.userId;
     if (userId == null || userId.isEmpty) {
@@ -226,6 +228,8 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
         userId: userId,
         scheduleId: selectedSlot.scheduleId,
         price: selectedSlot.price,
+        boardingStationId: boardingStationId,
+        alightingStationId: alightingStationId,
       );
     }
 
@@ -533,9 +537,27 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
   void _showPurchaseDialog(Schedule schedule) {
     int quantity = 1;
     List<ScheduleSlot> slots = [];
+    List<Map<String, dynamic>> routeStations = [];
     ScheduleSlot? selectedSlot;
     bool loadingSlots = true;
+    bool loadingRouteStations = true;
     bool isProcessingPurchase = false;
+    String? boardingStationId;
+    String? alightingStationId;
+
+    String stationName(Map<String, dynamic> station) {
+      final nested = station['stations'];
+      if (nested is Map) {
+        return nested['name']?.toString() ?? 'Unknown';
+      }
+      return station['name']?.toString() ?? 'Unknown';
+    }
+
+    int stationOrder(Map<String, dynamic> station) {
+      final value = station['sequence_order'];
+      if (value is num) return value.toInt();
+      return int.tryParse(value?.toString() ?? '') ?? 0;
+    }
 
     showModalBottomSheet(
       context: context,
@@ -562,9 +584,35 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                   });
             }
 
+            if (loadingRouteStations) {
+              _apiService
+                  .fetchRouteStations(schedule.routeId)
+                  .then((result) {
+                    setModalState(() {
+                      routeStations = result;
+                      if (routeStations.isNotEmpty) {
+                        boardingStationId ??= routeStations.first['station_id']
+                            ?.toString();
+                        alightingStationId ??= routeStations.last['station_id']
+                            ?.toString();
+                      }
+                      loadingRouteStations = false;
+                    });
+                  })
+                  .catchError((e) {
+                    print('❌ fetchRouteStations error: $e');
+                    setModalState(() => loadingRouteStations = false);
+                  });
+            }
+
             final seatCount = selectedSlot?.availableSeats ?? 0;
             final hasEnoughSeats =
                 selectedSlot != null && seatCount >= quantity;
+            final hasStations =
+                routeStations.isEmpty ||
+                (boardingStationId != null && alightingStationId != null);
+            final canProceed = hasEnoughSeats && hasStations;
+            final isLoadingDetails = loadingSlots || loadingRouteStations;
 
             return Container(
               padding: const EdgeInsets.all(30),
@@ -665,7 +713,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  loadingSlots
+                  isLoadingDetails
                       ? const CircularProgressIndicator()
                       : slots.isEmpty
                       ? Text(
@@ -708,6 +756,128 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                             ),
                           ),
                         ),
+                  if (!isLoadingDetails && routeStations.length >= 2) ...[
+                    const SizedBox(height: 20),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Trip segment",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.colorA.withOpacity(0.3),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: boardingStationId,
+                          hint: const Text('Boarding station'),
+                          items: routeStations.map((station) {
+                            final id = station['station_id']?.toString() ?? '';
+                            final label = stationName(station);
+                            return DropdownMenuItem<String>(
+                              value: id,
+                              child: Text(
+                                'From: $label',
+                                style: GoogleFonts.poppins(fontSize: 14),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) => setModalState(() {
+                            boardingStationId = val;
+                            if (boardingStationId == null) return;
+
+                            final boardingIndex = routeStations.indexWhere(
+                              (station) =>
+                                  station['station_id']?.toString() ==
+                                  boardingStationId,
+                            );
+
+                            final validDestinations = routeStations
+                                .where(
+                                  (station) =>
+                                      stationOrder(station) >
+                                      stationOrder(
+                                        routeStations[boardingIndex],
+                                      ),
+                                )
+                                .toList();
+
+                            if (validDestinations.isNotEmpty) {
+                              alightingStationId = validDestinations
+                                  .first['station_id']
+                                  ?.toString();
+                            }
+                          }),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.colorA.withOpacity(0.3),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: alightingStationId,
+                          hint: const Text('Alighting station'),
+                          items: routeStations
+                              .where(
+                                (station) =>
+                                    boardingStationId == null ||
+                                    stationOrder(station) >
+                                        stationOrder(
+                                          routeStations.firstWhere(
+                                            (s) =>
+                                                s['station_id']?.toString() ==
+                                                boardingStationId,
+                                            orElse: () => routeStations.first,
+                                          ),
+                                        ),
+                              )
+                              .map((station) {
+                                final id =
+                                    station['station_id']?.toString() ?? '';
+                                final label = stationName(station);
+                                return DropdownMenuItem<String>(
+                                  value: id,
+                                  child: Text(
+                                    'To: $label',
+                                    style: GoogleFonts.poppins(fontSize: 14),
+                                  ),
+                                );
+                              })
+                              .toList(),
+                          onChanged: (val) => setModalState(() {
+                            alightingStationId = val;
+                          }),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Leave the defaults to book the full route.',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
                   if (!loadingSlots && selectedSlot != null) ...[
                     const SizedBox(height: 14),
                     Row(
@@ -814,7 +984,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: (selectedSlot == null || !hasEnoughSeats)
+                      onPressed: (selectedSlot == null || !canProceed)
                           ? null
                           : () async {
                               setModalState(() => isProcessingPurchase = true);
@@ -823,6 +993,8 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                                 await _processPurchase(
                                   selectedSlot: selectedSlot!,
                                   quantity: quantity,
+                                  boardingStationId: boardingStationId,
+                                  alightingStationId: alightingStationId,
                                 );
                               } catch (error) {
                                 if (!mounted) return;

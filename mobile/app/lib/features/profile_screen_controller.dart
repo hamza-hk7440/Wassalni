@@ -81,7 +81,14 @@ class ProfileScreenController extends GetxController {
     }
   }
 
-  Future<void> changePassword({required String newPassword}) async {
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    if (oldPassword.isEmpty) {
+      throw Exception('Current password is required');
+    }
+
     if (newPassword.length < 6) {
       throw Exception('Password must be at least 6 characters');
     }
@@ -90,7 +97,7 @@ class ProfileScreenController extends GetxController {
       isChangingPassword.value = true;
       await _apiClient.post(
         'users/changepassword',
-        body: {'new_password': newPassword},
+        body: {'old_password': oldPassword, 'new_password': newPassword},
       );
     } finally {
       isChangingPassword.value = false;
