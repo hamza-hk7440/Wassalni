@@ -143,5 +143,19 @@ class ScheduleService {
       (schedule) => !cancelledIds.has(schedule.schedule_id),
     );
   }
+  //update schedule
+  async updateSchedule(id, updateData) {
+    const { data, error } = await supabase
+      .from("schedules")
+      .update(updateData)
+      .eq("schedule_id", id)
+      .select()
+      .single();
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data;
+  }
 }
 export default new ScheduleService();
+
