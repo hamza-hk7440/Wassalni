@@ -84,63 +84,7 @@ function Navbar() {
 
         
         <div className="flex items-center gap-3 md:gap-4">
-          {/* Notification Bell */}
-          <button
-            className="relative p-2.5 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
-            onClick={toggleNotifications}
-          >
-            <span className="text-lg md:text-xl">🔔</span>
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center bg-softTeal">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-
-          {isNotifOpen && (
-            <div
-              className="absolute top-[76px] right-16 md:right-24 w-[20rem] bg-white rounded-2xl shadow-2xl p-4 z-40 border border-frostBlue"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-bold text-deepOcean">
-                  Notifications
-                </p>
-                <span className="text-xs font-semibold text-skyBlue">
-                  {unreadCount}
-                </span>
-              </div>
-
-              <div className="space-y-3 max-h-64 overflow-auto">
-                {notifications.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-3 rounded-xl border bg-blue-50/80 border-frostBlue"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-deepOcean">
-                          {item.title}
-                        </p>
-                        <p className="text-xs text-skyBlue">
-                          {item.detail}
-                        </p>
-                      </div>
-                      <span className="text-[10px] font-bold text-softTeal">
-                        {item.time}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-
-                {notifications.length === 0 && (
-                  <p className="text-xs text-center text-skyBlue">
-                    Aucune notification
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
+          
           {/* Profile Button */}
           <button onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-white font-bold shadow-md border-2 border-white hover:scale-105 transition-transform cursor-pointer bg-deepOcean">
