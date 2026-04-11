@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:app/core/theme/colors_R.dart';
 import 'package:get/get.dart';
 import '../auth_controller.dart';
-import 'role_choice_screen.dart';
 import 'login_page.dart';
 
 class SplashScreen extends StatefulWidget {
