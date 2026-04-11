@@ -1,5 +1,6 @@
 import { supabase } from "../config/supabase.js";
 
+
 class TransportService {
   //create transport
   async createTransport(transport) {
@@ -62,3 +63,4 @@ class TransportService {
     return { message: "Transport deleted successfully" };
   }
 }
+export default new TransportService();

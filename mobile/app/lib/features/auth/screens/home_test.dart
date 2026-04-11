@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(backgroundColor: Colors.blue, title: Text('Home')),
-      body: Center(child: Text('Login Successful!')),
+      body: Center(child: Text('Controller Login Successful!')),
     );
   }
 }

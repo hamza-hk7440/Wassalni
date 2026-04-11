@@ -1,17 +1,17 @@
-
 import express from "express";
-const router = express.Router();
-
 import TransportController from "../controllers/transport.controller.js";
 import requireAdmin from "../middlewares/auth.middleware.js";
 
-// Public or standard routes
-router.get("/", TransportController.getAll);
-router.get("/:id", TransportController.getById);
+const router = express.Router();
+
+// Public routes
+router.get("/", TransportController.getAll.bind(TransportController));
+router.get("/:id", TransportController.getById.bind(TransportController));
 
 // Admin only routes for modification
-router.post("/", requireAdmin, TransportController.create);
-router.put("/:id", requireAdmin, TransportController.update);
-router.delete("/:id", requireAdmin, TransportController.delete);
+router.post("/", requireAdmin, TransportController.create.bind(TransportController));
+router.put("/:id", requireAdmin, TransportController.update.bind(TransportController));
+router.delete("/:id", requireAdmin, TransportController.delete.bind(TransportController));
 
 export default router;
+
