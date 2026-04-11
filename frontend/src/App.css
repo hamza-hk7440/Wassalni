@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
-
+@import "tailwindcss";
 * {
   box-sizing: border-box;
 }
@@ -32,4 +32,3 @@ button:disabled,
 a[aria-disabled='true'],
 [role='button'][aria-disabled='true'] {
   cursor: not-allowed;}
-

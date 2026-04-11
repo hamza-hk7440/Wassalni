@@ -8,10 +8,23 @@ import {
   TRANSACTION_STATUS,
 } from "../models/payment.model.js";
 import axios from "axios";
+import https from "https";
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+function extractTransactionId(rawValue) {
+  const raw = String(rawValue || "");
+  return (
+    raw.match(
+      /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/,
+    )?.[0] || raw
+  );
+}
+
 export async function createRecharge({ user_id, amount }) {
+  let transactionId = null;
+
   try {
     //to create a recharge transaction, we need to insert a new record in the transactions table with type as recharge, method as online and status as pending
     const { data: transaction, error: dbError } = await supabase
@@ -36,8 +49,11 @@ export async function createRecharge({ user_id, amount }) {
         dbError?.message || "Transaction record was not returned by database",
       );
     }
+    transactionId = transaction.transaction_id;
     //we will build the paymee payload
     //this what we will send to paymee(the fields are from paymee integration documentation)
+    const publicBaseUrl = process.env.NGROK_URL || "http://localhost:3000";
+
     const paymeePayload = {
       amount: amount,
       note: `Recharge Wallet - User ${user_id}`,
@@ -45,27 +61,66 @@ export async function createRecharge({ user_id, amount }) {
       last_name: "User",
       email: "test@example.com",
       phone: "21600000000",
-      return_url: "https://localhost:3000/payment-success",
-      cancel_url: "https://localhost:3000/payment-error",
+      return_url: `${publicBaseUrl}/payment-success?transaction_id=${transaction.transaction_id}`,
+      cancel_url: `${publicBaseUrl}/payment-error?transaction_id=${transaction.transaction_id}`,
       webhook_url: `${process.env.NGROK_URL}/webhooks/paymee`, //this is the route that paymee will send to it the response,and like we said it have to be public(on the internet bcz paymee can't communicate to local host ) so we use Ngrok
       order_id: transaction.transaction_id || "temp_id", //here we are verifying if the id is null so we will put to it temp_id to don't crash
     };
+
+    const allowInsecureTls =
+      String(process.env.PAYMEE_ALLOW_INSECURE_TLS || "false").toLowerCase() ===
+      "true";
+
+    const axiosConfig = {
+      headers: {
+        Authorization: `Token ${process.env.PAYMEE_API}`,
+        "Content-Type": "application/json",
+      },
+      timeout: 15000,
+      ...(allowInsecureTls
+        ? {
+            httpsAgent: new https.Agent({
+              rejectUnauthorized: false,
+            }),
+          }
+        : {}),
+    };
+
+    if (allowInsecureTls) {
+      console.warn(
+        "PAYMEE_ALLOW_INSECURE_TLS is enabled. Disable it outside sandbox/dev.",
+      );
+    }
+
     //the axios.post take 3 parameters the first is url is the destination (is the sandbox url given by paymee),the second is the data (the Payload) and the third is config it means how it should be sent
     const response = await axios.post(
       `${process.env.PAYMEE_URL}/payments/create`,
       paymeePayload,
-      {
-        headers: {
-          Authorization: `Token ${process.env.PAYMEE_API}`,
-          "Content-Type": "application/json",
-        },
-      },
+      axiosConfig,
     );
     //and here paymee api will return with a response that contains many fields( guven in paymee doculentation)one of them is data that contains also many fields
     //this data we will need it in the controller
     return response.data;
   } catch (error) {
+    if (transactionId) {
+      await supabase
+        .from("transactions")
+        .update({ status: TRANSACTION_STATUS.FAILED })
+        .eq("transaction_id", transactionId);
+    }
+
     console.error("Paymee API error:", error.response?.data || error.message);
+
+    if (
+      String(error.message || "")
+        .toLowerCase()
+        .includes("certificate")
+    ) {
+      throw new Error(
+        "Paymee TLS certificate error. If you are in sandbox, set PAYMEE_ALLOW_INSECURE_TLS=true in backend/.env and restart backend.",
+      );
+    }
+
     throw error;
   }
 }
@@ -74,19 +129,42 @@ export async function updateTokenBalance({ user_id, amount }) {
   console.log("user_id:", user_id, "amount:", amount);
 
   try {
+    const delta = Number(amount);
+    if (!Number.isFinite(delta)) {
+      throw new Error("Invalid amount for token balance update");
+    }
+
     const { data: user, error } = await supabase
       .from("users")
       .select("token_balance")
       .eq("user_id", user_id)
       .single();
     if (error) throw error;
+
+    const currentBalance = Number(user?.token_balance ?? 0);
+    const nextBalance = currentBalance + delta;
+
     const { error: dbError } = await supabase
       .from("users")
-      .update({ token_balance: user.token_balance + amount })
-      .eq("user_id", user_id);
+      .update({ token_balance: nextBalance })
+      .eq("user_id", user_id)
+      .select("token_balance");
+
     if (dbError) throw dbError;
+
+    const { data: updatedUser, error: readError } = await supabase
+      .from("users")
+      .select("token_balance")
+      .eq("user_id", user_id)
+      .single();
+
+    if (readError) throw readError;
+
+    console.log("updated token_balance:", updatedUser.token_balance);
+    return updatedUser.token_balance;
   } catch (error) {
     console.log("balance update error", error.message);
+    throw error;
   }
 }
 //to verify if the tokens that one user have are enough for payment or no
@@ -139,5 +217,89 @@ export async function getUserIdByTransactionId({ transaction_id }) {
     return transactions.user_id;
   } catch (error) {
     console.log(" get User Id By Transaction Id verify error", error.message);
+    throw error;
   }
+}
+
+export async function completeRechargeTransactionById({
+  transaction_id,
+  paid_amount,
+}) {
+  const cleanTransactionId = extractTransactionId(transaction_id);
+
+  if (!cleanTransactionId) {
+    throw new Error("transaction_id is required to complete recharge");
+  }
+
+  const { data: existingTx, error: existingTxError } = await supabase
+    .from("transactions")
+    .select("transaction_id, user_id, amount, status, credited")
+    .eq("transaction_id", cleanTransactionId)
+    .maybeSingle();
+
+  if (existingTxError) {
+    throw existingTxError;
+  }
+
+  if (!existingTx) {
+    return {
+      transaction_id: cleanTransactionId,
+      credited: false,
+      reason: "not_found",
+    };
+  }
+
+  if (existingTx.status === TRANSACTION_STATUS.COMPLETED) {
+    const { data: userData, error: userDataError } = await supabase
+      .from("users")
+      .select("token_balance")
+      .eq("user_id", existingTx.user_id)
+      .single();
+
+    if (userDataError) {
+      throw userDataError;
+    }
+
+    return {
+      transaction_id: cleanTransactionId,
+      user_id: existingTx.user_id,
+      new_balance: userData?.token_balance ?? null,
+      credited: false,
+      reason: "already_completed",
+    };
+  }
+
+  const baseAmount =
+    typeof paid_amount === "number" &&
+    !Number.isNaN(paid_amount) &&
+    paid_amount > 0
+      ? paid_amount
+      : Number(existingTx.amount || 0);
+
+  const tokensAdded = moneyToToken({ amount: baseAmount });
+
+  const newBalance = await updateTokenBalance({
+    user_id: existingTx.user_id,
+    amount: tokensAdded,
+  });
+
+  const { error: finalizeError } = await supabase
+    .from("transactions")
+    .update({ status: TRANSACTION_STATUS.COMPLETED, credited: true })
+    .eq("transaction_id", cleanTransactionId);
+
+  if (finalizeError) {
+    console.error(
+      "Failed to set transaction completed:",
+      finalizeError.message,
+    );
+  }
+
+  return {
+    transaction_id: cleanTransactionId,
+    user_id: existingTx.user_id,
+    tokens_added: tokensAdded,
+    new_balance: newBalance,
+    credited: true,
+  };
 }

@@ -153,7 +153,7 @@ function Navbar() {
               </Link>
             </li>
             <li>
-              <Link to="/client" onClick={() => setIsOpen(false)} 
+              <Link to="/Home" onClick={() => setIsOpen(false)} 
                 className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95 text-deepOcean">
                 <span className="text-xl group-hover:scale-125 transition-transform">👤</span> 
                 <span>Client</span>
@@ -183,7 +183,7 @@ function Navbar() {
               </Link>
             </li>
             <li>
-              <Link to="/ticket" onClick={() => setIsOpen(false)} 
+              <Link to="/BookTiket" onClick={() => setIsOpen(false)} 
                 className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95 text-deepOcean">
                 <span className="text-xl group-hover:scale-125 transition-transform">🎫</span> 
                 <span>Ticket</span>
