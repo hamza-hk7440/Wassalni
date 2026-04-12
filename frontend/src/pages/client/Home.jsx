@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/layout/NavbarRa';
 import palette from '../../components/common/pallette';
+import tokenLogo from '../../assets/token_logo.png';
 
 const initialClients = [
 	{ clientId: 'CL-001', nom: 'Ali Ben Salah', ticketId: 'TK-1023', ticketDate: '2026-04-05', transport: 'Bus', statut: 'Actif', token: 120 },
@@ -126,7 +127,7 @@ function Home() {
 											</div>
 											<div className="flex items-center gap-2">
 												<div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold text-deepOcean" style={{ borderColor: '#fde68a', backgroundColor: '#fef9c3' }}>
-													<span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: '#facc15' }}></span>
+													<img src={tokenLogo} alt="Token logo" className="h-4 w-4 object-contain" />
 													{client.token}
 												</div>
 												<div className="inline-flex rounded-full px-3 py-1 text-xs font-bold bg-deepOcean text-pureWhite">
@@ -185,7 +186,7 @@ function Home() {
 										</div>
 
 										{editingId === client.clientId && (
-											<form className="mt-4 rounded-2xl border p-4" onSubmit={saveEdit} className="border-frostBlue bg-pureWhite">
+											<form className="mt-4 rounded-2xl border p-4 border-frostBlue bg-pureWhite" onSubmit={saveEdit}>
 												<p className="text-sm font-bold text-deepOcean">
 													Modifier ce client
 												</p>

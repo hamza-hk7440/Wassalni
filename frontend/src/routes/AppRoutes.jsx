@@ -13,7 +13,7 @@ import Home from '../pages/client/Home';
 import Auth from '../pages/auth/Login';
 import Packages from '../pages/client/packages';
 import Profile from '../pages/client/profile';
-import HomeH from '../pages/client/HomeH';
+import HomeH from '../pages/client/homeH';
 import About from '../pages/client/About';
 import Contact from '../pages/client/Contact';
 import BusSchedule from '../pages/client/BusSchedule';
@@ -26,10 +26,8 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Auth />} />
-      <Route path="/Mainlayout" element={<MainLayout />} />
       <Route path="/Dashboard" element={<Dashboard />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/parametre" element={<Parametre/>} />
+      <Route path="/parametre" element={<Parametre />} />
       <Route path="/superlog" element={<Superlog />} /> 
       <Route path="/admin" element={<CreateEmp />} />
       <Route path="/controller" element={<ControllerEmp />} />
@@ -53,6 +51,7 @@ const AppRoutes = () => {
     <Route path="/busSchedule" element={<BusSchedule />} />
     <Route path="metroSchedule" element={<MetroSchedule/>}/>
     <Route path="refundRequest" element={<RefundRequest/>}/>
+    
 </Route>
     
       
