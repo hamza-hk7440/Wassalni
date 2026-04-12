@@ -20,6 +20,7 @@ import BusSchedule from '../pages/client/BusSchedule';
 import ActiveTickets from '../pages/client/active-tickets';
 import TicketHistory from '../pages/client/TicketHistory';
 import MetroSchedule from '../pages/client/metroSchedule';
+import RefundRequest from '../pages/client/refundRequest';
 
 const AppRoutes = () => {
   return (
@@ -51,7 +52,7 @@ const AppRoutes = () => {
     <Route path="/history" element={<TicketHistory />} />
     <Route path="/busSchedule" element={<BusSchedule />} />
     <Route path="metroSchedule" element={<MetroSchedule/>}/>
-    
+    <Route path="refundRequest" element={<RefundRequest/>}/>
 </Route>
     
       

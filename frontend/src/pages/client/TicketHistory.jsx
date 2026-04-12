@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import TicketCard from '../../components/common/Ticket';
@@ -34,6 +33,12 @@ const TicketHistory = () => {
                 issued_at: "2026-04-01 10:00", valid_from: "2026-04-02 08:00", valid_to: "2026-04-02 20:00",
                 from_station: "South Station", to_station: "North Park",
                 status: "active", type: "Bus"
+            },
+            {
+                id: 105, booking_id: "B-005", qr_code: "W-9900",
+                issued_at: "2026-03-20 09:30", valid_from: "2026-03-21 10:00", valid_to: "2026-03-21 22:00",
+                from_station: "Central Station", to_station: "West End",
+                status: "refunded", type: "Train"
             }
         ];
         setHistory(mockData);
@@ -82,6 +87,7 @@ const TicketHistory = () => {
                         />
                     </div>
                 </div>
+
                 {filteredHistory.length > 0 ? (
                     <div className="grid grid-cols-1 gap-6">
                         {filteredHistory.map(ticket => (
@@ -91,7 +97,7 @@ const TicketHistory = () => {
                 ) : (
                     <div className="py-20 text-center flex flex-col items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="text-6xl grayscale opacity-20">🎫</div>
-                        <p className="text-xl text-gray-500 font-medium">No tickets matching your criteria were found.</p>
+                        <p className="text-xl text-gray-500 font-medium">No tickets or refunds matching your criteria were found.</p>
                         
                         <div className="flex flex-col sm:flex-row gap-4 mt-2">
                             <button 
