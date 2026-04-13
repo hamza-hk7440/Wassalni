@@ -39,22 +39,22 @@ export const createController = async (data) => {
 // ==========================================
 
 export const getTransports = async () => {
-    const response = await api.get('/transports');
+    const response = await api.get('/transport');
     return response.data;
 };
 
 export const createTransport = async (data) => {
-    const response = await api.post('/transports', data);
+    const response = await api.post('/transport', data);
     return response.data;
 };
 
 export const updateTransport = async (id, data) => {
-    const response = await api.put(`/transports/${id}`, data);
+    const response = await api.put(`/transport/${id}`, data);
     return response.data;
 };
 
 export const deleteTransport = async (id) => {
-    const response = await api.delete(`/transports/${id}`);
+    const response = await api.delete(`/transport/${id}`);
     return response.data;
 };
 
@@ -63,22 +63,22 @@ export const deleteTransport = async (id) => {
 // ==========================================
 
 export const getStations = async () => {
-    const response = await api.get('/stations');
+    const response = await api.get('/station');
     return response.data;
 };
 
 export const createStation = async (data) => {
-    const response = await api.post('/stations', data);
+    const response = await api.post('/station', data);
     return response.data;
 };
 
 export const updateStation = async (id, data) => {
-    const response = await api.put(`/stations/${id}`, data);
+    const response = await api.put(`/station/${id}`, data);
     return response.data;
 };
 
 export const deleteStation = async (id) => {
-    const response = await api.delete(`/stations/${id}`);
+    const response = await api.delete(`/station/${id}`);
     return response.data;
 };
 
@@ -87,23 +87,23 @@ export const deleteStation = async (id) => {
 // ==========================================
 
 export const getRoutes = async () => {
-    const response = await api.get('/routes');
+    const response = await api.get('/route');
     return response.data;
 };
 
 export const createRoute = async (data) => {
     // data should contain { routeData, stationSequence }
-    const response = await api.post('/routes', data);
+    const response = await api.post('/route', data);
     return response.data;
 };
 
 export const updateRoute = async (id, data) => {
-    const response = await api.put(`/routes/${id}`, data);
+    const response = await api.put(`/route/${id}`, data);
     return response.data;
 };
 
 export const deleteRoute = async (id) => {
-    const response = await api.delete(`/routes/${id}`);
+    const response = await api.delete(`/route/${id}`);
     return response.data;
 };
 
@@ -113,21 +113,21 @@ export const deleteRoute = async (id) => {
 
 export const getSchedules = async (date) => {
     const queryString = date ? `?date=${date}` : '';
-    const response = await api.get(`/schedules/all${queryString}`);
+    const response = await api.get(`/schedule/all${queryString}`);
     return response.data;
 };
 
 export const createSchedule = async (data) => {
-    const response = await api.post('/schedules', data);
+    const response = await api.post('/schedule', data);
     return response.data;
 };
 
 export const updateSchedule = async (id, data) => {
-    const response = await api.put(`/schedules/${id}`, data);
+    const response = await api.put(`/schedule/${id}`, data);
     return response.data;
 };
 
 export const deleteSchedule = async (id) => {
-    const response = await api.delete(`/schedules/${id}`);
+    const response = await api.delete(`/schedule/${id}`);
     return response.data;
 };
