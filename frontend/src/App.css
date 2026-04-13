@@ -1,8 +1,34 @@
-/* App.css */
-body {
-  background: radial-gradient(circle at center, #fdfdfd 0%, #e0e5ec 100%);
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+* {
+  box-sizing: border-box;
 }
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Manrope', sans-serif;
+  color: #16384a;
+  line-height: 1.45;
+  background: linear-gradient(180deg, #eef8ff 0%, #ffffff 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a,
+button,
+[role='button'],
+input[type='button'],
+input[type='submit'] {
+  cursor: pointer;
+}
+
+button:disabled,
+a[aria-disabled='true'],
+[role='button'][aria-disabled='true'] {
+  cursor: not-allowed;}

@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+@theme {
+  --color-deepOcean: #1E5470;
+  --color-classicBlue: #34729C;
+  --color-skyBlue: #6CB1DA;
+  --color-softTeal: #6EC1D1;
+  --color-frostBlue: #C8EAEC;
+  --color-iceWhite: #D1ECFF;
+  --color-pureWhite: #FFFFFF;
+  --color-dangerSoft: #F4C9C9;
+  --color-dangerText: #B4233C;
+  --color-textGray: #5B7181;
+  --color-warmAccent: #F0B35D;
+}
