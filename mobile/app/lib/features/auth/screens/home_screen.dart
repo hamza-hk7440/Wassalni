@@ -251,7 +251,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Welcome,",
+                      'welcome_comma'.tr,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.grey,
@@ -268,7 +268,10 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Obx(
                       () => Text(
-                        "${_homeController.tokenBalance.value} tokens",
+                        'tokens_count'.trParams({
+                          'value': _homeController.tokenBalance.value
+                              .toString(),
+                        }),
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: Colors.grey,
@@ -282,7 +285,7 @@ class _HomePageState extends State<HomePage> {
           ),
           _drawerTile(
             Icons.person_outline,
-            "Profile",
+            'profile'.tr,
             onTap: () {
               Navigator.push(
                 context,
@@ -292,7 +295,7 @@ class _HomePageState extends State<HomePage> {
           ),
           _drawerTile(
             Icons.account_balance_wallet_outlined,
-            "Recharge Tokens",
+            'recharge_tokens'.tr,
             onTap: () {
               Navigator.push(
                 context,
@@ -302,7 +305,7 @@ class _HomePageState extends State<HomePage> {
           ),
           _drawerTile(
             Icons.history,
-            "My Tickets",
+            'my_tickets'.tr,
             onTap: () {
               Navigator.push(
                 context,
@@ -312,7 +315,7 @@ class _HomePageState extends State<HomePage> {
           ),
           _drawerTile(
             Icons.request_page_outlined,
-            "Refund Requests",
+            'refund_requests_title'.tr,
             onTap: () {
               Navigator.push(
                 context,
@@ -326,7 +329,7 @@ class _HomePageState extends State<HomePage> {
           const Divider(),
           _drawerTile(
             Icons.logout,
-            "Logout",
+            'log_out'.tr,
             isExit: true,
             onTap: () {
               Navigator.of(context).pop();

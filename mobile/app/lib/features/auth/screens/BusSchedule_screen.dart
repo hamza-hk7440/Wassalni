@@ -528,15 +528,15 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "${schedule.price} Tokens",
+                  '${schedule.price} ${'tokens'.tr}',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: Colors.orange[800],
                   ),
                 ),
-                  Text(
-                    'tap_to_pick_time'.tr,
+                Text(
+                  'tap_to_pick_time'.tr,
                   style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
                 ),
               ],
@@ -872,7 +872,7 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              "Available seats",
+                              'available_seats'.tr,
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 color: Colors.grey[700],
@@ -898,7 +898,7 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Number of tickets:",
+                        'number_of_tickets'.tr,
                         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                       ),
                       Row(
@@ -947,7 +947,7 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                             Image.asset("assets/token.png", height: 20),
                             const SizedBox(width: 5),
                             Text(
-                              "${(selectedSlot?.price ?? schedule.price) * quantity} Tokens",
+                              '${(selectedSlot?.price ?? schedule.price) * quantity} ${'tokens'.tr}',
                               style: GoogleFonts.poppins(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -1009,7 +1009,7 @@ class _BusSchedulePageState extends State<BusSchedulePage> {
                               ),
                             )
                           : Text(
-                              "Confirm Purchase",
+                              'confirm_purchase_button'.tr,
                               style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,

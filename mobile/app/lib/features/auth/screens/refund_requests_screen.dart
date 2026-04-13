@@ -59,7 +59,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-          title: Text(
+        title: Text(
           'refund_requests_title'.tr,
           style: GoogleFonts.poppins(
             color: AppColors.colorD,
@@ -155,7 +155,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                          '${'amount'.tr}: ${item['amount']}',
+                        '${'amount'.tr}: ${item['amount']}',
                         style: GoogleFonts.poppins(fontSize: 12),
                       ),
                       Text(

@@ -59,15 +59,21 @@ class WelcomeScreen extends StatelessWidget {
                     _languageTile(
                       title: 'english'.tr,
                       subtitle: 'English',
-                      selected: (languageController.locale?.languageCode ?? 'en') == 'en',
-                      onTap: () => languageController.setLanguage(const Locale('en')),
+                      selected:
+                          (languageController.locale?.languageCode ?? 'en') ==
+                          'en',
+                      onTap: () =>
+                          languageController.setLanguage(const Locale('en')),
                     ),
                     const SizedBox(height: 14),
                     _languageTile(
                       title: 'arabic'.tr,
                       subtitle: 'العربية',
-                      selected: (languageController.locale?.languageCode ?? 'en') == 'ar',
-                      onTap: () => languageController.setLanguage(const Locale('ar')),
+                      selected:
+                          (languageController.locale?.languageCode ?? 'en') ==
+                          'ar',
+                      onTap: () =>
+                          languageController.setLanguage(const Locale('ar')),
                     ),
                     const SizedBox(height: 30),
                     SizedBox(

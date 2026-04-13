@@ -16,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
+  bool _isCodeDialogOpen = false;
   final AuthController authController = Get.find<AuthController>();
 
   Widget _buildDivider() {
@@ -223,6 +224,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                       email: emailController.text,
                                       password: passwordController.text,
                                     );
+                                    if (authController.pendingRole.value.isNotEmpty &&
+                                        authController.pendingSession.value.isNotEmpty) {
+                                      _maybeShowCodeDialog(
+                                        authController.pendingRole.value,
+                                      );
+                                    }
                                   }
                                 },
                           child: authController.isLoading.value
@@ -297,12 +304,28 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     ever(authController.pendingRole, (role) {
       if (role.isNotEmpty && authController.pendingSession.value.isNotEmpty) {
+        _maybeShowCodeDialog(role);
+      }
+    });
+  }
+
+  void _maybeShowCodeDialog(String role) {
+    if (!mounted || _isCodeDialogOpen) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isCodeDialogOpen) return;
+      if (authController.pendingRole.value.isNotEmpty &&
+          authController.pendingSession.value.isNotEmpty) {
         _showCodeDialog(role);
       }
     });
   }
 
   void _showCodeDialog(String role) {
+    if (_isCodeDialogOpen) return;
+    _isCodeDialogOpen = true;
     final codeController = TextEditingController();
     final label = role == 'controller' ? 'controller_code' : 'admin_code';
     final hint = role == 'controller'
@@ -364,6 +387,7 @@ class _LoginScreenState extends State<LoginScreen> {
               authController.pendingSession.value = '';
               authController.pendingRole.value = '';
               authController.errorMessage.value = '';
+              _isCodeDialogOpen = false;
               Navigator.pop(context);
             },
             child: Text('cancel'.tr, style: TextStyle(color: Colors.grey[600])),
@@ -382,7 +406,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       final success = await authController.verifyRoleCode(
                         code: codeController.text.trim(),
                       );
-                      if (success) Navigator.pop(context);
+                      if (success) {
+                        _isCodeDialogOpen = false;
+                        Navigator.pop(context);
+                      }
                     },
               child: authController.isLoading.value
                   ? const SizedBox(

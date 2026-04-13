@@ -232,9 +232,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
       return;
     }
 
-    _showMessage(
-      result['message']?.toString() ?? 'ticket_marked_used'.tr,
-    );
+    _showMessage(result['message']?.toString() ?? 'ticket_marked_used'.tr);
   }
 
   void _showTicketReviewDialog({

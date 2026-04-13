@@ -89,16 +89,16 @@ class _RechargePageState extends State<RechargePage> {
       );
 
       if (!launched && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('unable_open_paymee'.tr)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('unable_open_paymee'.tr)));
       }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
-        SnackBar(content: Text('payment_failed'.trParams({'error': error.toString()}))),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('payment_failed'.trParams({'error': error.toString()})),
+        ),
       );
     } finally {
       if (mounted) {

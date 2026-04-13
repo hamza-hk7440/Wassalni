@@ -137,10 +137,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
             ),
           ],
         ),
-        content: Text(
-          'purchase_confirmed'.tr,
-          style: GoogleFonts.poppins(),
-        ),
+        content: Text('purchase_confirmed'.tr, style: GoogleFonts.poppins()),
         actions: [
           TextButton(
             onPressed: () {
@@ -179,10 +176,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
             ),
           ],
         ),
-        content: Text(
-          'not_enough_tokens'.tr,
-          style: GoogleFonts.poppins(),
-        ),
+        content: Text('not_enough_tokens'.tr, style: GoogleFonts.poppins()),
         actions: [
           TextButton(
             onPressed: () {
@@ -301,8 +295,8 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                           ),
                           Text(
                             widget.direction == "mahdia"
-                              ? 'monastir_mahdia'.tr
-                              : 'mahdia_monastir'.tr,
+                                ? 'monastir_mahdia'.tr
+                                : 'mahdia_monastir'.tr,
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               color: Colors.grey,
@@ -420,9 +414,9 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
     final routeOptions = routeMap.values.toList();
 
     if (routeOptions.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('no_routes_available'.tr)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('no_routes_available'.tr)));
       return;
     }
 
@@ -731,7 +725,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              "Available seats",
+                              'available_seats'.tr,
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 color: Colors.grey[700],
@@ -757,7 +751,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Tickets:",
+                        'tickets'.tr,
                         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                       ),
                       Row(
@@ -806,7 +800,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                             Image.asset("assets/token.png", height: 20),
                             const SizedBox(width: 5),
                             Text(
-                              "${(selectedSlot?.price ?? schedule.price) * quantity} Tokens",
+                              '${(selectedSlot?.price ?? schedule.price) * quantity} ${'tokens'.tr}',
                               style: GoogleFonts.poppins(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -837,7 +831,11 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                                 if (!mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text("Purchase failed: $error"),
+                                    content: Text(
+                                      'purchase_failed'.trParams({
+                                        'error': error.toString(),
+                                      }),
+                                    ),
                                   ),
                                 );
                               } finally {
@@ -1127,7 +1125,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "${schedule.price} Tokens",
+                  '${schedule.price} ${'tokens'.tr}',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
