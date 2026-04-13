@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
           child: Row(
             children: [
               Text(
-                "WASALNI",
+                'app_title'.tr,
                 style: GoogleFonts.poppins(
                   color: AppColors.colorA,
                   fontWeight: FontWeight.bold,
@@ -103,8 +103,8 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _buildTransportButton(
-                  title: "Bus",
-                  subtitle: "Check Bus schedule and book your seat easily",
+                  title: 'bus'.tr,
+                  subtitle: 'bus_schedule'.tr,
                   assetPath: "assets/bus.png",
                   size: squareSize,
                   onTap: () {
@@ -118,8 +118,8 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 30),
                 _buildTransportButton(
-                  title: "Train",
-                  subtitle: "View Train schedules and buy your digital ticket",
+                  title: 'metro'.tr,
+                  subtitle: 'metro_schedule'.tr,
                   assetPath: "assets/trainnn.png",
                   size: squareSize,
                   onTap: () {
@@ -160,15 +160,15 @@ class _HomePageState extends State<HomePage> {
         items: [
           BottomNavigationBarItem(
             icon: Image.asset("assets/home.png", height: 22),
-            label: "Home",
+            label: 'home'.tr,
           ),
           BottomNavigationBarItem(
             icon: Image.asset("assets/tickett.png", height: 22),
-            label: "My Tickets",
+            label: 'my_tickets'.tr,
           ),
           BottomNavigationBarItem(
             icon: Image.asset("assets/profile.png", height: 22),
-            label: "Profile",
+            label: 'profile'.tr,
           ),
         ],
       ),

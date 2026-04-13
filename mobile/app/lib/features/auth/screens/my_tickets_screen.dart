@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:app/core/theme/colors_R.dart';
 import 'package:app/features/mytickets_screen_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class MyTicketsPage extends StatefulWidget {
@@ -88,10 +89,8 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
       await _controller.requestRefund(ticket.ticketId);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Refund request sent. It will be processed in about 2 minutes (test mode).',
-          ),
+        SnackBar(
+          content: Text('refund_pending'.tr),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -189,7 +188,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
         width: double.infinity,
         child: OutlinedButton(
           onPressed: () => _requestRefund(ticket),
-          child: const Text('Request Refund'),
+          child: Text('request_refund'.tr),
         ),
       ),
     );
@@ -217,7 +216,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
       builder: (context) {
         return AlertDialog(
           title: Text(
-            'Ticket QR',
+            'ticket_qr'.tr,
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.bold,
               color: AppColors.colorD,
@@ -250,7 +249,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                       ),
                     const SizedBox(height: 12),
                     Text(
-                      'Ticket ID: ${_controllerCode(ticket.ticketId)}',
+                      'ticket_id_label'.trParams({'value': _controllerCode(ticket.ticketId)}),
                       style: GoogleFonts.poppins(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -261,7 +260,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                     Text(
                       hasQr
                           ? 'Show this QR to controller for scanning.'
-                          : 'QR unavailable. Use this Ticket ID if scan fails.',
+                          : 'qr_unavailable'.tr,
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         color: Colors.grey[700],
@@ -276,7 +275,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
+              child: Text('close'.tr),
             ),
           ],
         );
@@ -363,7 +362,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
             return Center(
               child: Text(
                 widget.showHistory
-                    ? 'No ticket history found.'
+                    ? 'no_ticket_history'.tr
                     : 'No active tickets found.',
                 style: GoogleFonts.poppins(color: Colors.grey[700]),
               ),

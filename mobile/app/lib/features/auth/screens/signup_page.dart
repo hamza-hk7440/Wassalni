@@ -30,7 +30,7 @@ class _SignupScreenState extends State<SignupScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
-              "OR",
+              'or_separator'.tr,
               style: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 12),
             ),
           ),
@@ -85,7 +85,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 Image.asset("assets/logoGoogle.png", height: 22),
               const SizedBox(width: 12),
               Text(
-                "Continue with Google",
+                'continue_with_google'.tr,
                 style: GoogleFonts.poppins(
                   color: Colors.black87,
                   fontSize: 15,
@@ -126,7 +126,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      "Create your Account",
+                      'create_account_title'.tr,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 27,
@@ -136,7 +136,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "Join us today!",
+                      'join_us_today'.tr,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 15,
@@ -151,7 +151,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             controller: firstNameController,
                             keyboardType: TextInputType.name,
                             decoration: InputDecoration(
-                              labelText: 'First Name',
+                              labelText: 'first_name'.tr,
                               prefixIcon: Icon(
                                 Icons.person_outline,
                                 color: AppColors.colorA,
@@ -165,7 +165,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             ),
                             validator: (value) =>
                                 (value == null || value.isEmpty)
-                                ? 'Required'
+                                ? 'required'.tr
                                 : null,
                           ),
                         ),
@@ -174,7 +174,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           child: TextFormField(
                             controller: lastNameController,
                             decoration: InputDecoration(
-                              labelText: 'Last Name',
+                              labelText: 'last_name'.tr,
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
@@ -184,7 +184,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             ),
                             validator: (value) =>
                                 (value == null || value.isEmpty)
-                                ? 'Required'
+                                ? 'required'.tr
                                 : null,
                           ),
                         ),
@@ -195,7 +195,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       controller: emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        labelText: 'Email',
+                        labelText: 'email'.tr,
                         prefixIcon: Icon(
                           Icons.email_outlined,
                           color: AppColors.colorA,
@@ -209,7 +209,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       validator: (value) =>
                           (value == null || !value.contains('@'))
-                          ? 'Invalid Email'
+                          ? 'invalid_email'.tr
                           : null,
                     ),
                     const SizedBox(height: 18),
@@ -217,7 +217,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       controller: passwordController,
                       obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
-                        labelText: 'Password',
+                        labelText: 'password'.tr,
                         prefixIcon: Icon(
                           Icons.lock_outline,
                           color: AppColors.colorA,
@@ -241,7 +241,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
                       validator: (value) => (value == null || value.length < 6)
-                          ? 'Minimum 6 characters'
+                          ? 'minimum_6_chars'.tr
                           : null,
                     ),
                     const SizedBox(height: 18),
@@ -249,7 +249,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       controller: confirmPasswordController,
                       obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
-                        labelText: 'Confirm Password',
+                        labelText: 'confirm_password'.tr,
                         prefixIcon: Icon(
                           Icons.lock_reset,
                           color: AppColors.colorA,
@@ -263,9 +263,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty)
-                          return 'Please confirm password !';
+                          return 'confirm_password_required'.tr;
                         if (value != passwordController.text)
-                          return 'Passwords do not match';
+                          return 'passwords_do_not_match'.tr;
                         return null;
                       },
                     ),
@@ -319,7 +319,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                   ),
                                 )
                               : Text(
-                                  "Sign Up",
+                                  'sign_up'.tr,
                                   style: GoogleFonts.poppins(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -334,7 +334,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Already have an account?",
+                          'already_have_account'.tr,
                           style: GoogleFonts.poppins(color: Colors.grey[700]),
                         ),
                         TextButton(
@@ -342,7 +342,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             Navigator.pop(context);
                           },
                           child: Text(
-                            "Login",
+                            'login'.tr,
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.bold,
                               color: AppColors.colorA,

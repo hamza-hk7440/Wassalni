@@ -150,7 +150,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
 
   Future<void> _openScanner() async {
     if (_selectedSchedule == null) {
-      _showMessage('Please select a trip first.');
+      _showMessage('choose_trip_first'.tr);
       return;
     }
 
@@ -167,7 +167,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
   Future<void> _handleManualCheck() async {
     final input = _idController.text.trim();
     if (input.isEmpty) {
-      _showMessage('Please enter the short ticket code.');
+      _showMessage('enter_short_code'.tr);
       return;
     }
 
@@ -184,12 +184,12 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
   }) async {
     final ticketInput = rawValue.trim();
     if (ticketInput.isEmpty) {
-      _showMessage('Please scan or enter a ticket ID.');
+      _showMessage('scan_or_enter_id'.tr);
       return;
     }
 
     if (_selectedSchedule == null) {
-      _showMessage('Please select a trip first.');
+      _showMessage('choose_trip_first'.tr);
       return;
     }
 
@@ -207,7 +207,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
       );
 
       if (ticket.isEmpty) {
-        throw Exception('Ticket not found');
+        throw Exception('ticket_not_found'.tr);
       }
 
       _showTicketReviewDialog(
@@ -233,7 +233,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
     }
 
     _showMessage(
-      result['message']?.toString() ?? 'Ticket marked as used successfully.',
+      result['message']?.toString() ?? 'ticket_marked_used'.tr,
     );
   }
 
@@ -263,7 +263,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
           builder: (context, setDialogState) {
             return AlertDialog(
               title: Text(
-                'Ticket details',
+                'ticket_details_title'.tr,
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
               ),
               content: SingleChildScrollView(
@@ -271,42 +271,42 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _detailRow('Ticket ID', ticketId),
-                    _detailRow('Short code', shortId),
-                    _detailRow('Status', ticketStatus),
-                    _detailRow('Lookup mode', matchType),
+                    _detailRow('ticket_id'.tr, ticketId),
+                    _detailRow('short_code'.tr, shortId),
+                    _detailRow('status'.tr, ticketStatus),
+                    _detailRow('lookup_mode'.tr, matchType),
                     _detailRow(
-                      'Selected trip',
+                      'selected_trip'.tr,
                       selectedSchedule == null
-                          ? 'No trip selected'
+                          ? 'no_trip_selected'.tr
                           : _scheduleLabel(selectedSchedule),
                     ),
                     _detailRow(
-                      'Ticket trip',
+                      'ticket_trip'.tr,
                       ticketScheduleId.isEmpty ? '-' : ticketScheduleId,
                     ),
                     _detailRow(
-                      'Trip match',
-                      matchesSchedule ? 'Match' : 'Mismatch',
+                      'trip_match'.tr,
+                      matchesSchedule ? 'match'.tr : 'mismatch'.tr,
                       valueColor: matchesSchedule
                           ? Colors.green
                           : Colors.redAccent,
                     ),
-                    _detailRow('Price', '${ticket['price'] ?? 0}'),
+                    _detailRow('price'.tr, '${ticket['price'] ?? 0}'),
                     _detailRow(
-                      'Purchase date',
+                      'purchase_date'.tr,
                       ticket['purchase_date']?.toString() ?? '-',
                     ),
                     _detailRow(
-                      'Route',
+                      'route'.tr,
                       '${ticket['departure_station'] ?? '-'} → ${ticket['arrival_station'] ?? '-'}',
                     ),
                     _detailRow(
-                      'Departure',
+                      'departure'.tr,
                       ticket['departure_time']?.toString() ?? '-',
                     ),
                     _detailRow(
-                      'Arrival',
+                      'arrival'.tr,
                       ticket['arrival_time']?.toString() ?? '-',
                     ),
                   ],
@@ -315,7 +315,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Close'),
+                  child: Text('close'.tr),
                 ),
                 ElevatedButton(
                   onPressed: (!canValidate || isValidating)
@@ -446,7 +446,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Choose the trip first, then scan or enter the ticket code.\nThe ticket will be matched with the selected trip before validation.',
+              'controller_instructions'.tr,
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[700]),
             ),
@@ -487,7 +487,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Transport type',
+                      'transport_type'.tr,
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -499,7 +499,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
                       spacing: 10,
                       children: [
                         ChoiceChip(
-                          label: const Text('Metro'),
+                          label: Text('metro'.tr),
                           selected: _selectedTransportType == 'metro',
                           onSelected: (_) {
                             setState(() {
@@ -509,7 +509,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
                           },
                         ),
                         ChoiceChip(
-                          label: const Text('Bus'),
+                          label: Text('bus'.tr),
                           selected: _selectedTransportType == 'bus',
                           onSelected: (_) {
                             setState(() {
@@ -525,12 +525,16 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
                       const Center(child: CircularProgressIndicator())
                     else if (_schedules.isEmpty)
                       Text(
-                        'No schedules found for this date.',
+                        'no_schedules_for_date'.tr,
                         style: GoogleFonts.poppins(color: Colors.grey[700]),
                       )
                     else if (filteredSchedules.isEmpty)
                       Text(
-                        'No ${_selectedTransportType == 'metro' ? 'metro' : 'bus'} schedules found for this date.',
+                        'no_transport_schedules_for_date'.trParams({
+                          'type': _selectedTransportType == 'metro'
+                              ? 'metro'.tr
+                              : 'bus'.tr,
+                        }),
                         style: GoogleFonts.poppins(color: Colors.grey[700]),
                       )
                     else
@@ -629,7 +633,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
             ),
             const SizedBox(height: 22),
             Text(
-              'Manual short code',
+              'manual_short_code'.tr,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -641,7 +645,7 @@ class _ControllerHomePageState extends State<ControllerHomePage> {
               controller: _idController,
               textInputAction: TextInputAction.done,
               decoration: InputDecoration(
-                hintText: 'Enter short code (last part after -)',
+                hintText: 'enter_short_code_hint'.tr,
                 prefixIcon: Icon(
                   Icons.confirmation_number,
                   color: AppColors.colorA,
