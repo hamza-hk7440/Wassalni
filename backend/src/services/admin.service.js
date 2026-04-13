@@ -2,10 +2,15 @@
 import { supabase } from '../config/supabase.js';
 
 export const getDashboardStats = async () => {
-    const [users, transactions, buses] = await Promise.all([
+    const [users, transactions, busesData, metrosData, ticketsDataQuery] = await Promise.all([
         supabase.from('users').select('user_id', { count: 'exact' }),
         supabase.from('transactions').select('amount', { count: 'exact' }),
-        supabase.from('transports').select('transport_id', { count: 'exact' })
+        supabase.from('transports').select('transport_id', { count: 'exact' }).eq('type', 'Bus'),
+        supabase.from('transports').select('transport_id', { count: 'exact' }).eq('type', 'Metro'),
+        supabase.from('tickets').select(`
+            price,
+            schedules ( transports ( type ) )
+        `)
     ]);
 
     const { data: revenueData, error: revenueError } = await supabase
@@ -16,12 +21,36 @@ export const getDashboardStats = async () => {
     if (revenueError) throw revenueError;
 
     const totalRevenue = revenueData.reduce((sum, transaction) => sum + Number(transaction.amount), 0);
+    const ticketsData = ticketsDataQuery.data || [];
+    
+    let totalRevenueMet = 0;
+    let totalRevenueBus = 0;
+    let placesVenduesMetro = 0;
+    let placesVenduesBus = 0;
+
+    for (const ticket of ticketsData) {
+        const type = ticket.schedules?.transports?.type;
+        const price = Number(ticket.price) || 0;
+        if (type === 'Metro') {
+            totalRevenueMet += price;
+            placesVenduesMetro += 1;
+        } else if (type === 'Bus') {
+            totalRevenueBus += price;
+            placesVenduesBus += 1;
+        }
+    }
 
     return {
-        total_users: users.count,
-        total_transactions: transactions.count,
-        activeBuses: buses.count,
-        total_revenue: totalRevenue
+        total_users: users.count || 0,
+        total_transactions: transactions.count || 0,
+        buses_count: busesData.count || 0,
+        metros_count: metrosData.count || 0,
+        total_revenue: totalRevenue || 0,
+        revenue_metro: totalRevenueMet,
+        revenue_bus: totalRevenueBus,
+        places_vendues_metro: placesVenduesMetro,
+        places_vendues_bus: placesVenduesBus,
+        total_places: placesVenduesMetro + placesVenduesBus
     };
 };
 
