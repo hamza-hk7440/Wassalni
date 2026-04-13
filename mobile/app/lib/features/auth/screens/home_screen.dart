@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
           child: Row(
             children: [
               Text(
-                "WASALNI",
+                'app_title'.tr,
                 style: GoogleFonts.poppins(
                   color: AppColors.colorA,
                   fontWeight: FontWeight.bold,
@@ -103,8 +103,8 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _buildTransportButton(
-                  title: "Bus",
-                  subtitle: "Check Bus schedule and book your seat easily",
+                  title: 'bus'.tr,
+                  subtitle: 'bus_schedule'.tr,
                   assetPath: "assets/bus.png",
                   size: squareSize,
                   onTap: () {
@@ -118,8 +118,8 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 30),
                 _buildTransportButton(
-                  title: "Train",
-                  subtitle: "View Train schedules and buy your digital ticket",
+                  title: 'metro'.tr,
+                  subtitle: 'metro_schedule'.tr,
                   assetPath: "assets/trainnn.png",
                   size: squareSize,
                   onTap: () {
@@ -160,15 +160,15 @@ class _HomePageState extends State<HomePage> {
         items: [
           BottomNavigationBarItem(
             icon: Image.asset("assets/home.png", height: 22),
-            label: "Home",
+            label: 'home'.tr,
           ),
           BottomNavigationBarItem(
             icon: Image.asset("assets/tickett.png", height: 22),
-            label: "My Tickets",
+            label: 'my_tickets'.tr,
           ),
           BottomNavigationBarItem(
             icon: Image.asset("assets/profile.png", height: 22),
-            label: "Profile",
+            label: 'profile'.tr,
           ),
         ],
       ),
@@ -251,7 +251,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Welcome,",
+                      'welcome_comma'.tr,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.grey,
@@ -268,7 +268,10 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Obx(
                       () => Text(
-                        "${_homeController.tokenBalance.value} tokens",
+                        'tokens_count'.trParams({
+                          'value': _homeController.tokenBalance.value
+                              .toString(),
+                        }),
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: Colors.grey,
@@ -282,7 +285,7 @@ class _HomePageState extends State<HomePage> {
           ),
           _drawerTile(
             Icons.person_outline,
-            "Profile",
+            'profile'.tr,
             onTap: () {
               Navigator.push(
                 context,
@@ -292,7 +295,7 @@ class _HomePageState extends State<HomePage> {
           ),
           _drawerTile(
             Icons.account_balance_wallet_outlined,
-            "Recharge Tokens",
+            'recharge_tokens'.tr,
             onTap: () {
               Navigator.push(
                 context,
@@ -302,7 +305,7 @@ class _HomePageState extends State<HomePage> {
           ),
           _drawerTile(
             Icons.history,
-            "My Tickets",
+            'my_tickets'.tr,
             onTap: () {
               Navigator.push(
                 context,
@@ -312,7 +315,7 @@ class _HomePageState extends State<HomePage> {
           ),
           _drawerTile(
             Icons.request_page_outlined,
-            "Refund Requests",
+            'refund_requests_title'.tr,
             onTap: () {
               Navigator.push(
                 context,
@@ -326,7 +329,7 @@ class _HomePageState extends State<HomePage> {
           const Divider(),
           _drawerTile(
             Icons.logout,
-            "Logout",
+            'log_out'.tr,
             isExit: true,
             onTap: () {
               Navigator.of(context).pop();

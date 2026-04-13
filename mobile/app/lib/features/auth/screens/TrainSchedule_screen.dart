@@ -48,6 +48,14 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
     }
   }
 
+  String _transportTypeLabel(String value) {
+    final normalized = value.toLowerCase().trim();
+    if (normalized == 'bus') return 'bus'.tr;
+    if (normalized == 'metro') return 'metro'.tr;
+    if (normalized == 'train') return 'train'.tr;
+    return value;
+  }
+
   bool _isScheduleOnSelectedDay(Schedule schedule) {
     try {
       final departure = DateTime.parse(schedule.departure).toLocal();
@@ -120,7 +128,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
             const Icon(Icons.check_circle, color: Colors.green),
             const SizedBox(width: 8),
             Text(
-              "Purchase Successful",
+              'purchase_successful'.tr,
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -129,10 +137,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
             ),
           ],
         ),
-        content: Text(
-          "Your ticket is confirmed. You will find it in My Tickets.",
-          style: GoogleFonts.poppins(),
-        ),
+        content: Text('purchase_confirmed'.tr, style: GoogleFonts.poppins()),
         actions: [
           TextButton(
             onPressed: () {
@@ -142,11 +147,11 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                 MaterialPageRoute(builder: (_) => MyTicketsPage()),
               );
             },
-            child: const Text("Go to My Tickets"),
+            child: Text('go_to_my_tickets'.tr),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Close"),
+            child: Text('close'.tr),
           ),
         ],
       ),
@@ -162,7 +167,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
             const Icon(Icons.error, color: Colors.redAccent),
             const SizedBox(width: 8),
             Text(
-              "Insufficient Tokens",
+              'insufficient_tokens'.tr,
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -171,10 +176,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
             ),
           ],
         ),
-        content: Text(
-          "You don't have enough tokens to complete this purchase.",
-          style: GoogleFonts.poppins(),
-        ),
+        content: Text('not_enough_tokens'.tr, style: GoogleFonts.poppins()),
         actions: [
           TextButton(
             onPressed: () {
@@ -184,11 +186,11 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                 MaterialPageRoute(builder: (_) => const RechargePage()),
               );
             },
-            child: const Text("Recharge Now"),
+            child: Text('recharge_now'.tr),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text('cancel'.tr),
           ),
         ],
       ),
@@ -198,8 +200,6 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
   Future<void> _processPurchase({
     required ScheduleSlot selectedSlot,
     required int quantity,
-    String? boardingStationId,
-    String? alightingStationId,
   }) async {
     final userId = _authController.currentUser.value?.userId;
     if (userId == null || userId.isEmpty) {
@@ -228,8 +228,6 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
         userId: userId,
         scheduleId: selectedSlot.scheduleId,
         price: selectedSlot.price,
-        boardingStationId: boardingStationId,
-        alightingStationId: alightingStationId,
       );
     }
 
@@ -288,7 +286,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Train Schedule",
+                            'metro_schedule'.tr,
                             style: GoogleFonts.poppins(
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
@@ -297,8 +295,8 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                           ),
                           Text(
                             widget.direction == "mahdia"
-                                ? "Monastir ➔ Mahdia"
-                                : "Mahdia ➔ Monastir",
+                                ? 'monastir_mahdia'.tr
+                                : 'mahdia_monastir'.tr,
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               color: Colors.grey,
@@ -333,7 +331,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                           ),
                           const SizedBox(height: 15),
                           Text(
-                            "No schedules for this day",
+                            'no_schedules_for_day'.tr,
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               color: Colors.grey,
@@ -373,7 +371,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
           color: Colors.white,
         ),
         label: Text(
-          "Quick Buy",
+          'quick_buy'.tr,
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -393,7 +391,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
           Text(_scheduleController.errorMessage, style: GoogleFonts.poppins()),
           TextButton(
             onPressed: () => _scheduleController.loadSchedules(),
-            child: const Text("Retry"),
+            child: Text('retry'.tr),
           ),
         ],
       ),
@@ -416,9 +414,9 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
     final routeOptions = routeMap.values.toList();
 
     if (routeOptions.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No routes available for quick buy")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('no_routes_available'.tr)));
       return;
     }
 
@@ -450,7 +448,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    "Quick Buy",
+                    'quick_buy'.tr,
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -459,7 +457,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    "Select route (From → To)",
+                    'select_route'.tr,
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       color: Colors.grey,
@@ -537,27 +535,9 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
   void _showPurchaseDialog(Schedule schedule) {
     int quantity = 1;
     List<ScheduleSlot> slots = [];
-    List<Map<String, dynamic>> routeStations = [];
     ScheduleSlot? selectedSlot;
     bool loadingSlots = true;
-    bool loadingRouteStations = true;
     bool isProcessingPurchase = false;
-    String? boardingStationId;
-    String? alightingStationId;
-
-    String stationName(Map<String, dynamic> station) {
-      final nested = station['stations'];
-      if (nested is Map) {
-        return nested['name']?.toString() ?? 'Unknown';
-      }
-      return station['name']?.toString() ?? 'Unknown';
-    }
-
-    int stationOrder(Map<String, dynamic> station) {
-      final value = station['sequence_order'];
-      if (value is num) return value.toInt();
-      return int.tryParse(value?.toString() ?? '') ?? 0;
-    }
 
     showModalBottomSheet(
       context: context,
@@ -584,35 +564,10 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                   });
             }
 
-            if (loadingRouteStations) {
-              _apiService
-                  .fetchRouteStations(schedule.routeId)
-                  .then((result) {
-                    setModalState(() {
-                      routeStations = result;
-                      if (routeStations.isNotEmpty) {
-                        boardingStationId ??= routeStations.first['station_id']
-                            ?.toString();
-                        alightingStationId ??= routeStations.last['station_id']
-                            ?.toString();
-                      }
-                      loadingRouteStations = false;
-                    });
-                  })
-                  .catchError((e) {
-                    print('❌ fetchRouteStations error: $e');
-                    setModalState(() => loadingRouteStations = false);
-                  });
-            }
-
             final seatCount = selectedSlot?.availableSeats ?? 0;
             final hasEnoughSeats =
                 selectedSlot != null && seatCount >= quantity;
-            final hasStations =
-                routeStations.isEmpty ||
-                (boardingStationId != null && alightingStationId != null);
-            final canProceed = hasEnoughSeats && hasStations;
-            final isLoadingDetails = loadingSlots || loadingRouteStations;
+            final canProceed = hasEnoughSeats;
 
             return Container(
               padding: const EdgeInsets.all(30),
@@ -633,7 +588,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    "Ticket Details",
+                    'ticket_details'.tr,
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -654,7 +609,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "From",
+                                'from'.tr,
                                 style: GoogleFonts.poppins(
                                   fontSize: 11,
                                   color: Colors.grey,
@@ -679,7 +634,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                               size: 22,
                             ),
                             Text(
-                              "Direct",
+                              'direct'.tr,
                               style: GoogleFonts.poppins(
                                 fontSize: 10,
                                 color: Colors.grey,
@@ -692,7 +647,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                "To",
+                                'to'.tr,
                                 style: GoogleFonts.poppins(
                                   fontSize: 11,
                                   color: Colors.grey,
@@ -713,11 +668,11 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  isLoadingDetails
+                  loadingSlots
                       ? const CircularProgressIndicator()
                       : slots.isEmpty
                       ? Text(
-                          "No times available",
+                          'no_times_available'.tr,
                           style: GoogleFonts.poppins(color: Colors.grey),
                         )
                       : Container(
@@ -756,128 +711,6 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                             ),
                           ),
                         ),
-                  if (!isLoadingDetails && routeStations.length >= 2) ...[
-                    const SizedBox(height: 20),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Trip segment",
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: AppColors.colorA.withOpacity(0.3),
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: boardingStationId,
-                          hint: const Text('Boarding station'),
-                          items: routeStations.map((station) {
-                            final id = station['station_id']?.toString() ?? '';
-                            final label = stationName(station);
-                            return DropdownMenuItem<String>(
-                              value: id,
-                              child: Text(
-                                'From: $label',
-                                style: GoogleFonts.poppins(fontSize: 14),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (val) => setModalState(() {
-                            boardingStationId = val;
-                            if (boardingStationId == null) return;
-
-                            final boardingIndex = routeStations.indexWhere(
-                              (station) =>
-                                  station['station_id']?.toString() ==
-                                  boardingStationId,
-                            );
-
-                            final validDestinations = routeStations
-                                .where(
-                                  (station) =>
-                                      stationOrder(station) >
-                                      stationOrder(
-                                        routeStations[boardingIndex],
-                                      ),
-                                )
-                                .toList();
-
-                            if (validDestinations.isNotEmpty) {
-                              alightingStationId = validDestinations
-                                  .first['station_id']
-                                  ?.toString();
-                            }
-                          }),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: AppColors.colorA.withOpacity(0.3),
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: alightingStationId,
-                          hint: const Text('Alighting station'),
-                          items: routeStations
-                              .where(
-                                (station) =>
-                                    boardingStationId == null ||
-                                    stationOrder(station) >
-                                        stationOrder(
-                                          routeStations.firstWhere(
-                                            (s) =>
-                                                s['station_id']?.toString() ==
-                                                boardingStationId,
-                                            orElse: () => routeStations.first,
-                                          ),
-                                        ),
-                              )
-                              .map((station) {
-                                final id =
-                                    station['station_id']?.toString() ?? '';
-                                final label = stationName(station);
-                                return DropdownMenuItem<String>(
-                                  value: id,
-                                  child: Text(
-                                    'To: $label',
-                                    style: GoogleFonts.poppins(fontSize: 14),
-                                  ),
-                                );
-                              })
-                              .toList(),
-                          onChanged: (val) => setModalState(() {
-                            alightingStationId = val;
-                          }),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Leave the defaults to book the full route.',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
                   if (!loadingSlots && selectedSlot != null) ...[
                     const SizedBox(height: 14),
                     Row(
@@ -892,7 +725,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              "Available seats",
+                              'available_seats'.tr,
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 color: Colors.grey[700],
@@ -918,7 +751,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Tickets:",
+                        'tickets'.tr,
                         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                       ),
                       Row(
@@ -957,7 +790,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Total Price:",
+                          'total_price'.tr,
                           style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600,
                           ),
@@ -967,7 +800,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                             Image.asset("assets/token.png", height: 20),
                             const SizedBox(width: 5),
                             Text(
-                              "${(selectedSlot?.price ?? schedule.price) * quantity} Tokens",
+                              '${(selectedSlot?.price ?? schedule.price) * quantity} ${'tokens'.tr}',
                               style: GoogleFonts.poppins(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -993,14 +826,16 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                                 await _processPurchase(
                                   selectedSlot: selectedSlot!,
                                   quantity: quantity,
-                                  boardingStationId: boardingStationId,
-                                  alightingStationId: alightingStationId,
                                 );
                               } catch (error) {
                                 if (!mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text("Purchase failed: $error"),
+                                    content: Text(
+                                      'purchase_failed'.trParams({
+                                        'error': error.toString(),
+                                      }),
+                                    ),
                                   ),
                                 );
                               } finally {
@@ -1027,7 +862,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                               ),
                             )
                           : Text(
-                              "Confirm Purchase",
+                              'confirm_purchase'.tr,
                               style: GoogleFonts.poppins(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -1048,7 +883,15 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
     final now = DateTime.now();
     final monday = now.subtract(Duration(days: now.weekday - 1));
     final days = List.generate(7, (i) => monday.add(Duration(days: i)));
-    final dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final dayNames = [
+      'mon'.tr,
+      'tue'.tr,
+      'wed'.tr,
+      'thu'.tr,
+      'fri'.tr,
+      'sat'.tr,
+      'sun'.tr,
+    ];
 
     return SizedBox(
       height: 70,
@@ -1109,7 +952,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
 
   Widget _buildDetailItem(String label, String city, String time) {
     return Column(
-      crossAxisAlignment: label == "From"
+      crossAxisAlignment: label == 'from'.tr
           ? CrossAxisAlignment.start
           : CrossAxisAlignment.end,
       children: [
@@ -1214,7 +1057,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "From",
+                      'from'.tr,
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         color: Colors.grey,
@@ -1235,7 +1078,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      "To",
+                      'to'.tr,
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         color: Colors.grey,
@@ -1267,7 +1110,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    schedule.transportType,
+                    _transportTypeLabel(schedule.transportType),
                     style: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -1282,7 +1125,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "${schedule.price} Tokens",
+                  '${schedule.price} ${'tokens'.tr}',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
@@ -1290,7 +1133,7 @@ class _TrainSchedulePageState extends State<TrainSchedulePage> {
                   ),
                 ),
                 Text(
-                  "Tap to pick time",
+                  'tap_to_pick_time'.tr,
                   style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
                 ),
               ],

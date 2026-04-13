@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:async';
+import 'package:app/data/api/api_config.dart';
 
 class ApiException implements Exception {
   final String message;
@@ -63,8 +64,8 @@ class NetworkException extends ApiException {
 }
 
 class ApiClient {
-  static const String baseUrl = 'http://192.168.1.8:3000';
-  static const int timeoutSeconds = 10;
+  static String get baseUrl => ApiConfig.baseUrl;
+  static int get timeoutSeconds => ApiConfig.timeoutSeconds;
   static const String authTokenKey = 'auth_token';
   static final ApiClient _instance = ApiClient._internal();
   factory ApiClient() {

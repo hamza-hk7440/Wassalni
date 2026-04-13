@@ -17,6 +17,7 @@
         "firebase_messaging",
         "firebase_storage",
         "flutter",
+        "flutter_localizations",
         "get",
         "google_fonts",
         "http",
@@ -232,6 +233,15 @@
         "flutter_web_plugins",
         "plugin_platform_interface",
         "web"
+      ]
+    },
+    {
+      "name": "flutter_localizations",
+      "version": "0.0.0",
+      "dependencies": [
+        "flutter",
+        "intl",
+        "path"
       ]
     },
     {
@@ -728,6 +738,15 @@
       "version": "0.0.0",
       "dependencies": [
         "flutter"
+      ]
+    },
+    {
+      "name": "intl",
+      "version": "0.20.2",
+      "dependencies": [
+        "clock",
+        "meta",
+        "path"
       ]
     },
     {

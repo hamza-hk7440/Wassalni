@@ -10,12 +10,22 @@ import 'package:app/features/auth/auth_controller.dart'; // Import your controll
 import 'package:app_links/app_links.dart'; // Import app_links for deep linking
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app/features/auth/screens/super_admin_home.dart';
 import 'package:app/features/auth/screens/payment_callback_screen.dart';
+import 'package:app/features/auth/screens/welcome_screen.dart';
+import 'package:app/localization/app_translations.dart';
+import 'package:app/localization/language_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Get.put(AuthController());
+  final preferences = await SharedPreferences.getInstance();
+  final languageController = LanguageController(preferences);
+  await languageController.init();
+  Get.put(AuthController(), permanent: true);
+  Get.put(languageController, permanent: true);
   _initDeepLinks();
   runApp(const MyApp());
 }
@@ -80,20 +90,47 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Wasalni',
-      // The app starts here, and since AuthController is already "put", it won't crash
-      home: const SplashScreen(),
-      getPages: [
-        GetPage(name: '/login', page: () => const LoginScreen()),
-        GetPage(name: '/home', page: () => const HomePage()),
-        GetPage(
-          name: '/controllerhome',
-          page: () => const ControllerHomePage(),
+    final languageController = Get.find<LanguageController>();
+
+    return Obx(() {
+      final locale = languageController.locale ?? const Locale('en');
+      final useArabic = locale?.languageCode == 'ar';
+
+      return GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'app_title'.tr,
+        translations: AppTranslations(),
+        locale: locale,
+        fallbackLocale: const Locale('en'),
+        supportedLocales: AppTranslations.supportedLocales,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        theme: ThemeData(
+          textTheme: useArabic
+              ? GoogleFonts.cairoTextTheme()
+              : GoogleFonts.poppinsTextTheme(),
         ),
-        GetPage(name: '/superadminhome', page: () => const SuperAdminHome()),
-      ],
-    );
+        builder: (context, child) {
+          return Directionality(
+            textDirection: useArabic ? TextDirection.rtl : TextDirection.ltr,
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
+        home: const SplashScreen(),
+        getPages: [
+          GetPage(name: '/welcome', page: () => const WelcomeScreen()),
+          GetPage(name: '/login', page: () => const LoginScreen()),
+          GetPage(name: '/home', page: () => const HomePage()),
+          GetPage(
+            name: '/controllerhome',
+            page: () => const ControllerHomePage(),
+          ),
+          GetPage(name: '/superadminhome', page: () => const SuperAdminHome()),
+        ],
+      );
+    });
   }
 }
