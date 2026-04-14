@@ -38,6 +38,8 @@ Main code areas:
 - API clients:
   - `data/api/api_client.dart` (auth + general requests)
   - `data/api/api_service.dart` (ticket/schedule/payment client calls)
+- Localization: the Flutter app starts in English by default, supports persisted English/Arabic selection, and switches to RTL when Arabic is active.
+- Startup flow now goes Splash -> Welcome (language picker) -> Login/Home.
 
 ### Web Frontend
 
@@ -339,6 +341,9 @@ Passenger key screens:
 - Refund requests
 - Profile
 - Recharge
+- Profile includes a language selector for switching between English and Arabic.
+- Common passenger and controller screens now use localized labels for booking, schedule browsing, days, transport types, and ticket validation.
+- A welcome screen is shown after splash so the user can choose language before entering the app.
 
 Controller key screen:
 

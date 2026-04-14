@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:app/core/theme/colors_R.dart';
 import 'package:app/features/mytickets_screen_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class MyTicketsPage extends StatefulWidget {
@@ -78,6 +79,22 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
     return Colors.grey;
   }
 
+  String _localizedType(String type) {
+    final lower = type.toLowerCase();
+    if (lower.contains('bus')) return 'bus'.tr;
+    if (lower.contains('metro') || lower.contains('train')) return 'metro'.tr;
+    return type;
+  }
+
+  String _localizedStatus(String status) {
+    final lower = status.toLowerCase();
+    if (lower == 'active') return 'status_active'.tr;
+    if (lower == 'used') return 'status_used'.tr;
+    if (lower == 'refunded') return 'status_refunded'.tr;
+    if (lower == 'cancelled') return 'status_cancelled'.tr;
+    return status;
+  }
+
   String _controllerCode(String ticketId) {
     final parts = ticketId.split('-');
     return parts.isNotEmpty ? parts.last : ticketId;
@@ -88,10 +105,8 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
       await _controller.requestRefund(ticket.ticketId);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Refund request sent. It will be processed in about 2 minutes (test mode).',
-          ),
+        SnackBar(
+          content: Text('refund_pending'.tr),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -121,8 +136,10 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
           const SizedBox(height: 8),
           Text(
             ticket.disruptionMessage.isNotEmpty
-                ? 'Cancelled: ${ticket.disruptionMessage}'
-                : 'Cancelled by administrator.',
+                ? 'cancelled_prefix'.trParams({
+                    'message': ticket.disruptionMessage,
+                  })
+                : 'cancelled_by_admin'.tr,
             style: GoogleFonts.poppins(
               fontSize: 12,
               color: Colors.red[700],
@@ -138,7 +155,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
       children: [
         const SizedBox(height: 8),
         Text(
-          'Delay: ${ticket.delayMinutes} minutes',
+          'delay_prefix'.trParams({'minutes': ticket.delayMinutes.toString()}),
           style: GoogleFonts.poppins(
             fontSize: 12,
             color: ticket.delayMinutes > 0
@@ -163,7 +180,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
       return Padding(
         padding: const EdgeInsets.only(top: 10),
         child: Text(
-          'Refund request is pending. It should be completed within 24-48 hours (2 min in test).',
+          'refund_pending'.tr,
           style: GoogleFonts.poppins(fontSize: 11, color: Colors.orange[800]),
         ),
       );
@@ -173,7 +190,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
       return Padding(
         padding: const EdgeInsets.only(top: 10),
         child: Text(
-          'Refund completed.',
+          'refund_completed'.tr,
           style: GoogleFonts.poppins(
             fontSize: 11,
             color: Colors.green[700],
@@ -189,7 +206,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
         width: double.infinity,
         child: OutlinedButton(
           onPressed: () => _requestRefund(ticket),
-          child: const Text('Request Refund'),
+          child: Text('request_refund'.tr),
         ),
       ),
     );
@@ -217,7 +234,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
       builder: (context) {
         return AlertDialog(
           title: Text(
-            'Ticket QR',
+            'ticket_qr'.tr,
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.bold,
               color: AppColors.colorD,
@@ -250,7 +267,9 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                       ),
                     const SizedBox(height: 12),
                     Text(
-                      'Ticket ID: ${_controllerCode(ticket.ticketId)}',
+                      'ticket_id_label'.trParams({
+                        'value': _controllerCode(ticket.ticketId),
+                      }),
                       style: GoogleFonts.poppins(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -259,9 +278,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      hasQr
-                          ? 'Show this QR to controller for scanning.'
-                          : 'QR unavailable. Use this Ticket ID if scan fails.',
+                      hasQr ? 'show_qr_to_controller'.tr : 'qr_unavailable'.tr,
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         color: Colors.grey[700],
@@ -276,7 +293,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
+              child: Text('close'.tr),
             ),
           ],
         );
@@ -306,7 +323,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          widget.showHistory ? 'Tickets history' : 'My Tickets',
+          widget.showHistory ? 'tickets_history'.tr : 'my_tickets'.tr,
           style: GoogleFonts.poppins(
             color: AppColors.colorD,
             fontWeight: FontWeight.bold,
@@ -335,7 +352,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Failed to load tickets.',
+                      'failed_to_load_tickets'.tr,
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 8),
@@ -350,7 +367,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                     const SizedBox(height: 14),
                     ElevatedButton(
                       onPressed: _refreshTickets,
-                      child: const Text('Retry'),
+                      child: Text('retry'.tr),
                     ),
                   ],
                 ),
@@ -363,8 +380,8 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
             return Center(
               child: Text(
                 widget.showHistory
-                    ? 'No ticket history found.'
-                    : 'No active tickets found.',
+                    ? 'no_ticket_history'.tr
+                    : 'no_active_tickets'.tr,
                 style: GoogleFonts.poppins(color: Colors.grey[700]),
               ),
             );
@@ -399,8 +416,8 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
             SnackBar(
               content: Text(
                 ticket.isCancelled
-                    ? 'This ticket is cancelled. Please request a refund.'
-                    : 'QR code is available only for active tickets.',
+                    ? 'ticket_cancelled_refund'.tr
+                    : 'qr_available_only_active'.tr,
               ),
               behavior: SnackBarBehavior.floating,
             ),
@@ -447,7 +464,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                ticket.type.toUpperCase(),
+                                _localizedType(ticket.type).toUpperCase(),
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.colorA,
@@ -457,7 +474,9 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                             ],
                           ),
                           Text(
-                            'ID: #${_controllerCode(ticket.ticketId)}',
+                            'ticket_id_label'.trParams({
+                              'value': '#${_controllerCode(ticket.ticketId)}',
+                            }),
                             style: GoogleFonts.poppins(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
@@ -467,7 +486,9 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                         ],
                       ),
                       Text(
-                        '${ticket.price} Tokens',
+                        'tokens_count'.trParams({
+                          'value': ticket.price.toString(),
+                        }),
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.bold,
                           color: AppColors.colorD,
@@ -480,7 +501,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildStationColumn('Departure', ticket.departure),
+                      _buildStationColumn('departure'.tr, ticket.departure),
                       Column(
                         children: [
                           Icon(
@@ -498,7 +519,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                         ],
                       ),
                       _buildStationColumn(
-                        'Arrival',
+                        'arrival'.tr,
                         ticket.arrival,
                         isRight: true,
                       ),
@@ -508,7 +529,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Day: $departureDate',
+                      'day_prefix'.trParams({'date': departureDate}),
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.grey[600],
@@ -531,7 +552,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                 ),
               ),
               child: Text(
-                ticket.status.toUpperCase(),
+                _localizedStatus(ticket.status).toUpperCase(),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 11,

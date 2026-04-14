@@ -1,6 +1,7 @@
 import 'package:app/core/theme/colors_R.dart';
 import 'package:app/data/api/api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class RefundRequestsPage extends StatefulWidget {
@@ -13,6 +14,13 @@ class RefundRequestsPage extends StatefulWidget {
 class _RefundRequestsPageState extends State<RefundRequestsPage> {
   final ApiService _apiService = ApiService();
   late Future<List<Map<String, dynamic>>> _future;
+
+  String _shortTicketId(dynamic ticketId) {
+    final value = ticketId?.toString().trim() ?? '';
+    if (value.isEmpty) return '--';
+    final parts = value.split('-');
+    return parts.isNotEmpty ? parts.last : value;
+  }
 
   @override
   void initState() {
@@ -52,7 +60,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Refund requests',
+          'refund_requests_title'.tr,
           style: GoogleFonts.poppins(
             color: AppColors.colorD,
             fontWeight: FontWeight.bold,
@@ -90,7 +98,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
           if (items.isEmpty) {
             return Center(
               child: Text(
-                'No refund requests yet.',
+                'no_refund_requests'.tr,
                 style: GoogleFonts.poppins(color: Colors.grey[700]),
               ),
             );
@@ -130,7 +138,7 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Ticket #${item['ticket_id']}',
+                            'Ticket #${_shortTicketId(item['ticket_id'])}',
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
                               color: AppColors.colorD,
@@ -147,15 +155,15 @@ class _RefundRequestsPageState extends State<RefundRequestsPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Amount: ${item['amount']}',
+                        '${'amount'.tr}: ${item['amount']}',
                         style: GoogleFonts.poppins(fontSize: 12),
                       ),
                       Text(
-                        'Requested: ${_formatDate(item['requested_at'])}',
+                        '${'requested'.tr}: ${_formatDate(item['requested_at'])}',
                         style: GoogleFonts.poppins(fontSize: 12),
                       ),
                       Text(
-                        'Release time: ${_formatDate(item['release_at'])}',
+                        '${'release_time'.tr}: ${_formatDate(item['release_at'])}',
                         style: GoogleFonts.poppins(fontSize: 12),
                       ),
                     ],

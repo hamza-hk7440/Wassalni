@@ -1,6 +1,5 @@
 import { supabase } from "../config/supabase.js";
-import dotenv from "dotenv";
-dotenv.config();
+
 class ScheduleService {
   async getCancelledScheduleIds(scheduleIds = []) {
     const cleanedIds = [...new Set((scheduleIds ?? []).filter(Boolean))];
@@ -52,7 +51,7 @@ class ScheduleService {
     //insert the schedule
     const finalScheduleData = {
       ...scheduleData,
-      availbl_seats: transport.capacity,
+      available_seats: transport.capacity,
       current_price: scheduleData.base_price || 0,
     };
     const { data, error } = await supabase
@@ -144,5 +143,19 @@ class ScheduleService {
       (schedule) => !cancelledIds.has(schedule.schedule_id),
     );
   }
+  //update schedule
+  async updateSchedule(id, updateData) {
+    const { data, error } = await supabase
+      .from("schedules")
+      .update(updateData)
+      .eq("schedule_id", id)
+      .select()
+      .single();
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data;
+  }
 }
 export default new ScheduleService();
+

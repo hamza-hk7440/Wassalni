@@ -62,7 +62,7 @@ class _RechargePageState extends State<RechargePage> {
     if (userId == null || userId.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('User not authenticated')));
+      ).showSnackBar(SnackBar(content: Text('not_authenticated'.tr)));
       return;
     }
 
@@ -70,7 +70,7 @@ class _RechargePageState extends State<RechargePage> {
     if (amount == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Invalid recharge amount')));
+      ).showSnackBar(SnackBar(content: Text('invalid_amount'.tr)));
       return;
     }
 
@@ -89,15 +89,17 @@ class _RechargePageState extends State<RechargePage> {
       );
 
       if (!launched && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to open Paymee form')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('unable_open_paymee'.tr)));
       }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Recharge failed: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('payment_failed'.trParams({'error': error.toString()})),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _loadingPack = '');
@@ -113,7 +115,7 @@ class _RechargePageState extends State<RechargePage> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          "Recharge my tokens ",
+          'recharge_title'.tr,
           style: GoogleFonts.poppins(
             color: AppColors.colorD,
             fontWeight: FontWeight.bold,
@@ -135,7 +137,7 @@ class _RechargePageState extends State<RechargePage> {
               _buildCurrentBalance(),
               const SizedBox(height: 30),
               Text(
-                "Choose your pack :",
+                'choose_pack'.tr,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -167,7 +169,7 @@ class _RechargePageState extends State<RechargePage> {
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Text(
-                  "Tokens allow you to buy your bus and train tickets instantly on Wasalni.",
+                  'tokens_info'.tr,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     fontSize: 13,
@@ -200,7 +202,7 @@ class _RechargePageState extends State<RechargePage> {
       child: Column(
         children: [
           Text(
-            "Current balance ",
+            'current_balance'.tr,
             style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 5),

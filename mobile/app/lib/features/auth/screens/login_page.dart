@@ -16,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
+  bool _isCodeDialogOpen = false;
   final AuthController authController = Get.find<AuthController>();
 
   Widget _buildDivider() {
@@ -27,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
-              "OR",
+              'or_separator'.tr,
               style: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 12),
             ),
           ),
@@ -72,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Image.asset("assets/logoGoogle.png", height: 22),
               const SizedBox(width: 12),
               Text(
-                "Continue with Google",
+                'continue_with_google'.tr,
                 style: GoogleFonts.poppins(
                   color: Colors.black87,
                   fontSize: 15,
@@ -103,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Welcome Back",
+                      'welcome_back'.tr,
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -113,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "Login to stay connected",
+                      'login_subtitle'.tr,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
@@ -126,8 +127,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        labelText: 'Email',
-                        hintText: 'Enter your email',
+                        labelText: 'email'.tr,
+                        hintText: 'enter_email'.tr,
                         prefixIcon: Icon(
                           Icons.email_outlined,
                           color: AppColors.colorA,
@@ -140,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       validator: (value) => (value == null || value.isEmpty)
-                          ? 'Email requis'
+                          ? 'email_required'.tr
                           : null,
                     ),
                     SizedBox(height: 18),
@@ -149,8 +150,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: passwordController,
                       obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
-                        labelText: 'Password',
-                        hintText: 'Enter your password',
+                        labelText: 'password'.tr,
+                        hintText: 'enter_password'.tr,
                         prefixIcon: Icon(
                           Icons.lock_outline,
                           color: AppColors.colorA,
@@ -174,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       validator: (value) => (value == null || value.isEmpty)
-                          ? 'Mot de passe requis'
+                          ? 'password_required'.tr
                           : null,
                     ),
                     Align(
@@ -182,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: TextButton(
                         onPressed: () {},
                         child: Text(
-                          "forgotten password ?",
+                          'forgot_password'.tr,
                           style: TextStyle(color: AppColors.colorA),
                         ),
                       ),
@@ -223,6 +224,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                       email: emailController.text,
                                       password: passwordController.text,
                                     );
+                                    if (authController.pendingRole.value.isNotEmpty &&
+                                        authController.pendingSession.value.isNotEmpty) {
+                                      _maybeShowCodeDialog(
+                                        authController.pendingRole.value,
+                                      );
+                                    }
                                   }
                                 },
                           child: authController.isLoading.value
@@ -234,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 )
                               : Text(
-                                  "Login",
+                                  'login'.tr,
                                   style: GoogleFonts.poppins(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -249,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Don't have an account ?",
+                          'dont_have_account'.tr,
                           style: GoogleFonts.poppins(color: Colors.grey[700]),
                         ),
                         TextButton(
@@ -262,7 +269,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           child: Text(
-                            "Create Account",
+                            'create_account'.tr,
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.bold,
                               color: AppColors.colorA,
@@ -297,17 +304,33 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     ever(authController.pendingRole, (role) {
       if (role.isNotEmpty && authController.pendingSession.value.isNotEmpty) {
+        _maybeShowCodeDialog(role);
+      }
+    });
+  }
+
+  void _maybeShowCodeDialog(String role) {
+    if (!mounted || _isCodeDialogOpen) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isCodeDialogOpen) return;
+      if (authController.pendingRole.value.isNotEmpty &&
+          authController.pendingSession.value.isNotEmpty) {
         _showCodeDialog(role);
       }
     });
   }
 
   void _showCodeDialog(String role) {
+    if (_isCodeDialogOpen) return;
+    _isCodeDialogOpen = true;
     final codeController = TextEditingController();
-    final label = role == 'controller' ? 'Controller code' : 'Admin code';
+    final label = role == 'controller' ? 'controller_code' : 'admin_code';
     final hint = role == 'controller'
-        ? 'Enter your 6-digit controller code'
-        : 'Enter your 4-digit admin code';
+        ? 'verification_hint_controller'
+        : 'verification_hint_admin';
     final maxLength = role == 'controller' ? 6 : 4;
 
     showDialog(
@@ -316,14 +339,14 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Verification required',
+          'verification_required'.tr,
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'A verification code is required for your role.',
+              'verification_message'.tr,
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
@@ -344,8 +367,8 @@ class _LoginScreenState extends State<LoginScreen> {
               keyboardType: TextInputType.number,
               maxLength: maxLength,
               decoration: InputDecoration(
-                labelText: label,
-                hintText: hint,
+                labelText: label.tr,
+                hintText: hint.tr,
                 prefixIcon: Icon(Icons.lock_outline, color: AppColors.colorA),
                 filled: true,
                 fillColor: Colors.grey[100],
@@ -364,9 +387,10 @@ class _LoginScreenState extends State<LoginScreen> {
               authController.pendingSession.value = '';
               authController.pendingRole.value = '';
               authController.errorMessage.value = '';
+              _isCodeDialogOpen = false;
               Navigator.pop(context);
             },
-            child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+            child: Text('cancel'.tr, style: TextStyle(color: Colors.grey[600])),
           ),
           Obx(
             () => ElevatedButton(
@@ -382,7 +406,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       final success = await authController.verifyRoleCode(
                         code: codeController.text.trim(),
                       );
-                      if (success) Navigator.pop(context);
+                      if (success) {
+                        _isCodeDialogOpen = false;
+                        Navigator.pop(context);
+                      }
                     },
               child: authController.isLoading.value
                   ? const SizedBox(
@@ -394,7 +421,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     )
                   : Text(
-                      'Verify',
+                      'verify'.tr,
                       style: GoogleFonts.poppins(color: Colors.white),
                     ),
             ),

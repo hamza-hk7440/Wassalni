@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:app/core/theme/colors_R.dart';
 import 'TrainSchedule_screen.dart';
@@ -35,7 +36,7 @@ class DirectionChoice extends StatelessWidget {
                     Image.asset("assets/trainnn.png", height: 100),
                     const SizedBox(height: 25),
                     Text(
-                      "Which direction?",
+                      'which_direction'.tr,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 27,
@@ -45,7 +46,7 @@ class DirectionChoice extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      "Please select your direction to continue",
+                      'select_direction_continue'.tr,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
@@ -55,13 +56,13 @@ class DirectionChoice extends StatelessWidget {
                     const SizedBox(height: 50),
                     _buildDirectionCard(
                       context,
-                      title: "Monastir    ➔    Mahdia",
+                      title: 'monastir_mahdia'.tr,
                       direction: "mahdia",
                     ),
                     const SizedBox(height: 20),
                     _buildDirectionCard(
                       context,
-                      title: "Mahdia    ➔    Monastir",
+                      title: 'mahdia_monastir'.tr,
                       direction: "monastir",
                     ),
                     const SizedBox(height: 30),

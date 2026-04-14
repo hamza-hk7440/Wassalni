@@ -85,3 +85,56 @@ export const createController = async (controllerData) => {
 
     return data[0];
 };
+
+
+// zedna lpart bch nfetchou l users lkoll bch nalgouhom fl dashboard, w zedna el delete user zeda
+export const getAllUsers = async () => {
+    const { data, error } = await supabase
+        .from('users')
+        .select(`
+            user_id,
+            email,
+            first_name,
+            last_name,
+            role,
+            token_balance,
+            created_at
+        `)
+        .order('created_at', { ascending: false });
+    
+    if (error) throw new Error(error.message);
+
+    return data;
+}
+
+export const deleteUser = async (userId) => {
+    const { data, error } = await supabase.auth.admin.deleteUser(userId);
+    
+    if (error) throw new Error(error.message);
+
+    return data;
+
+}
+
+// w zedna fetch l transactions w tickets zeda
+export const getAllTransactions = async () => {
+    const { data, error } = await supabase
+        .from('transactions')
+        .select(`*`)
+        .order('timestamp', { ascending: false });
+    
+    if (error) throw new Error(error.message);
+
+    return data;
+}
+
+export const getAllTickets = async () => {
+    const { data, error } = await supabase
+        .from('tickets')
+        .select(`*`)
+        .order('purchase_date', { ascending: false });
+    
+    if (error) throw new Error(error.message);
+
+    return data;
+}

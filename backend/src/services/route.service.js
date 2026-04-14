@@ -1,6 +1,5 @@
 import { supabase } from "../config/supabase.js";
-import dotenv from "dotenv";
-dotenv.config();
+
 class RouteService {
   //create route
   async createFullRoute(routeData, stationSequence) {
@@ -80,5 +79,40 @@ class RouteService {
     }
     return { message: "route deleted successfully" };
   }
+  //update route and replace its stops
+  async updateFullRoute(routeId, routeData, stationSequence) {
+    // 1. Update the main route record
+    const { data: route, error: routeError } = await supabase
+      .from("routes")
+      .update(routeData)
+      .eq("route_id", routeId)
+      .select()
+      .single();
+    if (routeError) {
+      throw new Error(routeError.message);
+    }
+    // 2. Delete existing stops for this route
+    const { error: deleteError } = await supabase
+      .from("route_stations")
+      .delete()
+      .eq("route_id", routeId);
+    if (deleteError) {
+      throw new Error(deleteError.message);
+    }
+    // 3. Re-insert the new stop sequence
+    const stops = stationSequence.map((stop) => ({
+      route_id: routeId,
+      station_id: stop.station_id,
+      sequence_order: stop.sequence_order,
+    }));
+    const { error: stopsError } = await supabase
+      .from("route_stations")
+      .insert(stops);
+    if (stopsError) {
+      throw new Error(stopsError.message);
+    }
+    return route;
+  }
 }
 export default new RouteService();
+

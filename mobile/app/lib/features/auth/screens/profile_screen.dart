@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:app/core/theme/colors_R.dart';
+import 'package:app/localization/language_controller.dart';
 import '../../profile_screen_controller.dart';
 import 'recharge_screen.dart';
 import 'my_tickets_screen.dart';
@@ -16,6 +17,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   late final ProfileScreenController _controller;
+  late final LanguageController _languageController;
 
   @override
   void initState() {
@@ -23,6 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _controller = Get.isRegistered<ProfileScreenController>()
         ? Get.find<ProfileScreenController>()
         : Get.put(ProfileScreenController());
+    _languageController = Get.find<LanguageController>();
   }
 
   @override
@@ -45,31 +48,29 @@ class _ProfilePageState extends State<ProfilePage> {
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
             return AlertDialog(
-              title: const Text("Change password"),
+              title: Text('change_password'.tr),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: currentPasswordController,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: "Current password",
+                    decoration: InputDecoration(
+                      labelText: 'current_password'.tr,
                     ),
                   ),
                   const SizedBox(height: 10),
                   TextField(
                     controller: passwordController,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: "New password",
-                    ),
+                    decoration: InputDecoration(labelText: 'new_password'.tr),
                   ),
                   const SizedBox(height: 10),
                   TextField(
                     controller: confirmController,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: "Confirm password",
+                    decoration: InputDecoration(
+                      labelText: 'confirm_password'.tr,
                     ),
                   ),
                   if (errorText != null) ...[
@@ -81,7 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text("Cancel"),
+                  child: Text('cancel'.tr),
                 ),
                 Obx(
                   () => TextButton(
@@ -98,23 +99,20 @@ class _ProfilePageState extends State<ProfilePage> {
                             if (currentPassword.isEmpty ||
                                 newPassword.isEmpty ||
                                 confirmPassword.isEmpty) {
-                              setDialogState(
-                                () => errorText = "All fields are required",
-                              );
+                              setDialogState(() => errorText = 'required'.tr);
                               return;
                             }
 
                             if (newPassword == currentPassword) {
                               setDialogState(
-                                () => errorText =
-                                    "New password must be different from current password",
+                                () => errorText = 'password_must_differ'.tr,
                               );
                               return;
                             }
 
                             if (newPassword != confirmPassword) {
                               setDialogState(
-                                () => errorText = "Passwords do not match",
+                                () => errorText = 'passwords_do_not_match'.tr,
                               );
                               return;
                             }
@@ -136,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             height: 16,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text("Save"),
+                        : Text('save'.tr),
                   ),
                 ),
               ],
@@ -151,27 +149,81 @@ class _ProfilePageState extends State<ProfilePage> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text("Personal informations"),
+        title: Text('personal_information'.tr),
         content: Obx(
           () => Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Name: ${_controller.fullName.value}"),
+              Text('name'.trParams({'value': _controller.fullName.value})),
               const SizedBox(height: 6),
-              Text("Email: ${_controller.email.value}"),
+              Text('email_value'.trParams({'value': _controller.email.value})),
               const SizedBox(height: 6),
-              Text("Tokens: ${_controller.tokenBalance.value}"),
+              Text(
+                'tokens_value'.trParams({
+                  'value': _controller.tokenBalance.value.toString(),
+                }),
+              ),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("Close"),
+            child: Text('close'.tr),
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _openLanguageDialog() async {
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Obx(
+          () => AlertDialog(
+            title: Text('select_language'.tr),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<String>(
+                  value: 'en',
+                  groupValue:
+                      _languageController.locale?.languageCode ??
+                      Get.locale?.languageCode ??
+                      'en',
+                  title: Text('english'.tr),
+                  onChanged: (value) {
+                    if (value == null) return;
+                    _languageController.setLanguage(Locale(value));
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+                RadioListTile<String>(
+                  value: 'ar',
+                  groupValue:
+                      _languageController.locale?.languageCode ??
+                      Get.locale?.languageCode ??
+                      'en',
+                  title: Text('arabic'.tr),
+                  onChanged: (value) {
+                    if (value == null) return;
+                    _languageController.setLanguage(Locale(value));
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: Text('cancel'.tr),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -183,7 +235,7 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          "My Profile",
+          'my_profile'.tr,
           style: GoogleFonts.poppins(
             color: AppColors.colorD,
             fontWeight: FontWeight.bold,
@@ -259,7 +311,10 @@ class _ProfilePageState extends State<ProfilePage> {
                           const SizedBox(width: 12),
                           Obx(
                             () => Text(
-                              "${_controller.tokenBalance.value} Tokens",
+                              'tokens_value'.trParams({
+                                'value': _controller.tokenBalance.value
+                                    .toString(),
+                              }),
                               style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -302,22 +357,27 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             const SizedBox(height: 30),
-            _buildSectionTitle("Account & Security"),
+            _buildSectionTitle('account_security'.tr),
+            _buildProfileItem(
+              Icons.language,
+              'language'.tr,
+              onTap: _openLanguageDialog,
+            ),
             _buildProfileItem(
               Icons.lock_outline,
-              "Change password",
+              'change_password'.tr,
               onTap: _openChangePasswordDialog,
             ),
             _buildProfileItem(
               Icons.person_outline,
-              "Personal informations",
+              'personal_information'.tr,
               onTap: _showPersonalInfoDialog,
             ),
             const SizedBox(height: 20),
-            _buildSectionTitle("Activities"),
+            _buildSectionTitle('activities'.tr),
             _buildProfileItem(
               Icons.confirmation_number_outlined,
-              "Tickets history",
+              'tickets_history'.tr,
               onTap: () {
                 Navigator.push(
                   context,
@@ -330,7 +390,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             _buildProfileItem(
               Icons.request_page_outlined,
-              "Refund requests",
+              'refund_requests'.tr,
               onTap: () {
                 Navigator.push(
                   context,
@@ -351,7 +411,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 leading: const Icon(Icons.logout, color: Colors.red),
                 title: Text(
-                  "Log out",
+                  'log_out'.tr,
                   style: GoogleFonts.poppins(
                     color: Colors.red,
                     fontWeight: FontWeight.w600,
@@ -368,9 +428,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 30, bottom: 10, top: 10),
+      padding: const EdgeInsetsDirectional.only(start: 30, bottom: 10, top: 10),
       child: Align(
-        alignment: Alignment.centerLeft,
+        alignment: AlignmentDirectional.centerStart,
         child: Text(
           title,
           style: GoogleFonts.poppins(
