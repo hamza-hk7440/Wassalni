@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import tokenLogo from '../../assets/token_logo.png';
 import useAuth from '../../hooks/useAuth';
-import'../../app.css';
+import '../../App.css';
 const Navbar = () => {
   const { tokens } = useAuth();
   return (

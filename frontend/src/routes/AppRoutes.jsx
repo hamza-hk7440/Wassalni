@@ -21,44 +21,54 @@ import ActiveTickets from '../pages/client/active-tickets';
 import TicketHistory from '../pages/client/TicketHistory';
 import MetroSchedule from '../pages/client/metroSchedule';
 import RefundRequest from '../pages/client/refundRequest';
+import ProtectedRoute from './ProtectedRoute';
 
 const AppRoutes = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<Auth />} />
-      <Route path="/Dashboard" element={<Dashboard />} />
-      <Route path="/parametre" element={<Parametre />} />
-      <Route path="/superlog" element={<Superlog />} /> 
-      <Route path="/admin" element={<CreateEmp />} />
-      <Route path="/controller" element={<ControllerEmp />} />
-      <Route path="/bus" element={<Bus />} />
-      <Route path="/metro" element={<Metro />} />
-      <Route path="/transport" element={<Transport />} />
-      <Route path="/home" element={<Home />} />
-<Route element={<MainLayout />}> 
-    <Route path="/login" element={<Auth />} />
-    <Route path="/about" element={<About />} />
-    <Route path="/contact" element={<Contact />} />
-    <Route path="/Register" element={<Auth />} />
-    <Route path="/client" element={<HomeH/>} />
-    <Route path="/packages" element={<Packages />} />
-    <Route path="/home" element={<Home />} />
-    <Route path="/profile" element={<Profile />} />
-    <Route path="/ticket" element={<BookTicket />} />
-    <Route path="/client" element={<Home />} />
-    <Route path="/active-tickets" element={<ActiveTickets />} />
-    <Route path="/history" element={<TicketHistory />} />
-    <Route path="/busSchedule" element={<BusSchedule />} />
-    <Route path="metroSchedule" element={<MetroSchedule/>}/>
-    <Route path="refundRequest" element={<RefundRequest/>}/>
-    
-</Route>
-    
-      
-      
-    </Routes>
-  );
-};
+    return (
+        <Routes>
+            {/* Public/Auth Routes */}
+            <Route path="/" element={<Auth />} />
+            <Route path="/login" element={<Auth />} />
+            <Route path="/Register" element={<Auth />} />
+            
+            {/* Passenger / Client Protected Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['passenger']} />}>
+                <Route element={<MainLayout />}>
+                    <Route path="/client" element={<HomeH />} />
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/packages" element={<Packages />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/ticket" element={<BookTicket />} />
+                    <Route path="/active-tickets" element={<ActiveTickets />} />
+                    <Route path="/history" element={<TicketHistory />} />
+                    <Route path="/busSchedule" element={<BusSchedule />} />
+                    <Route path="/metroSchedule" element={<MetroSchedule />} />
+                    <Route path="/refundRequest" element={<RefundRequest />} />
+                </Route>
+            </Route>
 
+            {/* Admin and SuperAdmin Protected Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['admin', 'superAdmin']} />}>
+                <Route path="/Dashboard" element={<Dashboard />} />
+                <Route path="/parametre" element={<Parametre />} />
+                <Route path="/superlog" element={<Superlog />} />
+                <Route path="/admin" element={<CreateEmp />} />
+                <Route path="/bus" element={<Bus />} />
+                <Route path="/metro" element={<Metro />} />
+                <Route path="/transport" element={<Transport />} />
+            </Route>
+
+            {/* Controller Protected Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['controller']} />}>
+                <Route path="/controller" element={<ControllerEmp />} />
+            </Route>
+
+            {/* General fallback */}
+            <Route path="*" element={<Auth />} />
+        </Routes>
+    );
+};
 
 export default AppRoutes;
