@@ -1,5 +1,7 @@
 import { url } from "inspector";
 import * as userService from "../services/user.service.js";
+import { changeUserPassword } from "../services/user.service.js";
+import { supabase } from "../config/supabase.js";
 
 export const createUser = async (req, res) => {
   try {
@@ -110,6 +112,33 @@ export const googleSignUpCallback = async (req, res) => {
     );
   }
 };
+
+export const changePassword = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { new_password } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!new_password || String(new_password).length < 6) {
+      return res.status(400).json({
+        error: "New password is required and must be at least 6 characters",
+      });
+    }
+
+    await changeUserPassword({
+      user_id: userId,
+      new_password: String(new_password),
+    });
+
+    return res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 export const controllerLogin = async (req, res) => {
   try {
     const { email, password, code } = req.body;
@@ -242,7 +271,7 @@ export const unifiedMobileLogin = async (req, res) => {
     console.error("Unified mobile login error:", error);
     return res
       .status(500)
-      .json({ error: error.message || "An unexpected error occurred" }); 
+      .json({ error: error.message || "An unexpected error occurred" });
   }
 };
 export const verifyRoleCode = async (req, res) => {

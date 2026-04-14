@@ -1,103 +1,108 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Input from '../../components/common/Input';
-import './Login.css';
+import Button from '../../components/common/Button';
+import google from '../../assets/google.jpg'
 
 const Auth = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+    const location = useLocation();
+    const navigate = useNavigate();
 
-  // Determine if we show Login or Register based on the URL
-  const [isLogin, setIsLogin] = useState(location.pathname === '/login');
-  const [isAdmin, setIsAdmin] = useState(false);
+    const [isLogin, setIsLogin] = useState(location.pathname === '/login');
+    const [isAdmin, setIsAdmin] = useState(false);
 
-  // Sync state if URL changes (e.g., user clicks back button)
-  useEffect(() => {
-    setIsLogin(location.pathname === '/login');
-  }, [location.pathname]);
+    useEffect(() => {
+        setIsLogin(location.pathname === '/login');
+    }, [location.pathname]);
 
-  const toggleAuthMode = () => {
-    const newPath = isLogin ? '/register' : '/login';
-    navigate(newPath);
-    setIsLogin(!isLogin);
-  };
+    const toggleAuthMode = () => {
+        const newPath = isLogin ? '/register' : '/login';
+        navigate(newPath);
+    };
 
-  return (
-    <div className="login-page-wrapper">
-      
-      {/* Role Toggle: Stays fixed at the top */}
-      <div className="role-toggle-container">
-        <button 
-          className={`toggle-btn ${!isAdmin ? 'active-user' : ''}`}
-          onClick={() => setIsAdmin(false)}
-        >
-          User Account
-        </button>
-        <button 
-          className={`toggle-btn ${isAdmin ? 'active-admin' : ''}`}
-          onClick={() => setIsAdmin(true)}
-        >
-          Admin Portal
-        </button>
-      </div>
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-[#f1f8fb] font-sans p-5">
+            <div className="flex bg-[#eee] p-[5px] rounded-xl mb-[25px] w-fit mx-auto">
+                <button 
+                    className={`border-none py-2.5 px-5 rounded-lg cursor-pointer font-semibold transition-all duration-200 ${!isAdmin ? 'bg-white shadow-[0_2px_4px_rgba(0,0,0,0.1)] text-[#3b759f]' : 'bg-transparent text-gray-600'}`}
+                    onClick={() => setIsAdmin(false)}
+                >
+                    User Account
+                </button>
+                <button 
+                    className={`border-none py-2.5 px-5 rounded-lg cursor-pointer font-semibold transition-all duration-200 ${isAdmin ? 'bg-white shadow-[0_2px_4px_rgba(0,0,0,0.1)] text-[#3b759f]' : 'bg-transparent text-gray-600'}`}
+                    onClick={() => setIsAdmin(true)}
+                >
+                    Admin Portal
+                </button>
+            </div>
 
-      <div className="perspective-container">
-        <div className={`flip-card-inner ${isAdmin ? 'is-flipped' : ''}`}>
-          
-          {/* --- FRONT FACE: USER (Swaps between Login/Register) --- */}
-          <div className="card-face face-front">
-            <h1 className="form-title">{isLogin ? "Login" : "Register"}</h1>
-            
-            <form className="flex flex-col gap-4">
-              {/* Conditional Fields for Register */}
-              {!isLogin && (
-                <div className="fade-in-fields">
-                  <Input label="Full Name" placeholder="John Doe" required />
-                </div>
-              )}
+            <div className="w-full max-w-[450px] bg-white p-10 rounded-[15px] shadow-[0_10px_40px_rgba(0,0,0,0.05)] animate-[fadeIn_0.4s_ease-in-out]">
+                {isAdmin ? (
+                    /* ADMIN */
+                    <div className="animate-in fade-in duration-500">
+                        <h1 className="text-[1.8rem] font-bold text-center text-[#3b759f] mb-2">Admin Access</h1>
+                        <p className="text-center text-[#8899a6] text-sm mb-[30px]">Internal Management System</p>
+                        
+                        <form className="flex flex-col gap-[15px]" onSubmit={(e) => e.preventDefault()}>
+                            <Input placeholder="Admin ID (ADM-XXXX)" required />
+                            <Input placeholder="Password" type="password" required />
+                            <Input placeholder="Security Key" type="password" required />
+                            <Button type="submit" className="custom-btn admin-btn">Verify Identity</Button>
+                        </form>
+                        <p className="text-[#d9534f] text-[0.8rem] font-bold text-center mt-5 uppercase tracking-widest">Restricted Personnel Only</p>
+                    </div>
+                ) : (
+                    /* USER */
+                    <div className="animate-in fade-in duration-500">
+                        <h1 className="text-[1.8rem] font-bold text-center text-[#3b759f] mb-2">
+                            {isLogin ? "Welcome Back" : "Create your Account"}
+                        </h1>
+                        <p className="text-center text-[#8899a6] text-sm mb-[30px]">Join us today!</p>
 
-              <Input label="Email" type="email" placeholder="user@example.com" required />
-              
-              <Input label="Password" type="password" placeholder="••••••••" required />
+                        <form className="flex flex-col gap-[15px]" onSubmit={(e) => e.preventDefault()}>
+                            {!isLogin && (
+                                <div className="flex gap-[15px]">
+                                    <Input placeholder="First Name" required />
+                                    <Input placeholder="Last Name" required />
+                                </div>
+                            )}
+                            
+                            <Input type="email" placeholder="Email" required />
+                            <Input type="password" placeholder="Password" required />
+                            
+                            {!isLogin && (
+                                <Input type="password" placeholder="Confirm Password" required />
+                            )}
 
-              {!isLogin && (
-                <div className="fade-in-fields">
-                  <Input label="Confirm Password" type="password" placeholder="••••••••" required />
-                </div>
-              )}
+                            <Button type="submit" className="custom-btn">
+                                {isLogin ? "Sign In" : "Sign Up"}
+                            </Button>
+                        </form>
 
-              <button className="custom-submit-btn" type="submit">
-                {isLogin ? "Sign In" : "Create Account"}
-              </button>
-            </form>
+                        <p className="text-center text-[13px] text-[#657786] mt-5">
+                            {isLogin ? "Don't have an account? " : "Already have an account? "}
+                            <span 
+                                className="text-[#3b759f] font-bold cursor-pointer hover:underline" 
+                                onClick={toggleAuthMode}
+                            >
+                                {isLogin ? "Register" : "Login"}
+                            </span>
+                        </p>
 
-            <p className="card-footer-text">
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
-              <button className="link-btn" onClick={toggleAuthMode}>
-                {isLogin ? "Register here" : "Login here"}
-              </button>
-            </p>
-          </div>
+                        <div className="flex items-center text-center my-5 text-[#ccc] text-[12px] before:content-[''] before:flex-1 before:border-b before:border-[#eee] after:content-[''] after:flex-1 after:border-b after:border-[#eee]">
+                            <span className="px-2.5">OR</span>
+                        </div>
 
-          {/* --- BACK FACE: ADMIN --- */}
-          <div className="card-face face-back">
-            <h1 className="form-title" style={{ color: '#1E5470' }}>Admin Access</h1>
-            <form className="flex flex-col gap-4">
-              <Input label="Admin ID" placeholder="ADM-XXXX" required />
-              <Input label="Security Key" type="password" placeholder="Enter Secret Key" required />
-              <button className="custom-submit-btn admin-btn" type="submit">
-                Verify Identity
-              </button>
-            </form>
-            <p className="card-footer-text" style={{ fontSize: '11px', color: '#999', letterSpacing: '2px' }}>
-              RESTRICTED PERSONNEL ONLY
-            </p>
-          </div>
-
+                        <button className="flex items-center justify-center gap-2.5 w-full p-3 bg-white border border-[#e1e8ed] rounded-lg cursor-pointer font-semibold transition-colors hover:bg-gray-50">
+                            <img src={google} alt="google" width="18" />
+                            Continue with Google
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Auth;

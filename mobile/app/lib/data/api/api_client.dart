@@ -2,9 +2,10 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:async';
+import 'package:app/data/api/api_config.dart';
 
 class ApiException implements Exception {
-  final String message; 
+  final String message;
   final String? errorCode;
   final int? statusCode;
   final dynamic originalError;
@@ -63,8 +64,8 @@ class NetworkException extends ApiException {
 }
 
 class ApiClient {
-  static const String baseUrl = 'http://10.0.2.2:3000';
-  static const int timeoutSeconds = 10;
+  static String get baseUrl => ApiConfig.baseUrl;
+  static int get timeoutSeconds => ApiConfig.timeoutSeconds;
   static const String authTokenKey = 'auth_token';
   static final ApiClient _instance = ApiClient._internal();
   factory ApiClient() {
@@ -92,21 +93,24 @@ class ApiClient {
   dynamic _handleResponse(http.Response response) {
     try {
       final decodedBody = jsonDecode(response.body) ?? {};
+      final backendMessage = decodedBody is Map<String, dynamic>
+          ? (decodedBody['message'] ?? decodedBody['error'])?.toString()
+          : null;
       if (response.statusCode == 200 || response.statusCode == 201) {
         return decodedBody;
       } else if (response.statusCode == 401) {
         throw UnauthorizedException(
-          message: decodedBody['message'] ?? 'Unauthorized',
+          message: backendMessage ?? 'Unauthorized',
           statusCode: response.statusCode,
         );
       } else if (response.statusCode == 500) {
         throw ServerException(
-          message: decodedBody['message'] ?? 'Server error',
+          message: backendMessage ?? 'Server error',
           statusCode: response.statusCode,
         );
       } else if (response.statusCode == 400) {
         throw ClientException(
-          message: decodedBody['message'] ?? 'Invalid request',
+          message: backendMessage ?? 'Invalid request',
           statusCode: response.statusCode,
         );
       } else {

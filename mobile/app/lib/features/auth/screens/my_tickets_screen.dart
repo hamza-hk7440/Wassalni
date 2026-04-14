@@ -1,19 +1,329 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:app/core/theme/colors_R.dart';
+import 'dart:convert';
 
-class MyTicketsPage extends StatelessWidget {
-  const MyTicketsPage({super.key});
+import 'package:app/core/theme/colors_R.dart';
+import 'package:app/features/mytickets_screen_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+class MyTicketsPage extends StatefulWidget {
+  final bool showHistory;
+
+  const MyTicketsPage({super.key, this.showHistory = false});
+
+  @override
+  State<MyTicketsPage> createState() => _MyTicketsPageState();
+}
+
+class _MyTicketsPageState extends State<MyTicketsPage> {
+  final MyTicketsScreenController _controller = MyTicketsScreenController();
+  late Future<List<MyTicket>> _ticketsFuture;
+  final Map<String, String> _qrByTicketId = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _ticketsFuture = _loadTickets();
+  }
+
+  Future<List<MyTicket>> _loadTickets() {
+    return widget.showHistory
+        ? _controller.getTicketHistory()
+        : _controller.getActiveTickets();
+  }
+
+  Future<void> _refreshTickets() async {
+    setState(() {
+      _ticketsFuture = _loadTickets();
+    });
+    await _ticketsFuture;
+  }
+
+  IconData _iconForType(String type) {
+    final lower = type.toLowerCase();
+    if (lower.contains('bus')) {
+      return Icons.directions_bus;
+    }
+    return Icons.train;
+  }
+
+  String _formatDate(String raw) {
+    try {
+      final dt = DateTime.parse(raw).toLocal();
+      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+    } catch (_) {
+      return raw;
+    }
+  }
+
+  String _formatTime(String raw) {
+    try {
+      final dt = DateTime.parse(raw).toLocal();
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '--:--';
+    }
+  }
+
+  Color _statusColor(String status) {
+    final lower = status.toLowerCase();
+    if (lower == 'active') {
+      return Colors.green;
+    }
+    if (lower == 'used') {
+      return Colors.orange;
+    }
+    if (lower == 'refunded') {
+      return Colors.blueGrey;
+    }
+    return Colors.grey;
+  }
+
+  String _localizedType(String type) {
+    final lower = type.toLowerCase();
+    if (lower.contains('bus')) return 'bus'.tr;
+    if (lower.contains('metro') || lower.contains('train')) return 'metro'.tr;
+    return type;
+  }
+
+  String _localizedStatus(String status) {
+    final lower = status.toLowerCase();
+    if (lower == 'active') return 'status_active'.tr;
+    if (lower == 'used') return 'status_used'.tr;
+    if (lower == 'refunded') return 'status_refunded'.tr;
+    if (lower == 'cancelled') return 'status_cancelled'.tr;
+    return status;
+  }
+
+  String _controllerCode(String ticketId) {
+    final parts = ticketId.split('-');
+    return parts.isNotEmpty ? parts.last : ticketId;
+  }
+
+  Future<void> _requestRefund(MyTicket ticket) async {
+    try {
+      await _controller.requestRefund(ticket.ticketId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('refund_pending'.tr),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      await _refreshTickets();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Widget _buildDisruptionInfo(MyTicket ticket) {
+    final status = ticket.status.toLowerCase();
+
+    if (status == 'used' || status == 'refunded') {
+      return const SizedBox.shrink();
+    }
+
+    if (ticket.isCancelled) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          Text(
+            ticket.disruptionMessage.isNotEmpty
+                ? 'cancelled_prefix'.trParams({
+                    'message': ticket.disruptionMessage,
+                  })
+                : 'cancelled_by_admin'.tr,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Colors.red[700],
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        Text(
+          'delay_prefix'.trParams({'minutes': ticket.delayMinutes.toString()}),
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: ticket.delayMinutes > 0
+                ? Colors.orange[800]
+                : Colors.grey[700],
+            fontWeight: ticket.delayMinutes > 0
+                ? FontWeight.w600
+                : FontWeight.w400,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRefundArea(MyTicket ticket) {
+    if (!ticket.isCancelled) {
+      return const SizedBox.shrink();
+    }
+
+    final status = ticket.refundStatus.toLowerCase();
+    if (status == 'pending') {
+      return Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: Text(
+          'refund_pending'.tr,
+          style: GoogleFonts.poppins(fontSize: 11, color: Colors.orange[800]),
+        ),
+      );
+    }
+
+    if (status == 'completed') {
+      return Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: Text(
+          'refund_completed'.tr,
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            color: Colors.green[700],
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: SizedBox(
+        width: double.infinity,
+        child: OutlinedButton(
+          onPressed: () => _requestRefund(ticket),
+          child: Text('request_refund'.tr),
+        ),
+      ),
+    );
+  }
+
+  Future<String> _resolveQrData(MyTicket ticket) async {
+    if (_qrByTicketId.containsKey(ticket.ticketId)) {
+      return _qrByTicketId[ticket.ticketId] ?? '';
+    }
+
+    final fromTicket = ticket.qrData ?? '';
+    if (fromTicket.isNotEmpty) {
+      _qrByTicketId[ticket.ticketId] = fromTicket;
+      return fromTicket;
+    }
+
+    final qrData = await _controller.getQrDataByTicketId(ticket.ticketId);
+    _qrByTicketId[ticket.ticketId] = qrData;
+    return qrData;
+  }
+
+  void _openTicketDetails(MyTicket ticket) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            'ticket_qr'.tr,
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold,
+              color: AppColors.colorD,
+            ),
+          ),
+          content: SizedBox(
+            width: 340,
+            child: FutureBuilder<String>(
+              future: _resolveQrData(ticket),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const SizedBox(
+                    height: 180,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                final qrData = snapshot.data ?? '';
+                final hasQr = qrData.isNotEmpty;
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (hasQr)
+                      _buildQrImage(qrData)
+                    else
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 18),
+                        child: Icon(Icons.qr_code_2, size: 120),
+                      ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'ticket_id_label'.trParams({
+                        'value': _controllerCode(ticket.ticketId),
+                      }),
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      hasQr ? 'show_qr_to_controller'.tr : 'qr_unavailable'.tr,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.grey[700],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('close'.tr),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildQrImage(String rawBase64) {
+    try {
+      final bytes = base64Decode(rawBase64);
+      return Image.memory(bytes, width: 260, height: 260, fit: BoxFit.contain);
+    } catch (_) {
+      return const Icon(
+        Icons.error_outline,
+        size: 120,
+        color: Colors.redAccent,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.colorL,
       appBar: AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
         title: Text(
-          "My Tickets",
+          widget.showHistory ? 'tickets_history'.tr : 'my_tickets'.tr,
           style: GoogleFonts.poppins(
             color: AppColors.colorD,
             fontWeight: FontWeight.bold,
@@ -25,153 +335,247 @@ class MyTicketsPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          _buildTicketItem(
-            context,
-            ticketId: "RNN-0111",
-            type: "BUS",
-            departure: "Monastir",
-            arrival: "Bekalta",
-            date: "10 Avril 2026",
-            time: "16:30",
-            price: "2 Tokens",
-            isActive: true,
-            icon: Icons.directions_bus,
-          ),
-          const SizedBox(height: 15),
-          _buildTicketItem(
-            context,
-            ticketId: "ABMT-000",
-            type: "TRAIN",
-            departure: "Mahdia",
-            arrival: "Ksiba bannen",
-            date: "15 Avril 2026",
-            time: "08:30",
-            price: "5 Tokens",
-            isActive: false,
-            icon: Icons.train,
-          ),
-          const SizedBox(height: 15),
-          _buildTicketItem(
-            context,
-            ticketId: "XXXX-10",
-            type: "BUS",
-            departure: "Monastir",
-            arrival: "Moknin",
-            date: "28 Avril 2026",
-            time: "18:30",
-            price: "3 Tokens",
-            isActive: false,
-            icon: Icons.directions_bus,
-          ),
-        ],
+      body: FutureBuilder<List<MyTicket>>(
+        future: _ticketsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(color: AppColors.colorA),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'failed_to_load_tickets'.tr,
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      snapshot.error.toString(),
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.grey[700],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 14),
+                    ElevatedButton(
+                      onPressed: _refreshTickets,
+                      child: Text('retry'.tr),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          final tickets = snapshot.data ?? const [];
+          if (tickets.isEmpty) {
+            return Center(
+              child: Text(
+                widget.showHistory
+                    ? 'no_ticket_history'.tr
+                    : 'no_active_tickets'.tr,
+                style: GoogleFonts.poppins(color: Colors.grey[700]),
+              ),
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: _refreshTickets,
+            child: ListView.separated(
+              padding: const EdgeInsets.all(20),
+              itemCount: tickets.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 15),
+              itemBuilder: (context, index) {
+                final ticket = tickets[index];
+                return _buildTicketItem(context, ticket);
+              },
+            ),
+          );
+        },
       ),
     );
   }
 
-Widget _buildTicketItem(
-  BuildContext context, {
-  required String ticketId, // NOUVEAU PARAMÈTRE
-  required String type,
-  required String departure,
-  required String arrival,
-  required String date,
-  required String time,
-  required String price,
-  required bool isActive,
-  required IconData icon,
-}) {
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
+  Widget _buildTicketItem(BuildContext context, MyTicket ticket) {
+    final color = _statusColor(ticket.status);
+    final departureDate = _formatDate(ticket.departureTime);
+    final departureTime = _formatTime(ticket.departureTime);
+
+    return InkWell(
+      onTap: () {
+        if (!ticket.isActive || ticket.isCancelled) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                ticket.isCancelled
+                    ? 'ticket_cancelled_refund'.tr
+                    : 'qr_available_only_active'.tr,
+              ),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
+        _openTicketDetails(ticket);
+      },
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(
-        color: AppColors.colorA.withOpacity(0.3), 
-        width: 1,
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.03),
-          blurRadius: 10,
-          offset: const Offset(0, 5),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: AppColors.colorA.withOpacity(0.3),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
-      ],
-    ),
-    child: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
+        child: Column(
           children: [
-            Row( mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(crossAxisAlignment: CrossAxisAlignment.start,
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
                 children: [
-                Row(children: [
-                    Icon(icon, color: AppColors.colorA, size: 16),
-                    const SizedBox(width: 6),
-                    Text(type, style: GoogleFonts.poppins(fontWeight: FontWeight.bold,color: AppColors.colorA,fontSize: 14,),),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                _iconForType(ticket.type),
+                                color: AppColors.colorA,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _localizedType(ticket.type).toUpperCase(),
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.colorA,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            'ticket_id_label'.trParams({
+                              'value': '#${_controllerCode(ticket.ticketId)}',
+                            }),
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[900],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        'tokens_count'.trParams({
+                          'value': ticket.price.toString(),
+                        }),
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.colorD,
+                          fontSize: 16,
+                        ),
+                      ),
                     ],
-                ),
-                Text("ID: #$ticketId", style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.grey[1000],), ),
+                  ),
+                  const Divider(height: 25),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildStationColumn('departure'.tr, ticket.departure),
+                      Column(
+                        children: [
+                          Icon(
+                            Icons.trending_flat,
+                            color: AppColors.colorA.withOpacity(0.5),
+                          ),
+                          Text(
+                            departureTime,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.colorA,
+                            ),
+                          ),
+                        ],
+                      ),
+                      _buildStationColumn(
+                        'arrival'.tr,
+                        ticket.arrival,
+                        isRight: true,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'day_prefix'.trParams({'date': departureDate}),
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                  _buildDisruptionInfo(ticket),
+                  _buildRefundArea(ticket),
                 ],
               ),
-              Text(price, style: GoogleFonts.poppins( fontWeight: FontWeight.bold, color: AppColors.colorD, fontSize: 16,),),
-              ],
             ),
-            const Divider(height: 25),
-            Row( mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildStationColumn("Departure", departure),
-                Column(
-                    children: [ Icon(Icons.trending_flat, color: AppColors.colorA.withOpacity(0.5)),
-                      Text(time, style: GoogleFonts.poppins( fontSize: 14,fontWeight: FontWeight.bold, color: AppColors.colorA,),),
-                    ],
-                ),
-                _buildStationColumn("Arrival", arrival, isRight: true),
-              ],
-            ),
-            const SizedBox(height: 15),
-            Align(alignment: Alignment.centerLeft,
-                child: Text(
-                  "Day: $date",
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(19),
+                  bottomRight: Radius.circular(19),
                 ),
               ),
-            ],
-          ),
-        ),
-
-      Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: isActive ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(19),
-              bottomRight: Radius.circular(19),
+              child: Text(
+                _localizedStatus(ticket.status).toUpperCase(),
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
             ),
-          ),
-          child: Text(
-            isActive ? "ACTIVE" : "EXPIRED",
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: isActive ? Colors.green : Colors.grey[600],
-            ),
-          ),
+          ],
         ),
-      ],
-    ),
-  );
-}
+      ),
+    );
+  }
 
-  Widget _buildStationColumn(String label, String city, {bool isRight = false}) {
+  Widget _buildStationColumn(
+    String label,
+    String city, {
+    bool isRight = false,
+  }) {
     return Column(
-      crossAxisAlignment: isRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: isRight
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       children: [
         Text(
           label,

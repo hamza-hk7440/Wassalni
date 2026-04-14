@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:app/core/theme/colors_R.dart';
+import 'TrainSchedule_screen.dart';
 
 class DirectionChoice extends StatelessWidget {
   const DirectionChoice({super.key});
@@ -10,59 +12,65 @@ class DirectionChoice extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.colorL,
       body: SafeArea(
-      child: Align (alignment: AlignmentGeometry.center,
-      child: SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [ 
-                Image.asset(
-                  "assets/trainnn.png", 
-                  height: 100,
-                  colorBlendMode: BlendMode.srcIn,
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              child: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios,
+                  color: AppColors.colorA,
+                  size: 22,
                 ),
-                const SizedBox(height: 25),
-                Text(
-                  "Which direction?",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 27,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.colorD,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  "Please select your direction to continue",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 50),
-
-                _buildDirectionCard(
-                  context,
-                  title: "Monastir    ➔    Mahdia", // Utilisation d'une flèche plus propre
-                  onTap: () {
-                    print("Vers Mahdia");
-                  },
-                ),
-
-                const SizedBox(height: 20),
-
-                _buildDirectionCard(
-                  context,
-                  title: "Mahdia    ➔    Monastir",
-                  onTap: () {
-                    print("Vers Monastir");
-                  },
-                ),
-                const SizedBox(height: 30),
-              ],
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
-          ),
+            Align(
+              alignment: Alignment.center,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Image.asset("assets/trainnn.png", height: 100),
+                    const SizedBox(height: 25),
+                    Text(
+                      'which_direction'.tr,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 27,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.colorD,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'select_direction_continue'.tr,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 50),
+                    _buildDirectionCard(
+                      context,
+                      title: 'monastir_mahdia'.tr,
+                      direction: "mahdia",
+                    ),
+                    const SizedBox(height: 20),
+                    _buildDirectionCard(
+                      context,
+                      title: 'mahdia_monastir'.tr,
+                      direction: "monastir",
+                    ),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -71,10 +79,17 @@ class DirectionChoice extends StatelessWidget {
   Widget _buildDirectionCard(
     BuildContext context, {
     required String title,
-    required VoidCallback onTap,
+    required String direction,
   }) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TrainSchedulePage(direction: direction),
+          ),
+        );
+      },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(25),
@@ -91,11 +106,11 @@ class DirectionChoice extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Expanded( 
+            Expanded(
               child: Text(
                 title,
                 style: GoogleFonts.poppins(
-                  fontSize: 20, 
+                  fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: AppColors.colorD,
                 ),

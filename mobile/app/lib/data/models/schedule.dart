@@ -1,6 +1,6 @@
 class Schedule {
   final String id;
-  final String routeId; 
+  final String routeId;
   final String from;
   final String to;
   final String departure;
@@ -8,6 +8,7 @@ class Schedule {
   final int price;
   final int availableSeats;
   final String transportType;
+  final String direction; // ADD THIS
 
   Schedule({
     required this.id,
@@ -19,6 +20,7 @@ class Schedule {
     required this.price,
     required this.availableSeats,
     required this.transportType,
+    required this.direction, // ADD THIS
   });
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
@@ -27,7 +29,7 @@ class Schedule {
 
     return Schedule(
       id: json['schedule_id']?.toString() ?? '',
-      routeId: json['route_id']?.toString() ?? '', 
+      routeId: json['route_id']?.toString() ?? '',
       from: route?['start_station']?['name'] ?? 'Unknown',
       to: route?['end_station']?['name'] ?? 'Unknown',
       departure: json['departure_time']?.toString() ?? '--:--',
@@ -35,6 +37,7 @@ class Schedule {
       price: (json['current_price'] ?? route?['base_price'] ?? 0).toInt(),
       availableSeats: json['available_seats'] ?? 0,
       transportType: transport?['type'] ?? 'Unknown',
+      direction: json['direction']?.toString() ?? '', // ADD THIS
     );
   }
 }

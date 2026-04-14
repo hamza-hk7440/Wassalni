@@ -4,8 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:app/core/theme/colors_R.dart';
 import 'package:get/get.dart';
 import '../auth_controller.dart';
-import 'role_choice_screen.dart';
-import 'login_page.dart';
+import 'home_screen.dart';
+import 'welcome_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -40,12 +40,15 @@ class _SplashScreenState extends State<SplashScreen>
     final AuthController authController = Get.find<AuthController>();
 
     Timer(const Duration(seconds: 3), () {
-      if (!authController.isAuthenticated.value) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
-      }
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => authController.isAuthenticated.value
+              ? const HomePage()
+              : const WelcomeScreen(),
+        ),
+      );
     });
   }
 

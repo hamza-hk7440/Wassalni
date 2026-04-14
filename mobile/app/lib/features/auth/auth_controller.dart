@@ -427,7 +427,7 @@ class AuthController extends GetxController {
     await _deleteUserData();
     currentUser.value = null;
     isAuthenticated.value = false;
-    Get.offAllNamed('/rolechoice');
+    Get.offAllNamed('/login');
   }
 
   void _navigateBasedOnRole(User user) {
@@ -450,7 +450,7 @@ class AuthController extends GetxController {
         if (userData != null) {
           final now = DateTime.now();
           final loginDate = userData.timestamp;
-          const int sessionLimitMinutes = 1;
+          const int sessionLimitMinutes = 30;
 
           if (now.difference(loginDate).inMinutes >= sessionLimitMinutes) {
             print('Session expired. Redirecting...');
