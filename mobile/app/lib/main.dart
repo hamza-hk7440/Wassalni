@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Wasalni',
       // The app starts here, and since AuthController is already "put", it won't crash
-      home: const ControllerHomePage(),
+      home: const SuperAdminHome(),
       getPages: [
         GetPage(name: '/rolechoice', page: () => const RoleChoicePage()),
         GetPage(name: '/login', page: () => const LoginScreen()),
