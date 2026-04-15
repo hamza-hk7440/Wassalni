@@ -38,7 +38,7 @@ const Footer = () => {
                         Quick Links
                     </h3>
                     <div className="flex flex-col gap-3">
-                        <Link to="/client" onClick={handleDisabledClick} className={linkStyles}>Home</Link>
+                        <Link to="/Home" onClick={handleDisabledClick} className={linkStyles}>Home</Link>
                         <Link to="/packages" onClick={handleDisabledClick} className={linkStyles}>Buy Tokens</Link>
                         <Link to="/profile" onClick={handleDisabledClick} className={linkStyles}>My Profile</Link>
                         <Link to="/about" onClick={handleDisabledClick} className={linkStyles}>About Us</Link>

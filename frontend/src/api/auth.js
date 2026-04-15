@@ -8,6 +8,7 @@ export const loginMobile = async (credentials) => {
 
 // Admin Web Login - Step 1
 export const loginWebFirstStep = async (credentials) => {
+    console.log("credentials", credentials);
     const response = await api.post('/users/loginwebfirststep', credentials);
     return response.data;
 };
@@ -33,5 +34,11 @@ export const registerUser = async (userData) => {
 // Get Context Profile
 export const getUserInfo = async (userId) => {
     const response = await api.post('/users/getuseressentialinfo', { user_id: userId });
+    return response.data;
+};
+
+// Change password (requires auth token)
+export const changePassword = async (newPassword) => {
+    const response = await api.post('/users/changepassword', { new_password: newPassword });
     return response.data;
 };

@@ -1,47 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import TicketCard from '../../components/common/Ticket';
+import { getTicketHistory } from '../../api/tickets';
 
 const TicketHistory = () => {
     const navigate = useNavigate();
     const [history, setHistory] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [searchTarget, setSearchTarget] = useState('');
     const [dateFilter, setDateFilter] = useState('');
 
     useEffect(() => {
-        const mockData = [
-            {
-                id: 101, booking_id: "B-001", qr_code: "W-1122",
-                issued_at: "2026-03-01 10:00", valid_from: "2026-03-02 08:00", valid_to: "2026-03-02 20:00",
-                from_station: "Central Station", to_station: "North Park",
-                status: "used", type: "Bus"
-            },
-            {
-                id: 102, booking_id: "B-002", qr_code: "W-3344",
-                issued_at: "2026-02-15 14:00", valid_from: "2026-02-16 09:00", valid_to: "2026-02-16 21:00",
-                from_station: "Downtown", to_station: "Airport",
-                status: "expired", type: "Train"
-            },
-            {
-                id: 103, booking_id: "B-003", qr_code: "W-5566",
-                issued_at: "2026-03-10 11:00", valid_from: "2026-03-11 07:00", valid_to: "2026-03-11 19:00",
-                from_station: "West End", to_station: "Central Station",
-                status: "used", type: "Bus"
-            },
-            {
-                id: 104, booking_id: "B-004", qr_code: "W-7788",
-                issued_at: "2026-04-01 10:00", valid_from: "2026-04-02 08:00", valid_to: "2026-04-02 20:00",
-                from_station: "South Station", to_station: "North Park",
-                status: "active", type: "Bus"
-            },
-            {
-                id: 105, booking_id: "B-005", qr_code: "W-9900",
-                issued_at: "2026-03-20 09:30", valid_from: "2026-03-21 10:00", valid_to: "2026-03-21 22:00",
-                from_station: "Central Station", to_station: "West End",
-                status: "refunded", type: "Train"
+        const fetchHistory = async () => {
+            try {
+                setLoading(true);
+                setError('');
+                const data = await getTicketHistory();
+                const list = Array.isArray(data) ? data : (data.tickets || []);
+                setHistory(list);
+            } catch (err) {
+                console.error('Failed to load ticket history', err);
+                setError('Could not load your ticket history.');
+            } finally {
+                setLoading(false);
             }
-        ];
-        setHistory(mockData);
+        };
+        fetchHistory();
     }, []);
 
     const resetFilters = () => {
@@ -50,8 +35,10 @@ const TicketHistory = () => {
     };
 
     const filteredHistory = history.filter(ticket => {
-        const matchesDestination = ticket.to_station?.toLowerCase().includes(searchTarget.toLowerCase());
-        const matchesDate = dateFilter ? ticket.valid_from.startsWith(dateFilter) : true;
+        const dest = ticket.to_station || ticket.destination || '';
+        const matchesDestination = dest.toLowerCase().includes(searchTarget.toLowerCase());
+        const validFrom = ticket.valid_from || ticket.issued_at || '';
+        const matchesDate = dateFilter ? validFrom.startsWith(dateFilter) : true;
         return matchesDestination && matchesDate;
     });
 
@@ -88,10 +75,14 @@ const TicketHistory = () => {
                     </div>
                 </div>
 
-                {filteredHistory.length > 0 ? (
+                {loading ? (
+                    <div className="py-20 text-center text-gray-400 font-medium">Loading ticket history...</div>
+                ) : error ? (
+                    <div className="py-20 text-center text-red-500 font-medium">{error}</div>
+                ) : filteredHistory.length > 0 ? (
                     <div className="grid grid-cols-1 gap-6">
                         {filteredHistory.map(ticket => (
-                            <TicketCard key={ticket.id} ticket={ticket} />
+                            <TicketCard key={ticket.id || ticket.ticket_id} ticket={ticket} />
                         ))}
                     </div>
                 ) : (

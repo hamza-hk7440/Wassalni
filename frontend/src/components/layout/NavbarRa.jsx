@@ -11,21 +11,7 @@ function Navbar() {
   const notifications = [{ id: 1, title: 'Nouveau ticket validé', detail: 'Ticket traité', time: '2 min' },
     { id: 2, title: 'Admin créé', detail: 'Compte admin ajouté', time: '10 min' },
     { id: 3, title: 'Maintenance', detail: 'Vérification bus 12', time: '1 h' },];
-{/*const [stats, setStats] = useState({nom:"",prenom:"",email:"",role:""});
-  const [loading, setLoading] = useState(true);
 
-  
-  useEffect(() => {
-    fetch('http://votre-api.com/stats') 
-      .then(response => response.json())
-      .then(data => {
-        setStats(data);
-        setLoading(false);
-      })
-      .catch(error => console.error("Erreur backend:", error));
-  }, []);
-  if (loading) return <div className="p-10 text-center text-blue-600 font-bold">Chargement...</div>;
-  */}
   const states = {
     nom: "rayen",
     prenom: "raddaoui",
@@ -44,13 +30,6 @@ function Navbar() {
     setIsOpen(false);
     setIsProfileOpen(false);
     setIsNotifOpen(false);
-  };
-
-  const unreadCount = notifications.length;
-
-  const toggleNotifications = () => {
-    setIsNotifOpen((previous) => !previous);
-    setIsProfileOpen(false);
   };
 
 
@@ -153,7 +132,7 @@ function Navbar() {
               </Link>
             </li>
             <li>
-              <Link to="/Home" onClick={() => setIsOpen(false)} 
+              <Link to="/HomeRa" onClick={() => setIsOpen(false)} 
                 className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95 text-deepOcean">
                 <span className="text-xl group-hover:scale-125 transition-transform">👤</span> 
                 <span>Client</span>
@@ -183,7 +162,7 @@ function Navbar() {
               </Link>
             </li>
             <li>
-              <Link to="/BookTiket" onClick={() => setIsOpen(false)} 
+              <Link to="/BookTicket" onClick={() => setIsOpen(false)} 
                 className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95 text-deepOcean">
                 <span className="text-xl group-hover:scale-125 transition-transform">🎫</span> 
                 <span>Ticket</span>

@@ -1,40 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getRefundRequests } from '../../api/tickets';
 
 const RefundRequest = () => {
     const navigate = useNavigate();
     const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [searchTarget, setSearchTarget] = useState('');
     const [dateFilter, setDateFilter] = useState('');
 
     useEffect(() => {
-        const mockRequests = [
-            {
-                id: 1,
-                ticket_id: "W-1122",
-                request_date: "2026-03-05",
-                amount: "15 Tokens",
-                reason: "Bus delayed over 60 minutes",
-                status: "pending"
-            },
-            {
-                id: 2,
-                ticket_id: "W-3344",
-                request_date: "2026-02-20",
-                amount: "10 Tokens",
-                reason: "Accidental purchase",
-                status: "approved"
-            },
-            {
-                id: 3,
-                ticket_id: "W-5566",
-                request_date: "2026-03-12",
-                amount: "12 Tokens",
-                reason: "Technical error at terminal",
-                status: "rejected"
+        const fetchRefunds = async () => {
+            try {
+                setLoading(true);
+                setError('');
+                const data = await getRefundRequests();
+                const list = Array.isArray(data) ? data : (data.refund_requests || data.requests || []);
+                setRequests(list);
+            } catch (err) {
+                console.error('Failed to load refund requests', err);
+                setError('Could not load your refund requests.');
+            } finally {
+                setLoading(false);
             }
-        ];
-        setRequests(mockRequests);
+        };
+        fetchRefunds();
     }, []);
 
     const resetFilters = () => {
@@ -43,10 +34,13 @@ const RefundRequest = () => {
     };
 
     const filteredRequests = requests.filter(req => {
-        const matchesTicket = req.ticket_id?.toLowerCase().includes(searchTarget.toLowerCase());
-        const matchesDate = dateFilter ? req.request_date === dateFilter : true;
+        const ticketId = req.ticket_id || req.qr_code || String(req.id);
+        const matchesTicket = ticketId.toLowerCase().includes(searchTarget.toLowerCase());
+        const reqDate = req.request_date || req.created_at || req.requested_at || '';
+        const matchesDate = dateFilter ? reqDate.startsWith(dateFilter) : true;
         return matchesTicket && matchesDate;
     });
+
     const getStatusStyle = (status) => {
         switch (status) {
             case 'approved': return 'bg-green-100 text-green-700';
@@ -71,7 +65,7 @@ const RefundRequest = () => {
                     <div className="flex-[2] relative">
                         <input
                             type="text"
-                            placeholder="Search by Ticket ID (e.g., W-1122)..."
+                            placeholder="Search by Ticket ID..."
                             className="w-full px-4 py-3.5 rounded-xl border border-[#e1e9f5] outline-none focus:border-[#6EC1D1] focus:ring-4 focus:ring-[#6EC1D1]/10 transition-all"
                             value={searchTarget}
                             onChange={(e) => setSearchTarget(e.target.value)}
@@ -86,26 +80,37 @@ const RefundRequest = () => {
                         />
                     </div>
                 </div>
-                {filteredRequests.length > 0 ? (
+
+                {loading ? (
+                    <div className="py-20 text-center text-gray-400 font-medium">Loading refund requests...</div>
+                ) : error ? (
+                    <div className="py-20 text-center text-red-500 font-medium">{error}</div>
+                ) : filteredRequests.length > 0 ? (
                     <div className="grid grid-cols-1 gap-4">
                         {filteredRequests.map(req => (
                             <div 
-                                key={req.id} 
+                                key={req.id || req.refund_id} 
                                 className="p-6 border border-[#f1f5f9] rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-[#D1ECFF] hover:bg-[#fcfdfe] transition-all"
                             >
                                 <div className="flex flex-col gap-1">
-                                    <span className="text-sm font-bold text-[#6EC1D1] uppercase tracking-wider">Ticket {req.ticket_id}</span>
-                                    <h4 className="text-lg font-bold text-[#1E5470]">{req.reason}</h4>
-                                    <p className="text-sm text-gray-400">Requested on: {req.request_date}</p>
+                                    <span className="text-sm font-bold text-[#6EC1D1] uppercase tracking-wider">
+                                        Ticket {req.ticket_id || req.qr_code || `#${req.id}`}
+                                    </span>
+                                    <h4 className="text-lg font-bold text-[#1E5470]">{req.reason || 'Refund requested'}</h4>
+                                    <p className="text-sm text-gray-400">
+                                        Requested on: {req.request_date || req.created_at || req.requested_at || 'N/A'}
+                                    </p>
                                 </div>
                                 
                                 <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-none pt-4 md:pt-0">
                                     <div className="text-right">
                                         <p className="text-xs font-bold text-gray-400 uppercase">Amount</p>
-                                        <p className="text-lg font-extrabold text-[#1E5470]">{req.amount}</p>
+                                        <p className="text-lg font-extrabold text-[#1E5470]">
+                                            {req.amount || req.refund_amount || '—'} {typeof req.amount === 'number' ? 'Tokens' : ''}
+                                        </p>
                                     </div>
                                     <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase ${getStatusStyle(req.status)}`}>
-                                        {req.status}
+                                        {req.status || 'pending'}
                                     </span>
                                 </div>
                             </div>

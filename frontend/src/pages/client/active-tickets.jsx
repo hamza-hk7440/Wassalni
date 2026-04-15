@@ -1,29 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TicketCard from '../../components/common/Ticket';
+import { getActiveTickets, requestRefund } from '../../api/tickets';
 
 const ActiveTickets = () => {
     const navigate = useNavigate();
     const [tickets, setTickets] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [refundReason, setRefundReason] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
-        setTickets([
-            { 
-                id: 1, qr_code: "W-8821", 
-                valid_from: "2026-04-04 08:00", valid_to: "2026-04-04 20:00", 
-                status: "active", type: "Bus", 
-                from_station: "Central Station", to_station: "North Park" 
-            },
-            { 
-                id: 2, qr_code: "W-9942", 
-                valid_from: "2026-04-05 09:00", valid_to: "2026-04-05 21:00", 
-                status: "active", type: "Train", 
-                from_station: "Downtown", to_station: "Airport" 
+        const fetchTickets = async () => {
+            try {
+                setLoading(true);
+                setError('');
+                const data = await getActiveTickets();
+                const list = Array.isArray(data) ? data : (data.tickets || []);
+                setTickets(list);
+            } catch (err) {
+                console.error('Failed to load active tickets', err);
+                setError('Could not load your tickets. Please try again.');
+            } finally {
+                setLoading(false);
             }
-        ]);
+        };
+        fetchTickets();
     }, []);
 
     const handleRefundClick = (ticket) => {
@@ -31,14 +36,24 @@ const ActiveTickets = () => {
         setIsModalOpen(true);
     };
 
-    const submitRefund = () => {
+    const submitRefund = async () => {
         if (!refundReason) {
             alert("Please provide a reason for the refund.");
             return;
         }
-        alert(`Refund request submitted for Ticket ${selectedTicket.qr_code}`);
-        setIsModalOpen(false);
-        setRefundReason("");
+        try {
+            setSubmitting(true);
+            await requestRefund(selectedTicket.id || selectedTicket.ticket_id);
+            // Remove refunded ticket from active list
+            setTickets(prev => prev.filter(t => (t.id || t.ticket_id) !== (selectedTicket.id || selectedTicket.ticket_id)));
+            setIsModalOpen(false);
+            setRefundReason("");
+        } catch (err) {
+            console.error('Failed to submit refund', err);
+            alert(err?.response?.data?.error || 'Failed to submit refund request.');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -57,10 +72,14 @@ const ActiveTickets = () => {
                     </div>
                 </div>
 
-                {tickets.length > 0 ? (
+                {loading ? (
+                    <div className="py-24 text-center text-gray-400 font-medium">Loading your tickets...</div>
+                ) : error ? (
+                    <div className="py-24 text-center text-red-500 font-medium">{error}</div>
+                ) : tickets.length > 0 ? (
                     <div className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-bottom-3 duration-500">
                         {tickets.map(t => (
-                            <div key={t.id} className="relative group">
+                            <div key={t.id || t.ticket_id} className="relative group">
                                 <TicketCard ticket={t} />
                                 <div className="mt-2 flex justify-end">
                                     <button 
@@ -123,9 +142,10 @@ const ActiveTickets = () => {
                             </button>
                             <button 
                                 onClick={submitRefund}
-                                className="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 shadow-md transition-all"
+                                disabled={submitting}
+                                className="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 shadow-md transition-all disabled:opacity-50"
                             >
-                                Submit Request
+                                {submitting ? 'Submitting...' : 'Submit Request'}
                             </button>
                         </div>
                     </div>
