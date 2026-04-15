@@ -224,8 +224,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                       email: emailController.text,
                                       password: passwordController.text,
                                     );
-                                    if (authController.pendingRole.value.isNotEmpty &&
-                                        authController.pendingSession.value.isNotEmpty) {
+                                    if (authController
+                                            .pendingRole
+                                            .value
+                                            .isNotEmpty &&
+                                        authController
+                                            .pendingSession
+                                            .value
+                                            .isNotEmpty) {
                                       _maybeShowCodeDialog(
                                         authController.pendingRole.value,
                                       );

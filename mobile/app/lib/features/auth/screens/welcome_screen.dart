@@ -35,7 +35,7 @@ class WelcomeScreen extends StatelessWidget {
                 () => Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset('assets/AppIcon.png', height: 140),
+                    Image.asset('assets/wwl.png', height: 140),
                     const SizedBox(height: 28),
                     Text(
                       'welcome_title'.tr,

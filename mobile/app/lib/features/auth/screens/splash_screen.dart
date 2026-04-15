@@ -70,7 +70,7 @@ class _SplashScreenState extends State<SplashScreen>
               opacity: _fadeAnimation,
               child: SlideTransition(
                 position: _slideAnimation,
-                child: Image.asset('assets/AppIcon.png', height: 150),
+                child: Image.asset('assets/wwl.png', height: 150),
               ),
             ),
             const SizedBox(height: 20),

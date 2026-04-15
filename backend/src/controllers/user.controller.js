@@ -29,9 +29,18 @@ export const createUser = async (req, res) => {
         user: authData.user,
       });
     } else {
+      const generatedCode =
+        typeof authData === "string"
+          ? authData
+          : authData?.generated_code ||
+            authData?.controller_code ||
+            authData?.admin_code ||
+            null;
+
       return res.status(201).json({
         message: "user created successfully",
-        user: authData.user,
+        user: authData?.user || authData || null,
+        generated_code: generatedCode,
       });
     }
   } catch (error) {
