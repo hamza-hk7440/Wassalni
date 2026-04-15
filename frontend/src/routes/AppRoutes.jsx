@@ -34,13 +34,11 @@ const AppRoutes = () => {
             {/* Passenger / Client Protected Routes */}
             <Route element={<ProtectedRoute allowedRoles={['passenger']} />}>
                 <Route element={<MainLayout />}>
-                    <Route path="/client" element={<HomeH />} />
-                    <Route path="/home" element={<Home />} />
+                    <Route path="/Home" element={<HomeH />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/packages" element={<Packages />} />
                     <Route path="/profile" element={<Profile />} />
-                    <Route path="/ticket" element={<BookTicket />} />
                     <Route path="/active-tickets" element={<ActiveTickets />} />
                     <Route path="/history" element={<TicketHistory />} />
                     <Route path="/busSchedule" element={<BusSchedule />} />
@@ -55,9 +53,12 @@ const AppRoutes = () => {
                 <Route path="/parametre" element={<Parametre />} />
                 <Route path="/superlog" element={<Superlog />} />
                 <Route path="/admin" element={<CreateEmp />} />
+                <Route path="/BookTicket" element={<BookTicket />} />
                 <Route path="/bus" element={<Bus />} />
                 <Route path="/metro" element={<Metro />} />
                 <Route path="/transport" element={<Transport />} />
+                <Route path="/HomeRa" element={<Home/>} />
+                <Route path="/Controller" element={<ControllerEmp/>} />
             </Route>
 
             {/* Controller Protected Routes */}

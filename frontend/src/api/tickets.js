@@ -17,3 +17,33 @@ export const verifyTicket = async (qrData) => {
     const response = await api.post('/ticket/getticketstatusbyqrdata', { qr_data: qrData });
     return response.data;
 };
+
+// Passenger: Get active tickets
+export const getActiveTickets = async () => {
+    const response = await api.get('/ticket/mytickets/active');
+    return response.data;
+};
+
+// Passenger: Get ticket history (all tickets including used/refunded)
+export const getTicketHistory = async () => {
+    const response = await api.get('/ticket/mytickets/history');
+    return response.data;
+};
+
+// Passenger: Request a refund for a cancelled ticket
+export const requestRefund = async (ticketId) => {
+    const response = await api.post('/ticket/requestrefund', { ticket_id: ticketId });
+    return response.data;
+};
+
+// Passenger: Get all refund requests
+export const getRefundRequests = async () => {
+    const response = await api.get('/ticket/refundrequests');
+    return response.data;
+};
+
+// Controller: Mark a ticket as used after scanning
+export const markTicketAsUsed = async (ticketId) => {
+    const response = await api.post('/ticket/markticketasused', { ticket_id: ticketId });
+    return response.data;
+};

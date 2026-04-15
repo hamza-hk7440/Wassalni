@@ -51,12 +51,17 @@ const Auth = () => {
             if (isLogin) {
                 if (!pendingSession) {
                     // Step 1: Same login endpoint handles both Passengers and Admins
-                    const data = await loginWebFirstStep({ email, password });
+                    console.log("test 1");
                     
-                    if (data.session) {
+                    const data = await loginWebFirstStep({ email, password });
+                    console.log("test 2", data);
+                    
+                    if (data.token_temp) {
+                    console.log("test 3");
                         // Backend detected an Admin and returned a session instead of a token
-                        setPendingSession(data.session);
+                        setPendingSession(data.token_temp);
                     } else if (data.token) {
+                    console.log("test 4");
                         // Backend detected a Passenger and returned the token directly
                         loginUser(data.token, data.user || { role: 'passenger' });
                         navigate('/home');
@@ -112,7 +117,7 @@ const Auth = () => {
                     </h1>
                     <p className="text-center text-[#8899a6] text-sm mb-[30px]">
                         {isLogin 
-                            ? (pendingSession ? "Entrez votre code admin à 6 chiffres" : "Connectez-vous à votre compte") 
+                            ? (pendingSession ? "Entrez votre code admin ï¿½ 6 chiffres" : "Connectez-vous ï¿½ votre compte") 
                             : "Rejoignez-nous aujourd'hui !"}
                     </p>
 
@@ -136,7 +141,7 @@ const Auth = () => {
                         )}
 
                         <Button type="submit" disabled={loading} className="custom-btn">       
-                            {loading ? "Patientez..." : (isLogin ? (pendingSession ? "Vérifier le code" : "Se connecter") : "S'inscrire")}
+                            {loading ? "Patientez..." : (isLogin ? (pendingSession ? "Vï¿½rifier le code" : "Se connecter") : "S'inscrire")}
                         </Button>
                         
                         {pendingSession && (
@@ -148,7 +153,7 @@ const Auth = () => {
 
                     {!pendingSession && (
                         <p className="text-center text-[13px] text-[#657786] mt-5">
-                            {isLogin ? "Vous n'avez pas de compte ? " : "Vous avez déjà un compte ? "}
+                            {isLogin ? "Vous n'avez pas de compte ? " : "Vous avez dï¿½jï¿½ un compte ? "}
                             <span
                                 className="text-[#3b759f] font-bold cursor-pointer hover:underline"
                                 onClick={toggleAuthMode}
@@ -161,7 +166,7 @@ const Auth = () => {
                     {isLogin && !pendingSession && (
                         <>
                             <div className="flex items-center text-center my-5 text-[#ccc] text-[12px] before:content-[''] before:flex-1 before:border-b before:border-[#eee] after:content-[''] after:flex-1 after:border-b after:border-[#eee]">  
-                                <span className="px-2.5">OÙ</span>
+                                <span className="px-2.5">Oï¿½</span>
                             </div>
 
                             <button type="button" className="flex items-center justify-center gap-2.5 w-full p-3 bg-white border border-[#e1e8ed] rounded-lg cursor-pointer font-semibold transition-colors hover:bg-gray-50">

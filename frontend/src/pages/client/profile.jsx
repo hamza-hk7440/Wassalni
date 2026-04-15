@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import avatar from '../../assets/default_pfp.png';
 import tokenLogo from '../../assets/token_logo.png';
-import Button from '../../components/common/Button';
+import { changePassword } from '../../api/auth';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -15,10 +15,13 @@ const Profile = () => {
     
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordSuccess, setPasswordSuccess] = useState('');
 
     useEffect(() => {
-        if (user) setLocalUser(user);
+        setLocalUser(user);
     }, [user]);
+
 
     const handleLogout = () => {
         if (logout) logout();
@@ -38,15 +41,28 @@ const Profile = () => {
         setIsEditing(false);
     };
 
-    const handlePasswordSave = () => {
+    const handlePasswordSave = async () => {
+        setPasswordError('');
+        setPasswordSuccess('');
         if (passwordData.new !== passwordData.confirm) {
-            alert("New passwords do not match!");
+            setPasswordError("New passwords do not match!");
             return;
         }
-        alert("Password successfully updated!");
-        setIsChangingPassword(false);
-        setPasswordData({ current: '', new: '', confirm: '' });
+        if (passwordData.new.length < 6) {
+            setPasswordError("Password must be at least 6 characters.");
+            return;
+        }
+        try {
+            await changePassword(passwordData.new);
+            setPasswordSuccess("Password successfully updated!");
+            setIsChangingPassword(false);
+            setPasswordData({ current: '', new: '', confirm: '' });
+        } catch (err) {
+            console.error('Password change failed', err);
+            setPasswordError(err?.response?.data?.error || 'Failed to update password.');
+        }
     };
+
 
     return (
         <div className="min-h-screen bg-[#f4f9fc] px-[5%] py-[50px] font-sans">
@@ -108,6 +124,8 @@ const Profile = () => {
                                 ) : (
                                     <div className="animate-in fade-in slide-in-from-top-2 rounded-xl border border-[#D1ECFF] bg-[#f9fbff] p-4">
                                         <h3 className="mb-3 text-sm font-bold text-[#1E5470]">Update Security</h3>
+                                        {passwordError && <p className="mb-2 text-xs font-semibold text-red-500">{passwordError}</p>}
+                                        {passwordSuccess && <p className="mb-2 text-xs font-semibold text-green-600">{passwordSuccess}</p>}
                                         <div className="flex flex-col gap-3">
                                             <input 
                                                 type="password" 

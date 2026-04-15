@@ -13,7 +13,7 @@ const Navbar = () => {
     return (
         <nav className="sticky top-0 z-[1000] flex items-center justify-between bg-white px-[5%] py-3 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border-b border-[#eef5f9]">
             <Link 
-                to={isAuthPage ? "#" : (user ? "/client" : "/login")} 
+                to={isAuthPage ? "#" : "/Home"} 
                 onClick={(e) => isAuthPage && e.preventDefault()}
                 className={`flex items-center gap-0 text-[1.8rem] font-extrabold tracking-wider text-[#1e5470] no-underline transition-all ${
                     isAuthPage 
@@ -28,7 +28,7 @@ const Navbar = () => {
                 {!isAuthPage && user && (
                     <>
                         <div className="hidden md:flex items-center gap-8">
-                            <Link to="/client" className={`text-[0.95rem] font-semibold no-underline transition-colors hover:text-[#1e5470] ${location.pathname === '/client' ? 'text-[#1e5470]' : 'text-[#34729c]'}`}>
+                            <Link to="/Home" className={`text-[0.95rem] font-semibold no-underline transition-colors hover:text-[#1e5470] ${location.pathname === '/Home' ? 'text-[#1e5470]' : 'text-[#34729c]'}`}>
                                 Home
                             </Link>
                             <Link to="/active-tickets" className="relative text-[0.95rem] font-semibold text-[#34729c] no-underline transition-colors hover:text-[#1e5470] flex items-center gap-1">

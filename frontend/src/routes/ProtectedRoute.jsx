@@ -16,9 +16,11 @@ const ProtectedRoute = ({ allowedRoles }) => {
     }
 
     if (allowedRoles && !allowedRoles.includes(role)) {
+        console.log("role", role);
+        
         // Logged in but insufficient role
         if (role === 'admin' || role === 'superAdmin') {
-            return <Navigate to="/admin/dashboard" replace />;
+            return <Navigate to="/dashboard" replace />;
         }
         return <Navigate to="/" replace />; // Passenger default fallback
     }

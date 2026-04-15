@@ -8,8 +8,6 @@ import transportRoutes from "./src/routes/transport.routes.js";
 import routeRoutes from "./src/routes/route.routes.js";
 import scheduleRoutes from "./src/routes/schedule.routes.js";
 import stationsRoutes from "./src/routes/station.routes.js";
-import routeRoutes from "./src/routes/route.routes.js";
-import transportRoutes from "./src/routes/transport.routes.js";
 import cors from "cors";
 
 const app = express();

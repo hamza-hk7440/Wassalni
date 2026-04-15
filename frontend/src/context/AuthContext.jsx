@@ -33,6 +33,8 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const loginUser = (tokenData, userData) => {
+        console.log("test 5", tokenData, userData);
+        
         setToken(tokenData);
         setUser(userData);
         setRole(userData.role || 'passenger'); // defaulting if none
