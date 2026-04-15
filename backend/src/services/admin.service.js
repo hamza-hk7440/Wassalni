@@ -41,6 +41,7 @@ export const getDashboardStats = async () => {
     }
 
     return {
+        // todo : passenger only
         total_users: users.count || 0,
         total_transactions: transactions.count || 0,
         buses_count: busesData.count || 0,
