@@ -1,25 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/layout/NavbarRa';
 import palette from '../../components/common/pallette';
-
-const initialTickets = [
-	{ id: 'TK-1023', trajet: 'Tunis -> Sfax', date: '2026-04-05', statut: 'Vendu', transport: 'bus' },
-	{ id: 'TK-1024', trajet: 'Sousse -> Tunis', date: '2026-04-06', statut: 'Vendu', transport: 'metro' },
-	{ id: 'TK-1025', trajet: 'Nabeul -> Tunis', date: '2026-04-09', statut: 'Vendu', transport: 'bus' },
-	{ id: 'TK-1026', trajet: 'Bizerte -> Tunis', date: '2026-04-10', statut: 'Vendu', transport: 'metro' },
-	{ id: 'TK-1027', trajet: 'Sfax -> Gabes', date: '2026-04-12', statut: 'Vendu', transport: 'bus' },
-];
+import api from '../../api/axios';
 
 const EMPTY_EDIT_FORM = { trajet: '', date: '', statut: 'Vendu' };
 
 function BookTicket() {
-	const [tickets, setTickets] = useState(initialTickets);
+	const [tickets, setTickets] = useState([]);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [searchField, setSearchField] = useState('trajet');
 	const [transportFilter, setTransportFilter] = useState('all');
 	const [editingId, setEditingId] = useState('');
 	const isEditing = Boolean(editingId);
 	const [editForm, setEditForm] = useState(EMPTY_EDIT_FORM);
+
+	useEffect(() => {
+		const fetchSchedules = async () => {
+			try {
+				const res = await api.get('/schedules/all');
+				const rawSchedules = Array.isArray(res.data) ? res.data : (res.data.data || []);
+				const formattedSchedules = rawSchedules.map(schedule => ({
+					id: schedule.schedule_id,
+					trajet: `${schedule.routes?.start_station?.name} -> ${schedule.routes?.end_station?.name}`,
+					date: new Date(schedule.departure_time).toISOString().split('T')[0],
+					statut: 'Available',
+					transport: schedule.transports?.type || 'Bus',
+					price: schedule.current_price
+				}));
+				setTickets(formattedSchedules);
+			} catch (err) {
+				console.error("Failed to load schedules", err);
+			}
+		};
+		fetchSchedules();
+	}, []);
 
 	const searchInputStyle = { borderColor: palette.frostBlue, backgroundColor: palette.pureWhite, color: palette.deepOcean };
 	const ticketCardStyle = { borderColor: palette.frostBlue, background: palette.pureWhite };

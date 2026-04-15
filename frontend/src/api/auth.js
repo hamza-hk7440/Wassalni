@@ -1,0 +1,37 @@
+import api from './axios';
+
+// Passenger Mobile Login
+export const loginMobile = async (credentials) => {
+    const response = await api.post('/users/loginmobile', credentials);
+    return response.data;
+};
+
+// Admin Web Login - Step 1
+export const loginWebFirstStep = async (credentials) => {
+    const response = await api.post('/users/loginwebfirststep', credentials);
+    return response.data;
+};
+
+// Admin Web Login - Step 2
+export const loginWebSecondStep = async (data) => {
+    const response = await api.post('/users/loginwebsecondstep', data);
+    return response.data;
+};
+
+// Controller Login
+export const controllerLogin = async (credentials) => {
+    const response = await api.post('/users/controllerlogin', credentials);
+    return response.data;
+};
+
+// Create User (Passenger Signup)
+export const registerUser = async (userData) => {
+    const response = await api.post('/users/createuser', userData);
+    return response.data;
+};
+
+// Get Context Profile
+export const getUserInfo = async (userId) => {
+    const response = await api.post('/users/getuseressentialinfo', { user_id: userId });
+    return response.data;
+};

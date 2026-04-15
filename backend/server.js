@@ -8,17 +8,24 @@ import transportRoutes from "./src/routes/transport.routes.js";
 import routeRoutes from "./src/routes/route.routes.js";
 import scheduleRoutes from "./src/routes/schedule.routes.js";
 import stationsRoutes from "./src/routes/station.routes.js";
-
+import routeRoutes from "./src/routes/route.routes.js";
+import transportRoutes from "./src/routes/transport.routes.js";
 import cors from "cors";
+
 const app = express();
+app.use(cors());
 
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:5173", // Allow requests from the frontend URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-};
 
-app.use(cors(corsOptions));
+// import cors from "cors";
+// const app = express();
+
+// const corsOptions = {
+//   origin: process.env.FRONTEND_URL || "http://localhost:5173", // Allow requests from the frontend URL
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+//   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+// };
+
+// app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); //we add this bcz paymee don't use json it use a format called :application/x-www-form-urlencoded
