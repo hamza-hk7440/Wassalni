@@ -201,39 +201,45 @@ class AuthController extends GetxController {
       await _deleteToken();
       await _deleteUserData();
 
-      final response = await _apiClient.post(
-        'users/loginunified',
-        body: {'email': email, 'password': password},
-      );
+      dynamic response;
+      try {
+        response = await _apiClient.post(
+          'users/loginunified',
+          body: {'email': email, 'password': password},
+        );
+      } catch (unifiedError) {
+        if (_isMissingProfileError(unifiedError)) {
+          throw Exception(
+            'This account exists in authentication but has no profile row in users table. Ask the backend admin to repair this user profile.',
+          );
+        }
+
+        response = await _apiClient.post(
+          'users/loginwebfirststep',
+          body: {'email': email, 'password': password},
+        );
+
+        if (response is Map<String, dynamic> &&
+            response.containsKey('token_temp')) {
+          isLoading.value = false;
+          pendingSession.value = response['token_temp']?.toString() ?? '';
+          pendingRole.value = 'superAdmin';
+          return true;
+        }
+      }
+
       if (response == null) throw Exception('Invalid response from server');
       final requiresCode = response['requiresCode'] as bool? ?? false;
       if (!requiresCode) {
-        if (!response.containsKey('token') || !response.containsKey('user')) {
-          throw Exception('Invalid response from server');
-        }
-        final token = response['token'] as String;
-        final userData = response['user'] as Map<String, dynamic>;
-        userData['timestamp'] = DateTime.now().toIso8601String();
-        final user = User.fromJson(userData);
-        await _saveToken(token);
-        await _saveUserData(user);
-        currentUser.value = user;
-        isAuthenticated.value = true;
-        successMessage.value = 'Login successful';
-        isLoading.value = false;
-        Future.delayed(
-          const Duration(seconds: 1),
-          () => _navigateBasedOnRole(user),
-        );
-        return true;
-      } else {
-        final role = response['role'] as String;
-        final session = response['session'] as String;
-        isLoading.value = false;
-        pendingSession.value = session;
-        pendingRole.value = role;
-        return true;
+        return _completeLogin(response);
       }
+
+      final role = response['role'] as String;
+      final session = response['session'] as String;
+      isLoading.value = false;
+      pendingSession.value = session;
+      pendingRole.value = role;
+      return true;
     } catch (e) {
       _handleError(e);
       isLoading.value = false;
@@ -247,38 +253,71 @@ class AuthController extends GetxController {
     try {
       errorMessage.value = '';
       isLoading.value = true;
-      final response = await _apiClient.post(
-        'users/loginunified/verify',
-        body: {'session': pendingSession.value, 'code': code},
-      );
+      dynamic response;
+
+      try {
+        response = await _apiClient.post(
+          'users/loginunified/verify',
+          body: {'session': pendingSession.value, 'code': code},
+        );
+      } catch (_) {
+        response = await _apiClient.post(
+          'users/loginwebsecondstep',
+          body: {'session': pendingSession.value, 'admin_code': code},
+        );
+      }
 
       if (response == null ||
           !response.containsKey('token') ||
           !response.containsKey('user')) {
         throw Exception('Invalid response from server');
       }
-      final token = response['token'] as String;
-      final userData = response['user'] as Map<String, dynamic>;
-      userData['timestamp'] = DateTime.now().toIso8601String();
-      final user = User.fromJson(userData);
-      await _saveToken(token);
-      await _saveUserData(user);
-      currentUser.value = user;
-      isAuthenticated.value = true;
-      successMessage.value = 'Login successful';
-      isLoading.value = false;
-      pendingSession.value = '';
-      pendingRole.value = '';
-      Future.delayed(
-        const Duration(seconds: 1),
-        () => _navigateBasedOnRole(user),
-      );
-      return true;
+      return _completeLogin(response, clearPendingSession: true);
     } catch (e) {
       _handleError(e);
       isLoading.value = false;
       return false;
     }
+  }
+
+  Future<bool> _completeLogin(
+    Map<String, dynamic> response, {
+    bool clearPendingSession = false,
+  }) async {
+    if (!response.containsKey('token') || !response.containsKey('user')) {
+      throw Exception('Invalid response from server');
+    }
+
+    final token = response['token'] as String;
+    final userData = response['user'] as Map<String, dynamic>;
+    userData['timestamp'] = DateTime.now().toIso8601String();
+    final user = User.fromJson(userData);
+
+    await _saveToken(token);
+    await _saveUserData(user);
+
+    currentUser.value = user;
+    isAuthenticated.value = true;
+    successMessage.value = 'Login successful';
+    isLoading.value = false;
+
+    if (clearPendingSession) {
+      pendingSession.value = '';
+      pendingRole.value = '';
+    }
+
+    Future.delayed(
+      const Duration(seconds: 1),
+      () => _navigateBasedOnRole(user),
+    );
+    return true;
+  }
+
+  bool _isMissingProfileError(dynamic error) {
+    final message = error.toString();
+    return message.contains('PGRST116') ||
+        message.contains('Cannot coerce the result to a single JSON object') ||
+        message.contains('The result contains 0 rows');
   }
 
   //signup method
@@ -590,6 +629,13 @@ class AuthController extends GetxController {
       String errorString = error.toString();
       if (errorString.contains('401') || errorString.contains('Unauthorized')) {
         message = 'Invalid email or password';
+      } else if (errorString.contains('PGRST116') ||
+          errorString.contains(
+            'Cannot coerce the result to a single JSON object',
+          ) ||
+          errorString.contains('The result contains 0 rows')) {
+        message =
+            'This account has no profile in users table. Ask backend admin to fix this user record, then try again.';
       } else if (errorString.contains('409') ||
           errorString.contains('already')) {
         message = 'Email is already registered. Please login instead.';

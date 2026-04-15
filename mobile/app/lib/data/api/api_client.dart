@@ -1,20 +1,23 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:app/data/api/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'dart:async';
-import 'package:app/data/api/api_config.dart';
 
 class ApiException implements Exception {
   final String message;
   final String? errorCode;
   final int? statusCode;
   final dynamic originalError;
+
   ApiException(
     this.message, {
     this.errorCode,
     this.statusCode,
     this.originalError,
   });
+
   @override
   String toString() => message;
 }
@@ -67,62 +70,72 @@ class ApiClient {
   static String get baseUrl => ApiConfig.baseUrl;
   static int get timeoutSeconds => ApiConfig.timeoutSeconds;
   static const String authTokenKey = 'auth_token';
+
   static final ApiClient _instance = ApiClient._internal();
-  factory ApiClient() {
-    return _instance;
-  }
+
+  factory ApiClient() => _instance;
+
   ApiClient._internal();
-  Future<Map<String, String>> _getHeaders() async {
-    final token = await _getToken();
-    final headers = {'Content-Type': 'application/json'};
-    if (token != null && token.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-    return headers;
-  }
 
   Future<String?> _getToken() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString(authTokenKey);
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }
 
+  Future<Map<String, String>> _getHeaders() async {
+    final token = await _getToken();
+    final headers = <String, String>{'Content-Type': 'application/json'};
+
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    return headers;
+  }
+
   dynamic _handleResponse(http.Response response) {
     try {
-      final decodedBody = jsonDecode(response.body) ?? {};
+      final decodedBody = jsonDecode(response.body);
       final backendMessage = decodedBody is Map<String, dynamic>
           ? (decodedBody['message'] ?? decodedBody['error'])?.toString()
           : null;
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         return decodedBody;
-      } else if (response.statusCode == 401) {
+      }
+
+      if (response.statusCode == 401) {
         throw UnauthorizedException(
           message: backendMessage ?? 'Unauthorized',
           statusCode: response.statusCode,
         );
-      } else if (response.statusCode == 500) {
+      }
+
+      if (response.statusCode == 500) {
         throw ServerException(
           message: backendMessage ?? 'Server error',
           statusCode: response.statusCode,
         );
-      } else if (response.statusCode == 400) {
+      }
+
+      if (response.statusCode == 400) {
         throw ClientException(
           message: backendMessage ?? 'Invalid request',
           statusCode: response.statusCode,
         );
-      } else {
-        throw ApiException(
-          'Request failed with status ${response.statusCode}',
-          statusCode: response.statusCode,
-        );
       }
+
+      throw ApiException(
+        'Request failed with status ${response.statusCode}',
+        statusCode: response.statusCode,
+      );
     } on ApiException {
       rethrow;
     } catch (e) {
-      print(' Error: $e, Response: ${response.body}');
       throw ApiException(
         'Failed to process response: ${response.body}',
         originalError: e,
@@ -131,27 +144,26 @@ class ApiClient {
   }
 
   String _buildUrl(String endpoint, [Map<String, String>? queryParams]) {
-    String url = baseUrl + '/' + endpoint;
+    var url = '$baseUrl/$endpoint';
+
     if (queryParams != null && queryParams.isNotEmpty) {
-      final queryString = queryParams.entries
-          .map((e) => '${e.key}=${e.value}')
+      final query = queryParams.entries
+          .map((entry) => '${entry.key}=${entry.value}')
           .join('&');
-      url += '?$queryString';
+      url = '$url?$query';
     }
+
     return url;
   }
 
-  //public meethods
   Future<dynamic> get(
     String endpoint, {
     Map<String, String>? queryParameters,
   }) async {
     try {
-      //step 1: get the headers(including the auth token if available)
       final headers = await _getHeaders();
-      //step 2: construct the full url with query parameters if provided
       final url = _buildUrl(endpoint, queryParameters);
-      //step 3: make the http GET request with a timeout
+
       final response = await http
           .get(Uri.parse(url), headers: headers)
           .timeout(
@@ -162,7 +174,7 @@ class ApiClient {
               );
             },
           );
-      //step 4: handle the response based on the status code
+
       return _handleResponse(response);
     } on http.ClientException catch (e) {
       throw NetworkException(
@@ -179,19 +191,15 @@ class ApiClient {
     }
   }
 
-  //post request method
   Future<dynamic> post(
     String endpoint, {
     required Map<String, dynamic> body,
   }) async {
     try {
-      //step 1: get the headers(including the auth token if available)
       final headers = await _getHeaders();
-      //step 2: construct the full url
       final url = _buildUrl(endpoint);
-      //step 3: encode the body to JSON
       final jsonBody = jsonEncode(body);
-      //step 4: make the http POST request with a timeout
+
       final response = await http
           .post(Uri.parse(url), headers: headers, body: jsonBody)
           .timeout(
@@ -202,7 +210,7 @@ class ApiClient {
               );
             },
           );
-      //step 5: handle the response based on the status code
+
       return _handleResponse(response);
     } on http.ClientException catch (e) {
       throw NetworkException(
@@ -218,31 +226,39 @@ class ApiClient {
       rethrow;
     }
   }
-}
 
-//private helper method
-//get the token from the response
-Future<String?> _getToken() async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(ApiClient.authTokenKey);
-  } catch (e) {
-    print(' Error retrieving token: $e');
-    return null;
-  }
-}
+  Future<dynamic> delete(
+    String endpoint, {
+    Map<String, String>? queryParameters,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final url = _buildUrl(endpoint, queryParameters);
 
-//get headers with the token if available
-Future<Map<String, String>> _getHeaders() async {
-  try {
-    final token = await _getToken();
-    final headers = {'Content-Type': 'application/json'};
-    if (token != null && token.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $token';
+      final response = await http
+          .delete(Uri.parse(url), headers: headers)
+          .timeout(
+            Duration(seconds: timeoutSeconds),
+            onTimeout: () {
+              throw TimeoutException(
+                'Request timeout after $timeoutSeconds seconds',
+              );
+            },
+          );
+
+      return _handleResponse(response);
+    } on http.ClientException catch (e) {
+      throw NetworkException(
+        message: 'Network error. Please check your internet connection.',
+        originalError: e,
+      );
+    } on TimeoutException catch (e) {
+      throw NetworkException(
+        message: 'Request timeout. Please check your internet connection.',
+        originalError: e,
+      );
+    } catch (e) {
+      rethrow;
     }
-    return headers;
-  } catch (e) {
-    print('Error getting headers: $e');
-    return {'Content-Type': 'application/json'};
   }
 }
