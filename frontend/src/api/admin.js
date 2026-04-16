@@ -19,6 +19,11 @@ export const deleteUser = async (userId) => {
     return response.data;
 };
 
+export const updateUser = async (userId, data) => {
+    const response = await api.put(`/admin/users/${userId}`, data);
+    return response.data;
+};
+
 export const getAllTransactions = async () => {
     const response = await api.get('/admin/transactions');
     return response.data;

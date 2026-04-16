@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Navbar from '../layout/NavbarRa';
-import { getAllUsers, deleteUser, createController } from '../../api/admin';
+import { getAllUsers, deleteUser, createController, updateUser } from '../../api/admin';
 
 const EMPTY_FORM = {
   nom: '',
@@ -19,6 +19,7 @@ function EmployeeManagementPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   // Fetch employees from the backend filtered by role
   const fetchEmployees = useCallback(async () => {
@@ -31,8 +32,8 @@ function EmployeeManagementPage({
       const filtered = users.filter((u) => u.role === role);
       setEmployees(
         filtered.map((u) => ({
-          id: String(u.id || u.user_id),
-          nom: u.name || u.full_name || u.nom || '',
+          id: String(u.user_id),
+          nom: `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Inconnu',
           email: u.email || '',
           role: u.role,
         }))
@@ -65,8 +66,20 @@ function EmployeeManagementPage({
   }, [employees, query]);
 
   const startCreate = () => {
+    setEditingId(null);
     setForm(EMPTY_FORM);
     setError('');
+  };
+
+  const startEdit = (employee) => {
+    setEditingId(employee.id);
+    setForm({
+      nom: employee.nom,
+      email: employee.email,
+      password: '', // Leave empty unless they want to change it
+    });
+    setError('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleChange = (event) => {
@@ -83,7 +96,7 @@ function EmployeeManagementPage({
       password: form.password.trim(),
     };
 
-    if (!normalized.name || !normalized.email || !normalized.password) {
+    if (!normalized.name || !normalized.email || (!normalized.password && !editingId)) {
       setError('Tous les champs sont obligatoires.');
       return;
     }
@@ -91,18 +104,34 @@ function EmployeeManagementPage({
     try {
       setSaving(true);
       setError('');
-      await createController({
-        name: normalized.name,
-        email: normalized.email,
-        password: normalized.password,
-        role,
-      });
+
+      const nameParts = normalized.name.split(' ');
+      const firstName = nameParts[0] || 'Unknown';
+      const lastName = nameParts.slice(1).join(' ').trim() || ' ';
+
+      if (editingId) {
+        await updateUser(editingId, {
+          first_name: firstName,
+          last_name: lastName,
+          email: normalized.email,
+          ...(normalized.password ? { password: normalized.password } : {})
+        });
+      } else {
+        await createController({
+          first_name: firstName,
+          last_name: lastName,
+          email: normalized.email,
+          password: normalized.password,
+          role,
+        });
+      }
+      setEditingId(null);
       setForm(EMPTY_FORM);
       // Refresh the list
       await fetchEmployees();
     } catch (err) {
-      console.error('Failed to create employee', err);
-      const msg = err?.response?.data?.error || err?.response?.data?.message || 'Erreur lors de la création.';
+      console.error('Failed to save employee', err);
+      const msg = err?.response?.data?.error || err?.response?.data?.message || 'Erreur lors de l\'enregistrement.';
       setError(msg);
     } finally {
       setSaving(false);
@@ -163,47 +192,77 @@ function EmployeeManagementPage({
             </div>
 
             {error && (
-              <div className="mt-3 rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-600 font-medium">
+              <div className="mt-3 rounded-xl bg-dangerSoft/20 border border-dangerSoft p-3 text-sm text-dangerText font-medium">
                 {error}
               </div>
             )}
 
             <form
               onSubmit={handleSubmit}
-              className="mt-4 grid gap-3 rounded-2xl border p-4 md:grid-cols-3 border-frostBlue bg-iceWhite"
+              className="mt-6 grid gap-4 rounded-2xl p-5 md:grid-cols-2 transition-colors border border-skyBlue bg-skyBlue/5 shadow-[0_0_15px_rgba(56,189,248,0.1)]"
             >
-              <input
-                name="nom"
-                value={form.nom}
-                onChange={handleChange}
-                placeholder="Nom complet"
-                className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none border-frostBlue"
-              />
-              <input
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="Email"
-                className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none border-frostBlue"
-              />
-              <input
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="Mot de passe"
-                className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none border-frostBlue"
-              />
+              <div className="md:col-span-2 mb-1">
+                <h3 className="text-lg font-bold text-skyBlue">
+                  {editingId ? `Modification de l'employé #${editingId}` : 'Créer un nouveau compte'}
+                </h3>
+                <p className="text-xs text-textGray mt-1">
+                  {editingId ? 'Mettez à jour les informations ci-dessous. Laissez le mot de passe vide pour le conserver.' : 'Remplissez les champs pour ajouter cet utilisateur au système.'}
+                </p>
+              </div>
 
-              <div className="flex gap-2 w-full md:col-span-3">
+              <div className="md:col-span-2">
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-classicBlue">Nom complet *</label>
+                <input
+                  name="nom"
+                  value={form.nom}
+                  onChange={handleChange}
+                  placeholder="Ex: Jean Dupont"
+                  className="w-full rounded-xl border px-4 py-3 text-base font-bold outline-none border-classicBlue focus:ring-2 focus:ring-skyBlue/50 text-deepOcean shadow-sm transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-textGray">Email *</label>
+                <input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="email@exemple.com"
+                  className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none border-frostBlue text-deepOcean"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-textGray">Mot de passe {editingId ? '(optionnel)' : '*'}</label>
+                <input
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder={editingId ? "Nouveau mot de passe" : "Mot de passe"}
+                  className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none border-frostBlue text-deepOcean"
+                />
+              </div>
+
+              <div className="flex gap-2 w-full md:col-span-2 mt-2">
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold transition-all hover:opacity-90 active:scale-95 bg-classicBlue text-pureWhite disabled:opacity-50"
+                  className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold transition-all hover:opacity-90 active:scale-95 bg-classicBlue text-pureWhite disabled:opacity-50 shadow-md"
                 >
-                  {saving ? 'Enregistrement...' : 'Ajouter'}
+                  {saving ? 'Enregistrement...' : editingId ? 'Enregistrer les modifications' : 'Ajouter'}
                 </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={startCreate}
+                    disabled={saving}
+                    className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold transition-all hover:bg-dangerSoft/20 active:scale-95 border border-dangerSoft text-dangerText disabled:opacity-50"
+                  >
+                    Annuler l'édition
+                  </button>
+                )}
               </div>
             </form>
 
@@ -232,21 +291,28 @@ function EmployeeManagementPage({
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-skyBlue">
-                          {role}
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-skyBlue mb-1">
+                          {role} — ID: #{employee.id}
                         </p>
-                        <h2 className="mt-1 text-xl font-black text-deepOcean">
-                          #{employee.id}
-                        </h2>
-                        <p className="mt-2 text-sm font-semibold text-classicBlue">
+                        <h2 className="text-xl md:text-2xl font-black text-deepOcean">
                           {employee.nom}
-                        </p>
-                        <p className="mt-1 text-xs text-textGray">
-                          {employee.email}
-                        </p>
+                        </h2>
+                        <div className="mt-2 flex items-center gap-2 text-sm text-textGray">
+                          <svg className="h-4 w-4 text-classicBlue" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          <span className="font-medium">{employee.email}</span>
+                        </div>
                       </div>
 
                       <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => startEdit(employee)}
+                          className="rounded-full border px-3 py-1.5 text-xs font-bold transition-colors hover:bg-skyBlue/10 active:scale-95 border-skyBlue text-skyBlue"
+                        >
+                          Modifier
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleDelete(employee.id)}
