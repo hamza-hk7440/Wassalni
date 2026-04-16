@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import palette from '../common/pallette';
+import { useAuth } from '../../hooks/useAuth';
 
 
 function Navbar() {
   const navigator = useNavigate();
+  const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -13,10 +15,10 @@ function Navbar() {
     { id: 3, title: 'Maintenance', detail: 'Vérification bus 12', time: '1 h' },];
 
   const states = {
-    nom: "rayen",
-    prenom: "raddaoui",
-    email: "raddaoui.rayen@gmail.com",
-    role: "Administrateur"
+    nom: user?.last_name || "Utilisateur",
+    prenom: user?.first_name || "",
+    email: user?.email || "",
+    role: user?.role || "Utilisateur"
   };
 
   const closeAllPanels = () => {
@@ -26,10 +28,8 @@ function Navbar() {
   };
 
   const handleLogout = () => {
-  
-    setIsOpen(false);
-    setIsProfileOpen(false);
-    setIsNotifOpen(false);
+    logout();
+    navigator('/login');
   };
 
 
@@ -67,15 +67,15 @@ function Navbar() {
           {/* Profile Button */}
           <button onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-white font-bold shadow-md border-2 border-white hover:scale-105 transition-transform cursor-pointer bg-deepOcean">
-            {states.prenom.charAt(0).toUpperCase()}{states.nom.charAt(0).toUpperCase()}
-          </button>
+                {(states.prenom ? states.prenom.charAt(0).toUpperCase() : '')}{(states.nom ? states.nom.charAt(0).toUpperCase() : '')}
+            </button>
 
-          {isProfileOpen && (
-            <div className="absolute top-[76px] right-4 md:right-8 w-[18rem] bg-white rounded-2xl shadow-2xl p-5 z-40 border border-frostBlue">
-              {/* Profile Header */}
-              <div className="flex items-center gap-3 mb-4 pb-4 border-b border-frostBlue">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg bg-deepOcean">
-                  {states.prenom.charAt(0).toUpperCase()}{states.nom.charAt(0).toUpperCase()}
+            {isProfileOpen && (
+              <div className="absolute top-[76px] right-4 md:right-8 w-[18rem] bg-white rounded-2xl shadow-2xl p-5 z-40 border border-frostBlue">
+                {/* Profile Header */}
+                <div className="flex items-center gap-3 mb-4 pb-4 border-b border-frostBlue">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg bg-deepOcean">
+                    {(states.prenom ? states.prenom.charAt(0).toUpperCase() : '')}{(states.nom ? states.nom.charAt(0).toUpperCase() : '')}
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-sm text-deepOcean">

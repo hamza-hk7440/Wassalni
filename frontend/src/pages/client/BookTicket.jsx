@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/layout/NavbarRa';
 import palette from '../../components/common/pallette';
-import api from '../../api/axios';
+import { getAllTickets } from '../../api/admin';
 
 const EMPTY_EDIT_FORM = { trajet: '', date: '', statut: 'Vendu' };
 
@@ -13,27 +13,39 @@ function BookTicket() {
 	const [editingId, setEditingId] = useState('');
 	const isEditing = Boolean(editingId);
 	const [editForm, setEditForm] = useState(EMPTY_EDIT_FORM);
-	console.log("testtttttt");
-	
+	const [loading, setLoading] = useState(true);
+
 	useEffect(() => {
-		const fetchSchedules = async () => {
+		const fetchTickets = async () => {
+			setLoading(true);
 			try {
-				const res = await api.get('/schedules/all');
-				const rawSchedules = Array.isArray(res.data) ? res.data : (res.data.data || []);
-				const formattedSchedules = rawSchedules.map(schedule => ({
-					id: schedule.schedule_id,
-					trajet: `${schedule.routes?.start_station?.name} -> ${schedule.routes?.end_station?.name}`,
-					date: new Date(schedule.departure_time).toISOString().split('T')[0],
-					statut: 'Available',
-					transport: schedule.transports?.type || 'Bus',
-					price: schedule.current_price
-				}));
-				setTickets(formattedSchedules);
+				const data = await getAllTickets();
+				// Map backend 'tickets' rows to frontend expected format
+				const formattedTickets = data.map(ticket => {
+					const route = ticket.schedules?.routes;
+					const transportType = ticket.schedules?.transports?.type || 'Inconnu';
+					const startSt = route?.start_station?.name || '?';
+					const endSt = route?.end_station?.name || '?';
+					const trajetName = route ? `${startSt} -> ${endSt}` : 'Trajet Inconnu';
+					
+					return {
+						id: ticket.ticket_id,
+						trajet: trajetName,
+						date: ticket.purchase_date ? new Date(ticket.purchase_date).toISOString().split('T')[0] : 'N/A',
+						statut: ticket.status || 'Active',
+						transport: transportType,
+						price: ticket.price,
+						clientName: ticket.users ? `${ticket.users.first_name || ''} ${ticket.users.last_name || ''}`.trim() : 'Inconnu'
+					};
+				});
+				setTickets(formattedTickets);
 			} catch (err) {
-				console.error("Failed to load schedules", err);
+				console.error("Failed to load tickets", err);
+			} finally {
+				setLoading(false);
 			}
 		};
-		fetchSchedules();
+		fetchTickets();
 	}, []);
 
 	const searchInputStyle = { borderColor: palette.frostBlue, backgroundColor: palette.pureWhite, color: palette.deepOcean };
@@ -54,7 +66,7 @@ function BookTicket() {
 	};
 
 	const filteredTickets = tickets.filter((ticket) => {
-		const matchesTransport = transportFilter === 'all' || ticket.transport === transportFilter;
+		const matchesTransport = transportFilter === 'all' || String(ticket.transport || '').toLowerCase() === transportFilter.toLowerCase();
 		if (!matchesTransport) {
 			return false;
 		}
@@ -64,7 +76,7 @@ function BookTicket() {
 			return true;
 		}
 
-		const value = ticket[searchField].toLowerCase();
+		const value = String(ticket[searchField] || '').toLowerCase();
 		return value.includes(query);
 	});
 
@@ -175,41 +187,56 @@ function BookTicket() {
 						</div>
 
 						<div className="mt-4 rounded-2xl border px-4 py-3 text-sm font-bold border-frostBlue text-deepOcean bg-iceWhite">
-							{filteredTickets.length} ticket(s)
-						</div>
+                                                        {loading ? "Chargement..." : `${filteredTickets.length} ticket(s)`}
+                                                </div>
 
-						<div className="mt-5 grid gap-4">
-							{filteredTickets.length === 0 ? (
-								<div className="rounded-2xl border border-dashed p-6 text-center text-sm border-frostBlue text-textGray bg-iceWhite">
-									Aucun ticket trouve.
-								</div>
-							) : (
-								filteredTickets.map((ticket) => (
-									<div key={ticket.id} className="rounded-2xl border p-5 shadow-sm" style={ticketCardStyle}>
-										<div className="flex flex-wrap items-center justify-between gap-3">
-											<div>
-												<p className="text-xs font-bold uppercase tracking-[0.2em] text-skyBlue">
-													Ticket vendu
-												</p>
-												<h2 className="mt-2 text-xl font-black text-deepOcean">
-													{ticket.id}
-												</h2>
-												<p className="mt-1 text-xs font-bold uppercase text-textGray">
-													Type: {ticket.transport === 'metro' ? 'Metro' : 'Bus'}
-												</p>
-											</div>
-											<div className="inline-flex rounded-full px-3 py-1 text-xs font-bold" style={badgeStyle}>
-												{ticket.statut}
-											</div>
-										</div>
+                                                <div className="mt-5 grid gap-4">
+                                                        {loading ? (
+                                                                <div className="rounded-2xl border border-dashed p-6 text-center text-sm border-frostBlue text-textGray bg-iceWhite">
+                                                                        Chargement des tickets en cours...
+                                                                </div>
+                                                        ) : filteredTickets.length === 0 ? (
+                                                                <div className="rounded-2xl border border-dashed p-6 text-center text-sm border-frostBlue text-textGray bg-iceWhite">
+                                                                        Aucun ticket trouve.
+                                                                </div>
+                                                        ) : (
+                                                                filteredTickets.map((ticket) => (
+                                                                        <div key={ticket.id} className="rounded-2xl border p-5 shadow-sm" style={ticketCardStyle}>
+                                                                               <div className="flex flex-wrap items-center justify-between gap-3">
+                                                                               <div>
+                                                                               <p className="text-xs font-bold uppercase tracking-[0.2em] text-skyBlue">        
+                                                                               Ticket client: {ticket.clientName}
+                                                                               </p>
+                                                                               <h2 className="mt-2 text-xl font-black text-deepOcean text-ellipsis overflow-hidden max-w-full">
+                                                                               {ticket.id}
+                                                                               </h2>
+                                                                               <p className="mt-1 text-xs font-bold uppercase text-textGray">
+                                                                               Type: {ticket.transport.toLowerCase() === 'metro' ? 'Metro' : 'Bus'}
+                                                                               </p>
+                                                                               </div>
+                                                                               <div className="inline-flex rounded-full px-3 py-1 text-xs font-bold" style={badgeStyle}>
+                                                                               {ticket.statut}
+                                                                               </div>
+                                                                               </div>
 
-										<p className="mt-3 text-sm font-medium text-classicBlue">
-											{ticket.trajet}
-										</p>
-										<p className="mt-2 text-xs text-textGray">
-											Date de voyage: {ticket.date}
-										</p>
-
+                                                                               <div className="mt-3 grid gap-2 md:grid-cols-2">
+                                                                                        <div className="rounded-xl border px-3 py-2 border-frostBlue bg-iceWhite">
+                                                                                                <p className="text-[11px] font-bold uppercase tracking-wider text-textGray">
+                                                                                                        Trajet
+                                                                                                </p>
+                                                                                                <p className="text-sm font-black text-deepOcean">
+                                                                                                        {ticket.trajet}
+                                                                                                </p>
+                                                                                        </div>
+                                                                                        <div className="rounded-xl border px-3 py-2 border-frostBlue bg-iceWhite">
+                                                                                                <p className="text-[11px] font-bold uppercase tracking-wider text-textGray">
+                                                                                                        Achat & Date de voyage
+                                                                                                </p>
+                                                                                                <p className="text-sm font-black text-deepOcean">
+                                                                                                        {ticket.date}  ({ticket.price} TND)
+                                                                                                </p>
+                                                                                        </div>
+                                                                                </div>
 										<div className="mt-4 flex gap-2">
 											<button
 												type="button"

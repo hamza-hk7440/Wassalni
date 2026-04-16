@@ -157,7 +157,18 @@ export const getAllTransactions = async () => {
 export const getAllTickets = async () => {
   const { data, error } = await supabase
     .from("tickets")
-    .select(`*`)
+    .select(`
+      *,
+      users (first_name, last_name, email),
+      schedules (
+        departure_time,
+        routes (
+          start_station:stations!routes_start_station_id_fkey(name),
+          end_station:stations!routes_end_station_id_fkey(name)
+        ),
+        transports (type)
+      )
+    `)
     .order("purchase_date", { ascending: false });
 
   if (error) throw new Error(error.message);
