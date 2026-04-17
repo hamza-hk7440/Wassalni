@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import palette from '../common/pallette';
+import { useAuth } from '../../hooks/useAuth';
 
 function Parametre() {
+    const { user } = useAuth();
+    
     const defaultProfile = {
-        nom: 'Rayen Masmoudi',
-        email: 'rayen.masmoudi@example.com',
-        telephone: '12345678',
-        adresse: '123 Rue Principale, Tunis'
+        nom: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'Utilisateur',
+        email: user?.email || '',
+        telephone: user?.phone || 'Non renseigné',
+        adresse: user?.address || 'Non renseignée'
     };
 
     const [nom, setNom] = useState(defaultProfile.nom);
@@ -24,12 +27,21 @@ function Parametre() {
     const telephoneRef = useRef(null);
     const adresseRef = useRef(null);
     const states = {
-        nom:"Rayen",
-        prenom:"Masmoudi",
-        email:"rayen.masmoudi@example.com",
-        telephone:"12345678",
-        adresse:"123 Rue Principale, Tunis"
+        nom: user?.last_name || "Utilisateur",
+        prenom: user?.first_name || "",
+        email: user?.email || "Non renseigné",
+        telephone: user?.phone || "Non renseigné",
+        adresse: user?.address || "Non renseignée"
     };
+
+    // Update state if user data loads later
+    useEffect(() => {
+        if (user) {
+            setNom(`${user.first_name || ''} ${user.last_name || ''}`.trim());
+            setEmail(user.email || '');
+            // update other fields if they exist
+        }
+    }, [user]);
 
     const handleSubmit = (e) => {
         e.preventDefault();

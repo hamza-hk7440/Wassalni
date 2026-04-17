@@ -1,19 +1,14 @@
-
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import palette from "./pallette";
 const DEFAULT_STATUS_LIST = ['En ligne', 'Maintenance', 'Retard'];
 const DEFAULT_EMPTY_FORM = {
   id: '',
-  line: '',
-  driver: '',
   occupancy: '',
   status: 'En ligne',
 };
 
 const DEFAULT_FIELD_KEYS = {
   id: 'id',
-  line: 'line',
-  operator: 'driver',
   occupancy: 'occupancy',
   status: 'status',
 };
@@ -22,8 +17,6 @@ const DEFAULT_LABELS = {
   entitySingular: 'transport',
   entityPlural: 'transports',
   id: 'Code',
-  line: 'Ligne / Trajet',
-  operator: 'Opérateur',
   occupancy: 'Charge',
   status: 'Statut',
 };
@@ -47,8 +40,11 @@ function BodyTransport({
   fieldKeys = DEFAULT_FIELD_KEYS,
   labels = DEFAULT_LABELS,
   onRowsChange,
+  onCreate,
+  onUpdate,
+  onDelete,
 }) {
-  const { id: idKey, line: lineKey, operator: operatorKey, occupancy: occupancyKey, status: statusKey } = fieldKeys;
+  const { id: idKey, occupancy: occupancyKey, status: statusKey } = fieldKeys;
 
   const getLoadColor = (value) => {
     if (value >= 85) return '#DC2626';
@@ -60,15 +56,11 @@ function BodyTransport({
   const setFormField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
   const toFormValues = (item) => ({
     [idKey]: readField(item, idKey),
-    [lineKey]: readField(item, lineKey),
-    [operatorKey]: readField(item, operatorKey),
     [occupancyKey]: String(readField(item, occupancyKey, '')),
     [statusKey]: readField(item, statusKey, statusList[0]),
   });
   const toDomainItem = (currentForm) => ({
     [idKey]: String(readField(currentForm, idKey)).trim().toUpperCase(),
-    [lineKey]: String(readField(currentForm, lineKey)).trim(),
-    [operatorKey]: String(readField(currentForm, operatorKey)).trim(),
     [occupancyKey]: Number(readField(currentForm, occupancyKey)),
     [statusKey]: readField(currentForm, statusKey, statusList[0]),
   });
@@ -129,17 +121,15 @@ function BodyTransport({
     withFormOpen();
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
 
     const nextItem = toDomainItem(form);
     const id = nextItem[idKey];
-    const line = nextItem[lineKey];
-    const operator = nextItem[operatorKey];
     const occupancy = nextItem[occupancyKey];
 
-    if (!id || !line || !operator || Number.isNaN(occupancy)) {
+    if (!id || Number.isNaN(occupancy)) {
       setError('Champs obligatoires.');
       return;
     }
@@ -155,28 +145,54 @@ function BodyTransport({
       return;
     }
 
-    setRows((prev) => (isEditing ? prev.map((item) => (String(item[idKey]) === String(editingId) ? nextItem : item)) : [...prev, nextItem]));
-    closeForm();
+    try {
+      if (isEditing) {
+        const oldItem = rows.find(r => String(r[idKey]) === String(editingId));
+        if (onUpdate) {
+          await onUpdate(nextItem, oldItem);
+        } else {
+          setRows((prev) => prev.map((item) => (String(item[idKey]) === String(editingId) ? nextItem : item)));
+        }
+      } else {
+        if (onCreate) {
+          await onCreate(nextItem);
+        } else {
+          setRows((prev) => [...prev, nextItem]);
+        }
+      }
+      closeForm();
+    } catch (err) {
+      setError(err.message || 'Une erreur est survenue.');
+    }
   };
 
-  const deleteItem = (id) => {
-    setRows((prev) => prev.filter((item) => item[idKey] !== id));
-    if (editingId === id) closeForm();
+  const deleteItem = async (id) => {
+    try {
+      const itemToDelete = rows.find((item) => item[idKey] === id);
+      if (onDelete && itemToDelete) {
+        await onDelete(itemToDelete);
+      } else {
+        setRows((prev) => prev.filter((item) => item[idKey] !== id));
+      }
+      if (editingId === id) closeForm();
+    } catch (err) {
+      setError(err.message || 'Une erreur est survenue.');
+    }
   };
 
   return (
     <section
       className="min-h-screen px-4 pt-[88px] pb-6 md:px-8 md:pt-[92px] md:pb-8"
-      style={{ background: `linear-gradient(180deg, ${palette.iceWhite} 0%, #eff8ff 48%, #f8fcff 100%)` }}
+      style={{ background: 'linear-gradient(180deg, #ffffff 0%, #eff8ff 48%, #f8fcff 100%)' }}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
         <header className="rounded-2xl border bg-white p-5 shadow-sm border-frostBlue">
-          <div className="h-1.5 w-28 rounded-full mb-4" style={{ background: `linear-gradient(90deg, ${palette.deepOcean}, ${palette.softTeal})` }}></div>
+          <div className="h-1.5 w-28 rounded-full mb-4" style={{ background: 'linear-gradient(90deg, #3B82F6, #60A5FA)' }}></div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-skyBlue">Module Transport</p>
               <h1 className="text-2xl md:text-3xl font-black text-deepOcean">{nom}</h1>
-              <p className="text-sm mt-1 text-textGray">Suivi des {labels.entityPlural} et opérations</p>
+              <p className="text-sm mt-1 text-textGray">Suivi des {labels.entityPlural} et op�rations</p>
             </div>
             {objetAdmin ? (
               <p className="text-xs text-textGray">
@@ -197,14 +213,14 @@ function BodyTransport({
           <div className="rounded-2xl border p-4 shadow-sm" style={{ borderColor: '#BAEAD7', backgroundColor: '#F0FDF7' }}>
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#0D7A55' }}>Actifs</p>
-              <span className="text-lg">●</span>
+              <span className="text-lg"></span>
             </div>
             <p className="text-3xl font-black mt-1" style={{ color: '#0D7A55' }}>{summary.active}</p>
           </div>
           <div className="rounded-2xl border p-4 shadow-sm" style={{ borderColor: '#F2D8AF', backgroundColor: '#FFF8EA' }}>
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#A86910' }}>Maintenance</p>
-              <span className="text-lg">●</span>
+              <span className="text-lg"></span>
             </div>
             <p className="text-3xl font-black mt-1" style={{ color: '#A86910' }}>{summary.maintenance}</p>
           </div>
@@ -217,7 +233,7 @@ function BodyTransport({
               type="button"
               onClick={open ? closeForm : openCreateForm}
               className="rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-              style={{ background: `linear-gradient(90deg, ${palette.deepOcean}, ${palette.classicBlue})` }}
+              style={{ background: 'linear-gradient(90deg, #3B82F6, #60A5FA)' }}
             >
               {open ? 'Fermer' : 'Ajouter'}
             </button>
@@ -228,8 +244,6 @@ function BodyTransport({
               <thead>
                 <tr className="border-b text-left text-xs uppercase bg-slate-50 text-textGray border-frostBlue">
                   <th className="px-3 py-3">{labels.id}</th>
-                  <th className="px-3 py-3">{labels.line}</th>
-                  <th className="px-3 py-3">{labels.operator}</th>
                   <th className="px-3 py-3">{labels.occupancy}</th>
                   <th className="px-3 py-3">{labels.status}</th>
                   <th className="px-3 py-3">Actions</th>
@@ -238,26 +252,36 @@ function BodyTransport({
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-3 py-10 text-center text-sm font-semibold text-textGray">
-                      Aucun élément disponible. Cliquez sur Ajouter pour commencer.
+                    <td colSpan="4" className="px-3 py-10 text-center text-sm font-semibold text-textGray">
+                      Aucun �l�ment disponible. Cliquez sur Ajouter pour commencer.
                     </td>
                   </tr>
                 ) : null}
                 {rows.map((item) => (
                   <tr key={item[idKey]} className="border-b last:border-b-0 hover:bg-slate-50/80 transition border-frostBlue">
                     <td className="px-3 py-3 font-semibold text-deepOcean">{item[idKey]}</td>
-                    <td className="px-3 py-3 text-textGray">{item[lineKey]}</td>
-                    <td className="px-3 py-3 text-textGray">{item[operatorKey]}</td>
                     <td className="px-3 py-3">
                       <div className="w-28">
                         <div className="h-2 rounded-full bg-slate-100">
-                          <div className="h-2 rounded-full" style={{ width: `${item[occupancyKey]}%`, backgroundColor: getLoadColor(item[occupancyKey]) }} />
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, item[occupancyKey]))}%`,
+                              backgroundColor: getLoadColor(item[occupancyKey]),
+                            }}
+                          ></div>
                         </div>
-                        <p className="mt-1 text-[11px] font-semibold text-textGray">{item[occupancyKey]}%</p>
+                        <p className="mt-1 text-[10px] font-bold text-textGray">{item[occupancyKey]} / 100</p>
                       </div>
                     </td>
                     <td className="px-3 py-3">
-                      <span className="rounded-full px-2 py-1 text-xs font-semibold" style={{ color: (statusStyle[item[statusKey]] || {}).text || '#334155', backgroundColor: (statusStyle[item[statusKey]] || {}).bg || '#E2E8F0' }}>
+                      <span
+                        className="rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider"
+                        style={{
+                          color: statusStyle[item[statusKey]]?.text || '#4B5563',
+                          backgroundColor: statusStyle[item[statusKey]]?.bg || '#F3F4F6',
+                        }}
+                      >
                         {item[statusKey]}
                       </span>
                     </td>
@@ -293,29 +317,15 @@ function BodyTransport({
                 value={form[idKey] || ''}
                 onChange={(e) => setFormField(idKey, e.target.value)}
                 placeholder={`${labels.id} (ex: T-150)`}
-                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 border-frostBlue"
+                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 border-frostBlue md:col-span-2"
               />
-              <input
-                name={lineKey}
-                value={form[lineKey] || ''}
-                onChange={(e) => setFormField(lineKey, e.target.value)}
-                placeholder={labels.line}
-                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 border-frostBlue"
-              />
-              <input
-                name={operatorKey}
-                value={form[operatorKey] || ''}
-                onChange={(e) => setFormField(operatorKey, e.target.value)}
-                placeholder={labels.operator}
-                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 border-frostBlue"
-              />
+              
               <input
                 type="number"
-                name={occupancyKey}
-                value={form[occupancyKey] || ''}
-                onChange={(e) => setFormField(occupancyKey, e.target.value)}
                 min="0"
                 max="100"
+                value={form[occupancyKey] || ''}
+                onChange={(e) => setFormField(occupancyKey, e.target.value)}
                 placeholder={`${labels.occupancy} (0-100)`}
                 className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 border-frostBlue"
               />
@@ -324,7 +334,7 @@ function BodyTransport({
                 name={statusKey}
                 value={form[statusKey] || statusList[0]}
                 onChange={(e) => setFormField(statusKey, e.target.value)}
-                className="rounded-lg border px-3 py-2.5 text-sm md:col-span-2 outline-none focus:ring-2 border-frostBlue"
+                className="rounded-lg border px-3 py-2.5 text-sm outline-none focus:ring-2 border-frostBlue"
               >
                 {statusList.map((item) => (
                   <option key={item} value={item}>
@@ -339,14 +349,14 @@ function BodyTransport({
                 <button
                   type="submit"
                   className="rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
-                  style={{ background: `linear-gradient(90deg, ${palette.deepOcean}, ${palette.classicBlue})` }}
+                  style={{ background: 'linear-gradient(90deg, #3B82F6, #60A5FA)' }}
                 >
                   {isEditing ? 'Enregistrer' : 'Ajouter'}
                 </button>
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="rounded-lg border px-4 py-2.5 text-sm font-semibold transition hover:bg-slate-100 border-frostBlue text-textGray"
+                  className="rounded-lg border px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 border-frostBlue"
                 >
                   Annuler
                 </button>
@@ -358,4 +368,5 @@ function BodyTransport({
     </section>
   );
 }
+
 export default BodyTransport;

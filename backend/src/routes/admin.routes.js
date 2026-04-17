@@ -8,6 +8,7 @@ import {
     createController, 
     getAllUsers, 
     deleteUser,
+    updateUser,
     getAllTransactions,
     getAllTickets
 } from "../controllers/admin.controller.js";
@@ -27,6 +28,9 @@ router.post("/createcontroller", validate(createControllerSchema), createControl
 
 // get all users for the dashboard
 router.get("/users", getAllUsers);
+
+// update a user
+router.put("/users/:userId", updateUser);
 
 // delete a user (permanent)
 router.delete("/users/:userId", deleteUser);

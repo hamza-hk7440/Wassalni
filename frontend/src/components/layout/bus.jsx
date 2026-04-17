@@ -1,55 +1,81 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import BodyTransport from '../common/bodyTranspot';
-import { getTransports } from '../../api/admin';
+import { getTransports, createTransport, updateTransport, deleteTransport } from '../../api/admin';
 
 function Bus() {
   const [busData, setBusData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchBuses = async () => {
-      try {
-        const response = await getTransports();
-        // Unwrap standard { success: true, data: [...] } structure or plain array
-        const allTransports = response.data || response;
-        const mapped = allTransports
-          .filter(t => t.type === 'Bus')
-          .map(t => ({
-            id: t.license_plate || t.transport_id,
-            line: 'Non assigné', // Not tracked at vehicle level in DB currently
-            driver: 'Enregistré', // Not tracked at vehicle level in DB currently
-            occupancy: t.capacity || 0,
-            status: t.status || 'En ligne'
-          }));
-        setBusData(mapped);
-      } catch (error) {
-        console.error("Failed to load buses from backend", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBuses();
+  const fetchBuses = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await getTransports();
+      const allTransports = response.data || response;
+      const mapped = allTransports.filter(t => t.type === 'Bus');
+      setBusData(mapped);
+    } catch (error) {
+      console.error("Failed to load buses from backend", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchBuses();
+  }, [fetchBuses]);
+
+  const handleCreate = async (newItem) => {
+    try {
+      await createTransport({
+        type: 'Bus',
+        license_plate: newItem.license_plate || newItem.id,
+        capacity: Number(newItem.capacity) || 0,
+        status: newItem.status
+      });
+      await fetchBuses();
+    } catch (err) {
+      throw new Error(err.response?.data?.error || "Erreur de création");
+    }
+  };
+
+  const handleUpdate = async (updatedItem, oldItem) => {
+    try {
+      if (oldItem && oldItem.transport_id) {
+        await updateTransport(oldItem.transport_id, {
+          license_plate: updatedItem.license_plate || updatedItem.id,
+          capacity: Number(updatedItem.capacity) || 0,
+          status: updatedItem.status
+        });
+        await fetchBuses();
+      }
+    } catch (err) {
+      throw new Error(err.response?.data?.error || "Erreur de modification");
+    }
+  };
+
+  const handleDelete = async (itemToDelete) => {
+    try {
+      if (itemToDelete && itemToDelete.transport_id) {
+        await deleteTransport(itemToDelete.transport_id);
+        await fetchBuses();
+      }
+    } catch (err) {
+      throw new Error(err.response?.data?.error || "Erreur de suppression");
+    }
+  };
 
   return (
     <div>
-      {loading ? (
-        <div className="p-10 text-center">Chargement des bus en direct...</div>
-      ) : (
-        <BodyTransport
-          nom="Gestion des bus"
-          listDonner={busData}
-          labels={{
-            entitySingular: 'bus',
-            entityPlural: 'bus',
-            id: 'Bus',
-            line: 'Ligne',
-            operator: 'Chauffeur',
-            occupancy: 'Capacité',
-            status: 'Statut',
-          }}
-        />
-      )}
+      <BodyTransport
+        nom="Gestion des bus"
+        listDonner={busData}
+        onCreate={handleCreate}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+        fieldKeys={{ id: 'license_plate', occupancy: 'capacity', status: 'status' }}
+        emptyForm={{ license_plate: '', capacity: '', status: 'En ligne' }}
+        labels={{ entitySingular: 'bus', entityPlural: 'bus', id: 'Matricule', occupancy: 'Capacité', status: 'Statut' }}
+      />
     </div>
   );
 }

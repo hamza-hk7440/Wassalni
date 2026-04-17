@@ -21,6 +21,10 @@ export const createControllerSchema = (body = {}) => {
     errors.push("last_name is required");
   }
 
+  if (body.role && !["controller", "admin"].includes(body.role)) {
+    errors.push("role must be 'controller' or 'admin'");
+  }
+
   return errors;
 };
 

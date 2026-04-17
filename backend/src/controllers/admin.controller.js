@@ -55,6 +55,25 @@ export const deleteUser = async (req, res) => {
     }
 };
 
+// update user
+export const updateUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const data = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'User ID is required' });
+        }
+
+        const updatedUser = await adminService.updateUser(userId, data);
+        
+        res.status(200).json({ message: 'User updated successfully', user: updatedUser });
+    } catch (err) {
+        console.error('Error updating user:', err);
+        res.status(500).json({ error: err.message || 'Internal Server Error' });
+    }
+};
+
 // fetch all transactions
 export const getAllTransactions = async (req, res) => {
     try {

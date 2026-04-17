@@ -1,31 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/layout/NavbarRa';
 import palette from '../../components/common/pallette';
 import tokenLogo from '../../assets/token_logo.png';
+import { getAllUsers, deleteUser as deleteUserApi } from '../../api/admin';
 
-const initialClients = [
-	{ clientId: 'CL-001', nom: 'Ali Ben Salah', ticketId: 'TK-1023', ticketDate: '2026-04-05', transport: 'Bus', statut: 'Actif', token: 120 },
-	{ clientId: 'CL-002', nom: 'Nour Trabelsi', ticketId: 'TK-1024', ticketDate: '2026-04-06', transport: 'Metro', statut: 'Actif', token: 85 },
-	{ clientId: 'CL-003', nom: 'Sami Jebali', ticketId: 'TK-1025', ticketDate: '2026-04-09', transport: 'Bus', statut: 'Inactif', token: 40 },
-];
-
-const EMPTY_FORM = { nom: '', ticketId: '', ticketDate: '', transport: 'Bus', statut: 'Actif', token: 0 };
+const EMPTY_FORM = { nom: '', email: '', signupDate: '', role: 'passenger', token: 0 };
 
 function Home() {
-	const [clients, setClients] = useState(initialClients);
+	const [clients, setClients] = useState([]);
 	const [query, setQuery] = useState('');
 	const [editingId, setEditingId] = useState('');
 	const [form, setForm] = useState(EMPTY_FORM);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		fetchClients();
+	}, []);
+
+	const fetchClients = async () => {
+		setLoading(true);
+		try {
+			const data = await getAllUsers();
+			// Map backend 'users' rows to frontend expected format
+			// Filtering only 'passenger' role as they are the clients
+			const formatted = data
+				.filter(u => u.role === 'passenger')
+				.map(user => ({
+					clientId: user.user_id,
+					nom: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
+					email: user.email || 'N/A',
+					signupDate: user.created_at ? new Date(user.created_at).toISOString().split('T')[0] : 'N/A',
+					role: user.role,
+					token: user.token_balance || 0
+				}));
+			setClients(formatted);
+		} catch (error) {
+			console.error('Failed to fetch clients:', error);
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	const startEdit = (client) => {
 		setEditingId(client.clientId);
 		setForm({
 			nom: client.nom,
-			ticketId: client.ticketId,
-			ticketDate: client.ticketDate,
-			transport: client.transport,
-			statut: client.statut,
+			email: client.email,
+			role: client.role,
 			token: client.token,
 		});
 	};
@@ -37,16 +59,25 @@ function Home() {
 
 	const saveEdit = (event) => {
 		event.preventDefault();
+		// API UPDATE NOT FULLY IMPLEMENTED ON BACKEND
 		setClients((previous) =>
 			previous.map((client) => (client.clientId === editingId ? { ...client, ...form } : client))
 		);
 		cancelEdit();
 	};
 
-	const deleteClient = (clientId) => {
-		setClients((previous) => previous.filter((client) => client.clientId !== clientId));
-		if (editingId === clientId) {
-			cancelEdit();
+	const deleteClient = async (clientId) => {
+		if (window.confirm("Voulez-vous vraiment supprimer ce client ?")) {
+			try {
+				await deleteUserApi(clientId);
+				setClients((previous) => previous.filter((client) => client.clientId !== clientId));
+				if (editingId === clientId) {
+					cancelEdit();
+				}
+			} catch (error) {
+				console.error("Erreur de suppression : ", error);
+				alert("Erreur lors de la suppression du client.");
+			}
 		}
 	};
 
@@ -57,12 +88,11 @@ function Home() {
 		}
 
 		return (
-			client.clientId.toLowerCase().includes(text) ||
-			client.nom.toLowerCase().includes(text) ||
-			client.ticketId.toLowerCase().includes(text) ||
-			client.ticketDate.toLowerCase().includes(text) ||
-			client.transport.toLowerCase().includes(text) ||
-			String(client.token).includes(text)
+			String(client.clientId || '').toLowerCase().includes(text) ||
+			String(client.nom || '').toLowerCase().includes(text) ||
+			String(client.email || '').toLowerCase().includes(text) ||
+			String(client.role || '').toLowerCase().includes(text) ||
+			String(client.token || '').includes(text)
 		);
 	});
 
@@ -99,17 +129,21 @@ function Home() {
 							type="text"
 							value={query}
 							onChange={(event) => setQuery(event.target.value)}
-							placeholder="ID client, nom, ID ticket, type ou token"
+							placeholder="ID client, nom, email ou token"
 							className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue bg-pureWhite text-deepOcean"
 						/>
 						</div>
 
 						<div className="mt-4 rounded-2xl border px-4 py-3 text-sm font-bold border-frostBlue text-deepOcean bg-iceWhite">
-							{filteredClients.length} client(s)
+							{loading ? "Chargement..." : `${filteredClients.length} client(s)`}
 						</div>
 
 						<div className="mt-5 grid gap-4">
-							{filteredClients.length === 0 ? (
+							{loading ? (
+								<div className="rounded-2xl border border-dashed p-6 text-center text-sm border-frostBlue text-textGray bg-iceWhite">
+									Chargement des clients en cours...
+								</div>
+							) : filteredClients.length === 0 ? (
 								<div className="rounded-2xl border border-dashed p-6 text-center text-sm border-frostBlue text-textGray bg-iceWhite">
 									Aucun client trouvé.
 								</div>
@@ -131,7 +165,7 @@ function Home() {
 													{client.token}
 												</div>
 												<div className="inline-flex rounded-full px-3 py-1 text-xs font-bold bg-deepOcean text-pureWhite">
-													{client.statut}
+													{client.role.toUpperCase()}
 												</div>
 											</div>
 										</div>
@@ -142,33 +176,23 @@ function Home() {
 										<div className="mt-3 grid gap-2 md:grid-cols-2">
 											<div className="rounded-xl border px-3 py-2 border-frostBlue bg-iceWhite">
 												<p className="text-[11px] font-bold uppercase tracking-wider text-textGray">
-													ID Ticket
+													E-mail Client
 												</p>
-												<p className="text-base font-black text-deepOcean">
-													{client.ticketId}
+												<p className="text-base font-black text-deepOcean overflow-hidden text-ellipsis">
+													{client.email}
 												</p>
 											</div>
 											<div className="rounded-xl border px-3 py-2 border-frostBlue bg-iceWhite">
 												<p className="text-[11px] font-bold uppercase tracking-wider text-textGray">
-													Date Ticket
+													Date d'inscription
 												</p>
 												<p className="text-base font-black text-deepOcean">
-													{client.ticketDate}
+													{client.signupDate}
 												</p>
 											</div>
 										</div>
 
-										<p className="mt-2 text-xs text-textGray">
-											Type: {client.transport}
-										</p>
-
 										<div className="mt-4 flex gap-2">
-											<Link
-												to={`/BookTicket?ticketId=${encodeURIComponent(client.ticketId)}`}
-												className="rounded-full border px-3 py-1.5 text-xs font-bold border-classicBlue text-classicBlue"
-											>
-												Voir ticket
-											</Link>
 											<button
 												type="button"
 												onClick={() => startEdit(client)}
@@ -191,54 +215,51 @@ function Home() {
 													Modifier ce client
 												</p>
 												<div className="mt-3 grid gap-3 md:grid-cols-2">
-													<input
-														name="nom"
-														value={form.nom}
-														onChange={(event) => setForm((previous) => ({ ...previous, nom: event.target.value }))}
-														placeholder="Nom"
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
-													/>
-													<input
-														name="ticketId"
-														value={form.ticketId}
-														onChange={(event) => setForm((previous) => ({ ...previous, ticketId: event.target.value }))}
-														placeholder="ID ticket"
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
-													/>
-													<input
-														name="ticketDate"
-														type="date"
-														value={form.ticketDate}
-														onChange={(event) => setForm((previous) => ({ ...previous, ticketDate: event.target.value }))}
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
-													/>
-													<select
-														name="transport"
-														value={form.transport}
-														onChange={(event) => setForm((previous) => ({ ...previous, transport: event.target.value }))}
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
-													>
-														<option value="Bus">Bus</option>
-														<option value="Metro">Metro</option>
-													</select>
-													<select
-														name="statut"
-														value={form.statut}
-														onChange={(event) => setForm((previous) => ({ ...previous, statut: event.target.value }))}
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
-													>
-														<option value="Actif">Actif</option>
-														<option value="Inactif">Inactif</option>
-													</select>
-													<input
-														name="token"
-														type="number"
-														min="0"
-														value={form.token}
-														onChange={(event) => setForm((previous) => ({ ...previous, token: Number(event.target.value) || 0 }))}
-														placeholder="Solde token"
-														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none md:col-span-2 border-frostBlue"
-													/>
+													<div>
+														<label className="text-xs font-bold text-classicBlue mb-1 block">Nom complet</label>
+														<input
+															name="nom"
+															value={form.nom}
+															onChange={(event) => setForm((previous) => ({ ...previous, nom: event.target.value }))}
+															placeholder="Nom"
+															className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
+														/>
+													</div>
+													<div>
+														<label className="text-xs font-bold text-classicBlue mb-1 block">Adresse e-mail</label>
+														<input
+															name="email"
+															value={form.email}
+															onChange={(event) => setForm((previous) => ({ ...previous, email: event.target.value }))}
+															placeholder="Email"
+															className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
+														/>
+													</div>
+													<div>
+														<label className="text-xs font-bold text-classicBlue mb-1 block">Rôle de l'utilisateur</label>
+														<select
+															name="role"
+															value={form.role}
+															disabled
+															className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue bg-gray-100 cursor-not-allowed opacity-70"
+														>
+															<option value="passenger">Passager</option>
+															<option value="admin">Administrateur</option>
+															<option value="controller">Contrôleur</option>
+														</select>
+													</div>
+													<div>
+														<label className="text-xs font-bold text-classicBlue mb-1 block">Solde token</label>
+														<input
+															name="token"
+															type="number"
+															min="0"
+															value={form.token}
+															onChange={(event) => setForm((previous) => ({ ...previous, token: Number(event.target.value) || 0 }))}
+															placeholder="Solde token"
+															className="w-full rounded-2xl border px-4 py-3 text-sm outline-none border-frostBlue"
+														/>
+													</div>
 												</div>
 
 												<div className="mt-3 flex gap-2">

@@ -79,7 +79,7 @@ export const getDashboardStats = async () => {
 };
 
 export const createController = async (controllerData) => {
-  const { email, password, first_name, last_name } = controllerData;
+  const { email, password, first_name, last_name, role } = controllerData;
 
   // 1. Create the Auth user
   const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -89,8 +89,9 @@ export const createController = async (controllerData) => {
 
   if (authError) throw authError;
 
-  // 2. Generate the code
-  const controllerCode = `CTRL-${Math.floor(1000 + Math.random() * 9000)}`;
+  // 2. Generate the code (only for controllers)
+  const controllerCode = role === "admin" ? null : `CTRL-${Math.floor(1000 + Math.random() * 9000)}`;
+  const userRole = role === "admin" ? "admin" : "controller";
 
   // 3. Insert into the public users table
   const { data, error: dbError } = await supabase
@@ -101,7 +102,7 @@ export const createController = async (controllerData) => {
         email: email,
         first_name: first_name,
         last_name: last_name,
-        role: "controller",
+        role: userRole,
         controller_code: controllerCode,
       },
     ])
@@ -142,6 +143,38 @@ export const deleteUser = async (userId) => {
   return data;
 };
 
+export const updateUser = async (userId, data) => {
+  const { first_name, last_name, email, password } = data;
+
+  // 1. Update Auth User if email or password provided
+  const authUpdates = {};
+  if (email) authUpdates.email = email;
+  if (password) authUpdates.password = password;
+
+  if (Object.keys(authUpdates).length > 0) {
+    const { error: authError } = await supabase.auth.admin.updateUserById(userId, authUpdates);
+    if (authError) throw new Error(authError.message);
+  }
+
+  // 2. Update Public Users Table
+  const dbUpdates = {};
+  if (first_name) dbUpdates.first_name = first_name;
+  if (last_name) dbUpdates.last_name = last_name;
+  if (email) dbUpdates.email = email;
+
+  if (Object.keys(dbUpdates).length > 0) {
+    const { data: updatedUser, error: dbError } = await supabase
+      .from("users")
+      .update(dbUpdates)
+      .eq("user_id", userId)
+      .select();
+
+    if (dbError) throw new Error(dbError.message);
+    return updatedUser[0];
+  }
+  return { message: "Aucune donnée à mettre à jour" };
+};
+
 // w zedna fetch l transactions w tickets zeda
 export const getAllTransactions = async () => {
   const { data, error } = await supabase
@@ -157,7 +190,18 @@ export const getAllTransactions = async () => {
 export const getAllTickets = async () => {
   const { data, error } = await supabase
     .from("tickets")
-    .select(`*`)
+    .select(`
+      *,
+      users (first_name, last_name, email),
+      schedules (
+        departure_time,
+        routes (
+          start_station:stations!routes_start_station_id_fkey(name),
+          end_station:stations!routes_end_station_id_fkey(name)
+        ),
+        transports (type)
+      )
+    `)
     .order("purchase_date", { ascending: false });
 
   if (error) throw new Error(error.message);
