@@ -162,6 +162,27 @@ function Navbar() {
               </Link>
             </li>
             <li>
+              <Link to="/stations" onClick={() => setIsOpen(false)} 
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95 text-deepOcean">
+                <span className="text-xl group-hover:scale-125 transition-transform">📍</span> 
+                <span>Stations</span>
+              </Link>
+            </li>
+            <li>
+              <Link to="/routes" onClick={() => setIsOpen(false)} 
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95 text-deepOcean">
+                <span className="text-xl group-hover:scale-125 transition-transform">🛣️</span> 
+                <span>Routes</span>
+              </Link>
+            </li>
+            <li>
+              <Link to="/schedules" onClick={() => setIsOpen(false)} 
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95 text-deepOcean">
+                <span className="text-xl group-hover:scale-125 transition-transform">⏰</span> 
+                <span>Schedules</span>
+              </Link>
+            </li>
+            <li>
               <Link to="/BookTicket" onClick={() => setIsOpen(false)} 
                 className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-[15px] font-semibold group hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 active:scale-95 text-deepOcean">
                 <span className="text-xl group-hover:scale-125 transition-transform">🎫</span> 

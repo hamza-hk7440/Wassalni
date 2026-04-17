@@ -23,7 +23,13 @@ export const AuthProvider = ({ children }) => {
                     setRole(userInfo.role);
                 } catch (error) {
                     console.error('Failed to restore user session:', error);
-                    logout();
+                    if (error?.response?.status === 401) {
+                        logout();
+                    } else {
+                        const parsedUser = JSON.parse(storedUser);
+                        setUser(parsedUser);
+                        setRole(parsedUser?.role || null);
+                    }
                 }
             }
             setLoading(false);

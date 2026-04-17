@@ -48,6 +48,12 @@ function MainLayout() {
 
   const totalRevenue = stats.total_revenue;
   const totalPlaces = stats.total_places;
+  const totalFleet = stats.buses_count + stats.metros_count;
+  const totalModeRevenue = stats.revenue_bus + stats.revenue_metro;
+  const busRevenuePercent = totalModeRevenue ? (stats.revenue_bus / totalModeRevenue) * 100 : 0;
+  const metroRevenuePercent = totalModeRevenue ? (stats.revenue_metro / totalModeRevenue) * 100 : 0;
+  const metroSeatsPercent = totalPlaces ? (stats.places_vendues_metro / totalPlaces) * 100 : 0;
+  const busSeatsPercent = totalPlaces ? (stats.places_vendues_bus / totalPlaces) * 100 : 0;
   
   const difference = stats.revenuHier ? ((totalRevenue - stats.revenuHier) / stats.revenuHier) * 100 : 0;
   const isPositive = difference >= 0;
@@ -123,6 +129,110 @@ function MainLayout() {
               </div>
             </div>
           </div>
+        </section>
+
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <article className="rounded-[22px] border bg-white p-5 shadow-xl border-frostBlue">
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-textGray">Flotte totale</p>
+            <p className="mt-1 text-4xl font-black text-deepOcean">{totalFleet}</p>
+            <p className="mt-1 text-xs font-semibold text-textGray">{stats.metros_count} metros et {stats.buses_count} bus</p>
+          </article>
+
+          <article className="rounded-[22px] border bg-white p-5 shadow-xl border-frostBlue">
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-textGray">Places vendues metro</p>
+            <p className="mt-1 text-4xl font-black text-deepOcean">{stats.places_vendues_metro}</p>
+            <div className="mt-4 h-2.5 overflow-hidden rounded-full" style={{ backgroundColor: '#e8f2f8' }}>
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{ width: `${metroSeatsPercent}%`, background: `linear-gradient(90deg, ${palette.classicBlue} 0%, ${palette.skyBlue} 100%)` }}
+              ></div>
+            </div>
+          </article>
+
+          <article className="rounded-[22px] border bg-white p-5 shadow-xl border-frostBlue">
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-textGray">Places vendues bus</p>
+            <p className="mt-1 text-4xl font-black text-deepOcean">{stats.places_vendues_bus}</p>
+            <div className="mt-4 h-2.5 overflow-hidden rounded-full" style={{ backgroundColor: '#e8f2f8' }}>
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{ width: `${busSeatsPercent}%`, background: `linear-gradient(90deg, ${palette.softTeal} 0%, ${palette.classicBlue} 100%)` }}
+              ></div>
+            </div>
+          </article>
+        </section>
+
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-[1.2fr_1fr]">
+          <article className="rounded-[22px] border bg-white p-5 shadow-xl border-frostBlue">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-black text-deepOcean">Actions rapides</h2>
+              <span className="text-[11px] font-black uppercase tracking-[0.16em] text-classicBlue">Administration</span>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <button
+                onClick={() => navigate('/stations')}
+                className="rounded-xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md"
+                style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}
+              >
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-classicBlue">Stations</p>
+                <p className="mt-1 text-sm font-semibold text-deepOcean">Ajouter ou modifier les stations</p>
+              </button>
+
+              <button
+                onClick={() => navigate('/routes')}
+                className="rounded-xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md"
+                style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}
+              >
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-classicBlue">Routes</p>
+                <p className="mt-1 text-sm font-semibold text-deepOcean">Configurer les trajets</p>
+              </button>
+
+              <button
+                onClick={() => navigate('/schedules')}
+                className="rounded-xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md"
+                style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}
+              >
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-classicBlue">Schedules</p>
+                <p className="mt-1 text-sm font-semibold text-deepOcean">Planifier les departs</p>
+              </button>
+
+              <button
+                onClick={() => navigate('/transport')}
+                className="rounded-xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md"
+                style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}
+              >
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-classicBlue">Transport</p>
+                <p className="mt-1 text-sm font-semibold text-deepOcean">Gerer la flotte active</p>
+              </button>
+            </div>
+          </article>
+
+          <article className="rounded-[22px] border bg-white p-5 shadow-xl border-frostBlue">
+            <h2 className="text-lg font-black text-deepOcean">Repartition revenus</h2>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-textGray">Bus vs Metro</p>
+
+            <div className="mt-5 space-y-4">
+              <div>
+                <div className="mb-1 flex items-center justify-between text-sm font-semibold">
+                  <span className="text-deepOcean">Bus</span>
+                  <span className="text-textGray">{stats.revenue_bus.toFixed(2)} DT ({busRevenuePercent.toFixed(1)}%)</span>
+                </div>
+                <div className="h-2.5 overflow-hidden rounded-full" style={{ backgroundColor: '#e8f2f8' }}>
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${busRevenuePercent}%`, backgroundColor: palette.classicBlue }}></div>
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-1 flex items-center justify-between text-sm font-semibold">
+                  <span className="text-deepOcean">Metro</span>
+                  <span className="text-textGray">{stats.revenue_metro.toFixed(2)} DT ({metroRevenuePercent.toFixed(1)}%)</span>
+                </div>
+                <div className="h-2.5 overflow-hidden rounded-full" style={{ backgroundColor: '#e8f2f8' }}>
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${metroRevenuePercent}%`, background: `linear-gradient(90deg, ${palette.softTeal} 0%, ${palette.skyBlue} 100%)` }}></div>
+                </div>
+              </div>
+            </div>
+          </article>
         </section>
 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
