@@ -1,9 +1,22 @@
 import api from './axios';
 
+const normalizeList = (payload, keys = []) => {
+    if (Array.isArray(payload)) {
+        return payload;
+    }
+
+    for (const key of keys) {
+        if (Array.isArray(payload?.[key])) {
+            return payload[key];
+        }
+    }
+
+    return [];
+};
+
 // ==========================================
 // Dashboard & General Admin Stats
 // ==========================================
-
 export const getDashboardStats = async () => {
     const response = await api.get('/admin/dashboard');
     return response.data;
@@ -42,10 +55,9 @@ export const createController = async (data) => {
 // ==========================================
 // Transports Management
 // ==========================================
-
 export const getTransports = async () => {
     const response = await api.get('/transports');
-    return response.data;
+    return normalizeList(response.data, ['data', 'transports']);
 };
 
 export const createTransport = async (data) => {
@@ -66,10 +78,9 @@ export const deleteTransport = async (id) => {
 // ==========================================
 // Stations Management
 // ==========================================
-
-export const getStations = async () => {
+export const getAllStations = async () => {
     const response = await api.get('/stations');
-    return response.data;
+    return normalizeList(response.data, ['data', 'stations']);
 };
 
 export const createStation = async (data) => {
@@ -90,20 +101,48 @@ export const deleteStation = async (id) => {
 // ==========================================
 // Routes Management
 // ==========================================
-
-export const getRoutes = async () => {
+export const getAllRoutes = async () => {
     const response = await api.get('/routes');
-    return response.data;
+    return normalizeList(response.data, ['routes', 'data']);
 };
 
 export const createRoute = async (data) => {
-    // data should contain { routeData, stationSequence }
-    const response = await api.post('/routes', data);
+    const hasLegacyShape = data?.routeData && data?.stationSequence;
+    const payload = hasLegacyShape
+        ? data
+        : {
+            routeData: {
+                name: data?.name,
+                start_station_id: data?.start_station_id,
+                end_station_id: data?.end_station_id,
+            },
+            stationSequence: [
+                { station_id: data?.start_station_id, sequence_order: 1 },
+                { station_id: data?.end_station_id, sequence_order: 2 },
+            ],
+        };
+
+    const response = await api.post('/routes', payload);
     return response.data;
 };
 
 export const updateRoute = async (id, data) => {
-    const response = await api.put(`/routes/${id}`, data);
+    const hasLegacyShape = data?.routeData && data?.stationSequence;
+    const payload = hasLegacyShape
+        ? data
+        : {
+            routeData: {
+                name: data?.name,
+                start_station_id: data?.start_station_id,
+                end_station_id: data?.end_station_id,
+            },
+            stationSequence: [
+                { station_id: data?.start_station_id, sequence_order: 1 },
+                { station_id: data?.end_station_id, sequence_order: 2 },
+            ],
+        };
+
+    const response = await api.put(`/routes/${id}`, payload);
     return response.data;
 };
 
@@ -115,11 +154,10 @@ export const deleteRoute = async (id) => {
 // ==========================================
 // Schedules Management
 // ==========================================
-
-export const getSchedules = async (date) => {
+export const getAllSchedules = async (date) => {
     const queryString = date ? `?date=${date}` : '';
     const response = await api.get(`/schedules/all${queryString}`);
-    return response.data;
+    return normalizeList(response.data, ['data', 'schedules']);
 };
 
 export const createSchedule = async (data) => {
@@ -136,3 +174,8 @@ export const deleteSchedule = async (id) => {
     const response = await api.delete(`/schedules/${id}`);
     return response.data;
 };
+
+// Backward-compatible aliases for older imports.
+export const getStations = getAllStations;
+export const getRoutes = getAllRoutes;
+export const getSchedules = getAllSchedules;

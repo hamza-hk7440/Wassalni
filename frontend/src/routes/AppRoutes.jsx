@@ -8,6 +8,9 @@ import ControllerEmp from '../pages/admin/ControllerEmp';
 import Metro from '../pages/admin/Metro';
 import Bus from '../pages/admin/Bus';
 import Transport from '../pages/admin/Transport';
+import Stations from '../pages/admin/Stations';
+import RoutesPage from '../pages/admin/RoutesPage';
+import Schedules from '../pages/admin/SchedulesAd';
 import BookTicket from '../pages/client/BookTicket';
 import Home from '../pages/client/Home';
 import Auth from '../pages/auth/Login';
@@ -57,6 +60,9 @@ const AppRoutes = () => {
                 <Route path="/bus" element={<Bus />} />
                 <Route path="/metro" element={<Metro />} />
                 <Route path="/transport" element={<Transport />} />
+                <Route path="/stations" element={<Stations />} />
+                <Route path="/routes" element={<RoutesPage />} />
+                <Route path="/schedules" element={<Schedules />} />
                 <Route path="/HomeRa" element={<Home/>} />
                 <Route path="/Controller" element={<ControllerEmp/>} />
             </Route>

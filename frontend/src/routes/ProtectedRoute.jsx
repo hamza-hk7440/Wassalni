@@ -12,7 +12,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
     if (!token) {
         // Not logged in
-        return <Navigate to="/auth/login" state={{ from: location }} replace />;
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     if (allowedRoles && !allowedRoles.includes(role)) {
@@ -20,7 +20,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
         
         // Logged in but insufficient role
         if (role === 'admin' || role === 'superAdmin') {
-            return <Navigate to="/dashboard" replace />;
+            return <Navigate to="/Dashboard" replace />;
         }
         return <Navigate to="/" replace />; // Passenger default fallback
     }

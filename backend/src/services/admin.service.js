@@ -1,30 +1,6 @@
 import { supabase } from "../config/supabase.js";
 
 export const getDashboardStats = async () => {
-  const [users, transactions, buses] = await Promise.all([
-    supabase.from("users").select("user_id", { count: "exact" }),
-    supabase.from("transactions").select("amount", { count: "exact" }),
-    supabase.from("transports").select("transport_id", { count: "exact" }),
-  ]);
-
-  const { data: revenueData, error: revenueError } = await supabase
-    .from("transactions")
-    .select("amount")
-    .eq("status", "completed");
-
-  if (revenueError) throw revenueError;
-
-  const totalRevenue = revenueData.reduce(
-    (sum, transaction) => sum + Number(transaction.amount),
-    0,
-  );
-
-  return {
-    total_users: users.count,
-    total_transactions: transactions.count,
-    activeBuses: buses.count,
-    total_revenue: totalRevenue,
-  };
     const [users, transactions, busesData, metrosData, ticketsDataQuery] = await Promise.all([
         supabase.from('users').select('user_id', { count: 'exact' }),
         supabase.from('transactions').select('amount', { count: 'exact' }),
