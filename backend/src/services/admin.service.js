@@ -147,7 +147,7 @@ export const deleteUser = async (userId) => {
 };
 
 export const updateUser = async (userId, data) => {
-  const { first_name, last_name, email, password } = data;
+  const { first_name, last_name, email, password, token_balance } = data;
 
   // 1. Update Auth User if email or password provided
   const authUpdates = {};
@@ -161,9 +161,19 @@ export const updateUser = async (userId, data) => {
 
   // 2. Update Public Users Table
   const dbUpdates = {};
-  if (first_name) dbUpdates.first_name = first_name;
-  if (last_name) dbUpdates.last_name = last_name;
-  if (email) dbUpdates.email = email;
+  if (first_name !== undefined) dbUpdates.first_name = first_name;
+  if (last_name !== undefined) dbUpdates.last_name = last_name;
+  if (email !== undefined) dbUpdates.email = email;
+
+  if (token_balance !== undefined) {
+    const parsedTokenBalance = Number(token_balance);
+
+    if (!Number.isFinite(parsedTokenBalance) || parsedTokenBalance < 0) {
+      throw new Error("token_balance must be a valid number greater than or equal to 0");
+    }
+
+    dbUpdates.token_balance = parsedTokenBalance;
+  }
 
   if (Object.keys(dbUpdates).length > 0) {
     const { data: updatedUser, error: dbError } = await supabase

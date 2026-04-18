@@ -6,9 +6,10 @@ import useAuth from '../../hooks/useAuth';
 import avatar from '../../assets/default_pfp.png';
 
 const Navbar = () => {
-    const { tokens, user } = useAuth();
+    const { user } = useAuth();
     const location = useLocation();
     const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+    const tokenBalance = Number(user?.token_balance ?? 0);
 
     return (
         <nav className="sticky top-0 z-[1000] flex items-center justify-between bg-white px-[5%] py-3 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border-b border-[#eef5f9]">
@@ -50,7 +51,7 @@ const Navbar = () => {
                             title="Buy Tokens">
                             <img src={tokenLogo} alt="token" className="h-6 w-6" />
                             <span className="text-[1.1rem] font-extrabold text-[#1e5470]">
-                                {tokens?.toLocaleString() || 0}
+                                {tokenBalance.toLocaleString()}
                             </span>
                             <div className="ml-2 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#3b759f] text-[12px] font-bold text-white shadow-inner">
                                 +

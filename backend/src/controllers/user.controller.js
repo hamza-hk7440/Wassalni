@@ -213,6 +213,35 @@ export const changePassword = async (req, res) => {
   }
 };
 
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { first_name, last_name, email } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!first_name || !last_name || !email) {
+      return res.status(400).json({ error: "first_name, last_name and email are required" });
+    }
+
+    const updatedUser = await userService.updateUserProfile({
+      user_id: userId,
+      first_name,
+      last_name,
+      email,
+    });
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 export const controllerLogin = async (req, res) => {
   try {
     const { email, password, code } = req.body;

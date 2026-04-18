@@ -2,6 +2,38 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TicketCard from '../../components/common/Ticket';
 import { getActiveTickets, requestRefund } from '../../api/tickets';
+const toCardStatus = (status) => {
+    const normalized = String(status || '').toLowerCase();
+    if (normalized === 'active') return 'active';
+    if (normalized === 'used') return 'used';
+    if (normalized === 'refunded') return 'refunded';
+    return 'active';
+};
+
+const toShortTicketCode = (ticketId) => {
+    const raw = String(ticketId || '').trim();
+    if (!raw) return '-';
+    const suffix = raw.includes('-') ? raw.split('-').pop() : raw;
+    return suffix.toUpperCase();
+};
+
+const mapTicketForCard = (ticket) => ({
+    ...ticket,
+    id: ticket.id || ticket.ticket_id,
+    status: toCardStatus(ticket.status),
+    type: ticket.transport_type || 'Transport',
+    from_station: ticket.from_station || ticket.departure_station || 'Departure',
+    to_station: ticket.to_station || ticket.arrival_station || 'Destination',
+    qr_code: toShortTicketCode(ticket.ticket_id),
+    qr_image: ticket.qr_data ? `data:image/png;base64,${ticket.qr_data}` : null,
+    valid_from: ticket.valid_from || ticket.purchase_date,
+    valid_to: ticket.valid_to || ticket.arrival_time || ticket.departure_time,
+});
+
+const canRequestRefund = (ticket) => {
+    const refundedOrPending = ['pending', 'completed'].includes(String(ticket.refund_status || '').toLowerCase());
+    return Boolean(ticket.is_cancelled) && !refundedOrPending;
+};
 
 const ActiveTickets = () => {
     const navigate = useNavigate();
@@ -20,7 +52,7 @@ const ActiveTickets = () => {
                 setError('');
                 const data = await getActiveTickets();
                 const list = Array.isArray(data) ? data : (data.tickets || []);
-                setTickets(list);
+                setTickets(list.map(mapTicketForCard));
             } catch (err) {
                 console.error('Failed to load active tickets', err);
                 setError('Could not load your tickets. Please try again.');
@@ -82,12 +114,18 @@ const ActiveTickets = () => {
                             <div key={t.id || t.ticket_id} className="relative group">
                                 <TicketCard ticket={t} />
                                 <div className="mt-2 flex justify-end">
-                                    <button 
-                                        onClick={() => handleRefundClick(t)}
-                                        className="text-sm font-bold text-red-400 hover:text-red-600 transition-colors flex items-center gap-1 px-2"
-                                    >
-                                        ✕ Request Refund
-                                    </button>
+                                    {canRequestRefund(t) ? (
+                                        <button 
+                                            onClick={() => handleRefundClick(t)}
+                                            className="text-sm font-bold text-red-400 hover:text-red-600 transition-colors flex items-center gap-1 px-2"
+                                        >
+                                            ✕ Request Refund
+                                        </button>
+                                    ) : (
+                                        <span className="text-xs font-semibold text-gray-400 px-2">
+                                            {t.is_cancelled ? 'Refund already requested' : 'Refund available only for cancelled trips'}
+                                        </span>
+                                    )}
                                 </div>
 
                                 <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-[#27ae60]/20 pointer-events-none transition-colors" />

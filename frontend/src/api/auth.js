@@ -49,8 +49,26 @@ export const getUserInfo = async (userId) => {
     return response.data;
 };
 
+// Update profile info
+export const updateProfile = async (data) => {
+    const response = await api.post('/users/updateprofile', data);
+    return response.data;
+};
+
 // Change password (requires auth token)
 export const changePassword = async (newPassword) => {
     const response = await api.post('/users/changepassword', { new_password: newPassword });
+    return response.data;
+};
+
+// Redeem tokens from user
+export const redeemTokens = async (userId, amount) => {
+    const response = await api.post('/users/redeemtokensfromuser', { user_id: userId, amount });
+    return response.data;
+};
+
+// Get current token balance
+export const getTokenBalance = async (userId) => {
+    const response = await api.post('/token/gettokenbalance', { user_id: userId });
     return response.data;
 };

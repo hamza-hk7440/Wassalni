@@ -523,3 +523,30 @@ export async function changeUserPassword({ user_id, new_password }) {
     throw error;
   }
 }
+
+export async function updateUserProfile({ user_id, first_name, last_name, email }) {
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .update({ first_name, last_name, email })
+      .eq("user_id", user_id)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    // Also update auth metadata for consistency
+    const adminClient = createAdminClient();
+    await adminClient.auth.admin.updateUserById(user_id, {
+      email,
+      user_metadata: { first_name, last_name },
+    });
+
+    return data;
+  } catch (error) {
+    console.error("update user profile error:", error.message);
+    throw error;
+  }
+}

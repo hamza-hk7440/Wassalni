@@ -47,9 +47,14 @@ const TicketCard = ({ ticket }) => {
                 </div>
                 <div className="flex flex-col items-center bg-white p-5">
                     <div className="flex items-center gap-5">
-                        <div className="relative flex h-20 w-20 items-center justify-center rounded-lg border-[6px] border-[#f1f5f9] bg-[#f1f5f9] after:font-bold after:text-[#cbd5e1] after:content-['QR']">
+                        <div className="relative flex h-20 w-20 items-center justify-center rounded-lg border-[6px] border-[#f1f5f9] bg-[#f1f5f9]">
+                            {ticket.qr_image ? (
+                                <img src={ticket.qr_image} alt="QR Code" className="w-full h-full object-contain" />
+                            ) : (
+                                <div className="font-bold text-[#cbd5e1]">QR</div>
+                            )}
                             {(ticket.status === 'refunded' || ticket.status === 'used') && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-[#f1f5f9] text-[0.8rem] font-bold text-[#e53e3e]">
+                                <div className="absolute inset-0 flex items-center justify-center bg-[#f1f5f9]/80 text-[0.8rem] font-bold text-[#e53e3e]">
                                     {ticket.status === 'used' ? 'USED' : 'VOID'}
                                 </div>
                             )}
@@ -92,7 +97,12 @@ const TicketCard = ({ ticket }) => {
                         <p className="text-gray-400 text-sm mb-6 text-center">
                             {ticket.status === 'used' ? 'This ticket has been scanned and is no longer valid for travel.' : 'Present this to the driver or scanner'}
                         </p>
-                        <div className="relative flex h-56 w-56 items-center justify-center rounded-2xl border-[12px] border-[#f1f5f9] bg-[#f1f5f9] after:text-4xl after:font-bold after:text-[#cbd5e1] after:content-['QR'] mb-6">
+                        <div className="relative flex h-56 w-56 items-center justify-center rounded-2xl border-[12px] border-[#f1f5f9] bg-[#f1f5f9] mb-6">
+                            {ticket.qr_image ? (
+                                <img src={ticket.qr_image} alt="QR Code" className="w-full h-full object-contain" />
+                            ) : (
+                                <div className="text-4xl font-bold text-[#cbd5e1]">QR</div>
+                            )}
                             {(ticket.status === 'refunded' || ticket.status === 'used') && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-[#f1f5f9]/80 text-xl font-bold text-[#e53e3e]">
                                     {ticket.status === 'used' ? 'USED' : 'VOID'}
