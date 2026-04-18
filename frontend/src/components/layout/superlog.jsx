@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import palette from '../common/pallette';
+import { useAdminLanguage } from '../common/language.jsx';
 
 function Superlog() {
+	const { t } = useAdminLanguage();
     const navigate = useNavigate();
     const target = new URLSearchParams(window.location.search).get('target') || 'admin';
     const isController = target === 'controller';
@@ -19,17 +21,17 @@ function Superlog() {
         setSuccess('');
 
         if (!password) {
-            setError('Le mot de passe est obligatoire');
+            setError(t('requiredPassword', 'Password is required'));
             return;
         }
 
         if (password !== ADMIN_PASSWORD) {
-            setError('Mot de passe incorrect');
+            setError(t('incorrectPassword', 'Incorrect password'));
             setPassword('');
             return;
         }
 
-        setSuccess('✓ Accès autorisé! Bienvenue super admin');
+        setSuccess(`✓ ${t('accessGranted', 'Access granted! Welcome super admin')}`);
         setPassword('');
         setTimeout(() => {
             navigate(target === 'controller' ? '/controller' : '/admin');
@@ -50,11 +52,11 @@ function Superlog() {
                         className="text-3xl font-bold bg-clip-text text-transparent mb-2"
                         style={{ backgroundImage: `linear-gradient(to right, ${palette.deepOcean}, ${palette.classicBlue})` }}
                     >
-                        Accès Super Admin
+                        {t('superAdminAccess', 'Super Admin Access')}
                     </h1>
-                    <p className="text-skyBlue text-sm font-semibold">Zone réservée aux administrateurs</p>
+                    <p className="text-skyBlue text-sm font-semibold">{t('restrictedZone', 'Administrators only area')}</p>
                     <p className="mt-1 text-xs font-bold uppercase tracking-wider text-classicBlue">
-                        Destination: {isController ? 'Contrôleurs' : 'Admins'}
+                        {t('destination', 'Destination')}: {isController ? t('controllers', 'Controllers') : t('admins', 'Admins')}
                     </p>
                 </div>
 
@@ -95,13 +97,13 @@ function Superlog() {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
                                 <label className="text-deepOcean block text-sm font-semibold">
-                                    Mot de passe super admin
+                                    {t('superAdminPassword', 'Super admin password')}
                                 </label>
                                 <input
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Entrez le mot de passe"
+                                    placeholder={t('enterPassword', 'Enter password')}
                                     className="border-frostBlue text-deepOcean w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition duration-200 bg-white shadow-sm"
                                 />
                             </div>
@@ -111,14 +113,14 @@ function Superlog() {
                                 style={{ background: `linear-gradient(to right, ${palette.deepOcean}, ${palette.classicBlue})` }}
                                 className="w-full text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-lg transform hover:scale-105 active:scale-95"
                             >
-                                Accéder à la gestion {isController ? 'contrôleur' : 'admin'}
+                                {isController ? t('accessControllerManagement', 'Access controller management') : t('accessAdminManagement', 'Access admin management')}
                             </button>
                         </form>
 
                         <p 
                             className="text-center text-xs pt-4 border-t-2 mt-6 font-semibold border-frostBlue text-classicBlue"
                         >
-                            ⚠️ Tentatives d'accès non autorisées sont enregistrées
+                            ⚠️ {t('unauthorizedAttempts', 'Unauthorized access attempts are logged')}
                         </p>
                     </div>
                 </div>

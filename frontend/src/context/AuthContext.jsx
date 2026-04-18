@@ -17,8 +17,14 @@ export const AuthProvider = ({ children }) => {
             if (storedToken && storedUser) {
                 try {
                     const parsedUser = JSON.parse(storedUser);
+                    const resolvedUserId = parsedUser?.id || parsedUser?.user_id;
+
+                    if (!resolvedUserId) {
+                        throw new Error('Missing user id in stored session');
+                    }
+
                     // Fetch latest info from backend to keep balance/role fresh
-                    const userInfo = await getUserInfo(parsedUser.id);
+                    const userInfo = await getUserInfo(resolvedUserId);
                     setUser({ ...parsedUser, ...userInfo });
                     setRole(userInfo.role);
                 } catch (error) {

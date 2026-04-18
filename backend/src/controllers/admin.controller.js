@@ -14,14 +14,30 @@ export const getDashboardStats = async (req, res) => {
 export const createController = async (req, res) => {
     try {
         const newController = await adminService.createController(req.body);
+        const referenceCode = newController?.reference_code || newController?.controller_code || newController?.admin_code || null;
+        const referenceCodeDetails = newController?.reference_code_details || null;
         
         res.status(201).json({
             message: 'Controller created successfully',
-            controller: newController
+            controller: newController,
+            reference_code: referenceCode,
+            reference_code_details: referenceCodeDetails
         });
     } catch (err) {
         console.error('Error creating controller:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
+        const message = String(err?.message || 'Internal Server Error');
+        const isValidation = /required|role must|invalid/i.test(message);
+        const isConflict = /already exists|duplicate|already|unique|23505/i.test(message);
+
+        if (isValidation) {
+            return res.status(400).json({ error: message });
+        }
+
+        if (isConflict) {
+            return res.status(409).json({ error: message });
+        }
+
+        res.status(500).json({ error: message });
     }
 };
 

@@ -1,12 +1,27 @@
 import { supabase } from "../config/supabase.js";
 
+function normalizeRouteData(routeData = {}) {
+  const parsedBasePrice = Number(routeData.base_price);
+
+  return {
+    ...routeData,
+    name: String(routeData.name || "").trim(),
+    base_price:
+      Number.isFinite(parsedBasePrice) && parsedBasePrice >= 0
+        ? parsedBasePrice
+        : 0,
+  };
+}
+
 class RouteService {
   //create route
   async createFullRoute(routeData, stationSequence) {
+    const safeRouteData = normalizeRouteData(routeData);
+
     //insert the main route
     const { data: route, error: routeError } = await supabase
       .from("routes")
-      .insert([routeData])
+      .insert([safeRouteData])
       .select()
       .single();
     if (routeError) {
@@ -81,10 +96,12 @@ class RouteService {
   }
   //update route and replace its stops
   async updateFullRoute(routeId, routeData, stationSequence) {
+    const safeRouteData = normalizeRouteData(routeData);
+
     // 1. Update the main route record
     const { data: route, error: routeError } = await supabase
       .from("routes")
-      .update(routeData)
+      .update(safeRouteData)
       .eq("route_id", routeId)
       .select()
       .single();

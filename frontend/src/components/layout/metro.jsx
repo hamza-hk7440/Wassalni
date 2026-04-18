@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import BodyTransport from '../common/bodyTranspot';
 import { getTransports, createTransport, updateTransport, deleteTransport } from '../../api/admin';
+import { useAdminLanguage } from '../common/language.jsx';
 
 function Metro() {
+	const { t } = useAdminLanguage();
   const [metroData, setMetroData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,14 +70,14 @@ function Metro() {
     <main>
       <div>
         <BodyTransport
-          nom="Gestion du métro"
+          nom={t('transport', 'Transport') + ' - Metro'}
           listDonner={metroData}
           onCreate={handleCreate}
           onUpdate={handleUpdate}
           onDelete={handleDelete}
           fieldKeys={{ id: 'license_plate', occupancy: 'capacity', status: 'status' }}
-          emptyForm={{ license_plate: '', capacity: '', status: 'En ligne' }}
-          labels={{ entitySingular: 'métro', entityPlural: 'métros', id: 'Métro / Rame', occupancy: 'Capacité', status: 'Statut' }}
+          emptyForm={{ license_plate: '', capacity: '', status: t('online', 'Online') }}
+          labels={{ entitySingular: 'metro', entityPlural: 'metros', id: 'Metro / Rame', occupancy: 'Capacité', status: t('status', 'Status') }}
         />
       </div>
     </main>

@@ -1,245 +1,372 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import palette from '../common/pallette';
 import { useAuth } from '../../hooks/useAuth';
+import { useAdminLanguage } from '../common/language.jsx';
+
+const hexToRgba = (hex, alpha) => {
+  const cleaned = (hex || '').replace('#', '');
+  if (cleaned.length !== 6) return `rgba(30, 84, 112, ${alpha})`;
+  const r = parseInt(cleaned.slice(0, 2), 16);
+  const g = parseInt(cleaned.slice(2, 4), 16);
+  const b = parseInt(cleaned.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 function Parametre() {
-    const { user } = useAuth();
-    
-    const defaultProfile = {
-        nom: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'Utilisateur',
-        email: user?.email || '',
-        telephone: user?.phone || 'Non renseigné',
-        adresse: user?.address || 'Non renseignée'
+  const { user, setUser } = useAuth();
+  const { t } = useAdminLanguage();
+
+  const [nomComplet, setNomComplet] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [editNom, setEditNom] = useState(false);
+  const [editEmail, setEditEmail] = useState(false);
+
+  const profile = useMemo(() => {
+    const fullName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim();
+    return {
+      nomComplet: fullName || t('user', 'User'),
+      email: user?.email || '-',
+      role: user?.role || user?.user_type || '-',
+      identifiant: user?.id || user?.user_id || '-',
+    };
+  }, [user, t]);
+
+  useEffect(() => {
+    setNomComplet(profile.nomComplet === t('user', 'User') ? '' : profile.nomComplet);
+    setEmail(profile.email === '-' ? '' : profile.email);
+  }, [profile.nomComplet, profile.email, t]);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setError('');
+    setMessage('');
+
+    const cleanName = nomComplet.trim();
+    const cleanEmail = email.trim();
+
+    if (!cleanName || !cleanEmail) {
+      setError('Le nom complet et l\'email sont obligatoires.');
+      return;
+    }
+
+    if (!cleanEmail.includes('@')) {
+      setError('Email invalide.');
+      return;
+    }
+
+    const nameParts = cleanName.split(/\s+/);
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ');
+
+    const updatedUser = {
+      ...user,
+      first_name: firstName,
+      last_name: lastName,
+      email: cleanEmail,
     };
 
-    const [nom, setNom] = useState(defaultProfile.nom);
-    const [email, setEmail] = useState(defaultProfile.email);
-    const [telephone, setTelephone] = useState(defaultProfile.telephone);
-    const [adresse, setAdresse] = useState(defaultProfile.adresse);
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
-    const [changeNom, setChangeNom] = useState(false);
-    const [changeEmail, setChangeEmail] = useState(false);
-    const [changeTelephone, setChangeTelephone] = useState(false);
-    const [changeAdresse, setChangeAdresse] = useState(false);
-    const nomRef = useRef(null);
-    const emailRef = useRef(null);
-    const telephoneRef = useRef(null);
-    const adresseRef = useRef(null);
-    const states = {
-        nom: user?.last_name || "Utilisateur",
-        prenom: user?.first_name || "",
-        email: user?.email || "Non renseigné",
-        telephone: user?.phone || "Non renseigné",
-        adresse: user?.address || "Non renseignée"
-    };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setMessage(t('saveChanges', 'Save changes'));
+    setEditNom(false);
+    setEditEmail(false);
+  };
 
-    // Update state if user data loads later
-    useEffect(() => {
-        if (user) {
-            setNom(`${user.first_name || ''} ${user.last_name || ''}`.trim());
-            setEmail(user.email || '');
-            // update other fields if they exist
-        }
-    }, [user]);
+  const handleCancelEdit = () => {
+    setNomComplet(profile.nomComplet === t('user', 'User') ? '' : profile.nomComplet);
+    setEmail(profile.email === '-' ? '' : profile.email);
+    setError('');
+    setMessage('');
+    setEditNom(false);
+    setEditEmail(false);
+  };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setError('');
-        setMessage('');
+  return (
+    <div className="relative min-h-screen overflow-hidden px-4 py-10" style={{ fontFamily: "'Space Grotesk', 'Segoe UI', sans-serif" }}>
+      <style>
+        {`
+          @keyframes cardEnter {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes floatBlob {
+            0% { transform: translate3d(0,0,0) scale(1); }
+            50% { transform: translate3d(0,-14px,0) scale(1.04); }
+            100% { transform: translate3d(0,0,0) scale(1); }
+          }
+        `}
+      </style>
 
-        if (!nom || !email || !telephone || !adresse) {
-            setError('Tous les champs sont obligatoires');
-            return;
-        }
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: `radial-gradient(circle at 10% 15%, ${hexToRgba(palette.softTeal, 0.24)} 0%, ${hexToRgba(palette.softTeal, 0)} 42%), radial-gradient(circle at 88% 18%, ${hexToRgba(palette.deepOcean, 0.2)} 0%, ${hexToRgba(palette.deepOcean, 0)} 44%), linear-gradient(135deg, ${palette.pureWhite} 0%, ${palette.iceWhite} 52%, ${palette.frostBlue} 100%)`,
+        }}
+      />
 
-        if (!email.includes('@')) {
-            setError('Email invalide');
-            return;
-        }
+      <div
+        className="pointer-events-none absolute -left-16 top-20 h-64 w-64 rounded-full"
+        style={{ backgroundColor: hexToRgba(palette.deepOcean, 0.13), filter: 'blur(2px)', animation: 'floatBlob 8s ease-in-out infinite' }}
+      />
+      <div
+        className="pointer-events-none absolute -right-20 bottom-16 h-72 w-72 rounded-full"
+        style={{ backgroundColor: hexToRgba(palette.softTeal, 0.14), filter: 'blur(2px)', animation: 'floatBlob 10s ease-in-out infinite' }}
+      />
 
-        setMessage('✓ Paramètres mis à jour avec succès');
-        setChangeNom(false);
-        setChangeEmail(false);
-        setChangeTelephone(false);
-        setChangeAdresse(false);
-    };
+      <div className="relative mx-auto max-w-6xl">
+        <div className="grid gap-6 lg:grid-cols-[330px_1fr]">
+          <aside
+            className="rounded-3xl border p-6 shadow-xl"
+            style={{
+              borderColor: palette.frostBlue,
+              backgroundColor: hexToRgba(palette.pureWhite, 0.86),
+              backdropFilter: 'blur(10px)',
+              animation: 'cardEnter 500ms ease-out',
+            }}
+          >
+            <div
+              className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-[26px] text-3xl font-black"
+              style={{
+                background: `linear-gradient(140deg, ${palette.deepOcean} 0%, ${palette.classicBlue} 60%, ${palette.softTeal} 100%)`,
+                boxShadow: `0 16px 26px ${hexToRgba(palette.deepOcean, 0.3)}`,
+                color: palette.pureWhite,
+              }}
+            >
+              {(profile.nomComplet || 'U').charAt(0).toUpperCase()}
+            </div>
 
-    useEffect(() => {
-        if (changeNom && nomRef.current) {
-            nomRef.current.focus();
-        }
-    }, [changeNom, nom.length]);
+            <p className="text-center text-xs font-black uppercase tracking-[0.25em]" style={{ color: palette.classicBlue }}>
+              {t('profile', 'Profile')}
+            </p>
+            <h2 className="mt-1 text-center text-2xl font-black" style={{ color: palette.deepOcean }}>
+              {profile.nomComplet}
+            </h2>
+            <p className="mt-1 text-center text-sm" style={{ color: palette.textGray }}>
+              {profile.email}
+            </p>
 
-    useEffect(() => {
-        if (changeEmail && emailRef.current) {
-            emailRef.current.focus();
-        }
-    }, [changeEmail, email.length]);
+            <div
+              className="mt-6 rounded-2xl border p-4"
+              style={{ borderColor: palette.frostBlue, background: `linear-gradient(160deg, ${palette.pureWhite} 0%, ${palette.iceWhite} 100%)` }}
+            >
+              <p className="text-xs font-black uppercase tracking-wide" style={{ color: palette.classicBlue }}>
+                {t('dataSource', 'Data source')}
+              </p>
+              <ul className="mt-2 space-y-1 text-sm" style={{ color: palette.textGray }}>
+                <li>{t('dataSourceLine1', 'Fields below are now editable.')}</li>
+                <li>{t('dataSourceLine2', 'Reference code is no longer displayed.')}</li>
+                <li>{t('dataSourceLine3', 'Role and identifier remain read-only.')}</li>
+              </ul>
+            </div>
+          </aside>
 
-    useEffect(() => {
-        if (changeTelephone && telephoneRef.current) {
-            telephoneRef.current.focus();
-        }
-    }, [changeTelephone, telephone.length]);
+          <main
+            className="overflow-hidden rounded-3xl border shadow-2xl"
+            style={{
+              borderColor: palette.frostBlue,
+              backgroundColor: hexToRgba(palette.pureWhite, 0.9),
+              backdropFilter: 'blur(10px)',
+              animation: 'cardEnter 650ms ease-out',
+            }}
+          >
+            <div className="h-2" style={{ background: `linear-gradient(90deg, ${palette.deepOcean}, ${palette.classicBlue}, ${palette.softTeal})` }} />
 
-    useEffect(() => {
-        if (changeAdresse && adresseRef.current) {
-            adresseRef.current.focus();
-            
-        }
-    }, [changeAdresse, adresse.length]);
+            <div className="p-6 md:p-8">
+              <header className="mb-7">
+                <p className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: palette.classicBlue }}>
+                  {t('accountSettingsArea', 'Settings Area')}
+                </p>
+                <h1 className="mt-1 text-3xl font-black md:text-4xl" style={{ color: palette.deepOcean }}>
+                  {t('accountSettingsTitle', 'Account Settings')}
+                </h1>
+                <p className="mt-1 text-sm" style={{ color: palette.textGray }}>
+                  {t('fieldPenHint', 'Changes are made with each field pen button.')}
+                </p>
+              </header>
 
-    const InputField = ({ label, type, value, onChange, placeholder, isEditing, onToggle, inputRef }) => (
-        <div className="space-y-2">
-            <div className="flex items-center justify-between">
-                <label className="text-deepOcean block text-sm font-semibold">{label}</label>
-                <button
-                    type="button"
-                    onClick={onToggle}
-                    className="text-sm font-semibold cursor-pointer transition-transform hover:scale-110"
-                    style={{ color: isEditing ? palette.deepOcean : palette.classicBlue }}
-                    
+              {error && (
+                <div
+                  className="mb-4 rounded-xl border px-4 py-3 text-sm font-semibold"
+                  style={{ borderColor: palette.dangerText, backgroundColor: palette.dangerSoft, color: palette.dangerText }}
                 >
-                    {isEditing ? '❌' : '✏️'}
-                </button>
-            </div>
-            <input
-                ref={inputRef}
-                type={type}
-                value={value}
-                onChange={onChange}
-                placeholder={placeholder}
-                readOnly={!isEditing}
-                className="w-full px-4 py-3 border rounded-md focus:outline-none bg-white text-deepOcean"
-                style={{ borderColor: isEditing ? palette.softTeal : palette.frostBlue, backgroundColor: isEditing ? '#FFFFFF' : '#F8FAFC' }}
-            />
-        </div>
-    );
+                  {error}
+                </div>
+              )}
 
-    return (
-        <div style={{ background: `linear-gradient(to bottom right, ${palette.iceWhite}, white, ${palette.frostBlue})` }} className="min-h-screen py-10 px-4">
-            <div className="mx-auto max-w-2xl">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <div 
-                        className="inline-flex items-center justify-center w-14 h-14 rounded-xl mb-3"
-                        style={{ background: `linear-gradient(135deg, ${palette.deepOcean}, ${palette.classicBlue})` }}
-                    >
-                        <span className="text-2xl">⚙️</span>
+              {message && (
+                <div
+                  className="mb-4 rounded-xl border px-4 py-3 text-sm font-semibold"
+                  style={{ borderColor: palette.softTeal, backgroundColor: palette.iceWhite, color: palette.deepOcean }}
+                >
+                  {message}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div
+                    className="space-y-2 rounded-2xl border p-4"
+                    style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite, boxShadow: `0 8px 20px ${hexToRgba(palette.deepOcean, 0.08)}` }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <label className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: palette.classicBlue }}>
+                        {t('fullName', 'Full name')}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setError('');
+                          setMessage('');
+                          setEditNom((prev) => !prev);
+                        }}
+                        className="inline-flex items-center rounded-lg border px-2 py-1 transition-all"
+                        style={{ borderColor: palette.frostBlue, color: palette.deepOcean, backgroundColor: palette.pureWhite }}
+                        aria-label={t('editFullName', 'Edit full name')}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M12 20h9" />
+                          <path d="M16.5 3.5a2.12 2.12 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
+                        </svg>
+                      </button>
                     </div>
-                    <h1 
-                        className="text-3xl font-bold bg-clip-text text-transparent mb-1"
-                        style={{ backgroundImage: `linear-gradient(to right, ${palette.deepOcean}, ${palette.classicBlue})` }}
-                    >
-                        Paramètres du Compte
-                    </h1>
-                    <p className="text-skyBlue text-sm">Gérez vos informations personnelles</p>
+                    <input
+                      type="text"
+                      value={nomComplet}
+                      onChange={(e) => setNomComplet(e.target.value)}
+                      placeholder="Ex: Rayen Ben Ali"
+                      readOnly={!editNom}
+                      className="w-full rounded-xl border px-4 py-3 focus:outline-none"
+                      style={{
+                        borderColor: palette.frostBlue,
+                        color: palette.deepOcean,
+                        backgroundColor: editNom ? palette.pureWhite : palette.iceWhite,
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    className="space-y-2 rounded-2xl border p-4"
+                    style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite, boxShadow: `0 8px 20px ${hexToRgba(palette.deepOcean, 0.08)}` }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <label className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: palette.classicBlue }}>
+                        Email
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setError('');
+                          setMessage('');
+                          setEditEmail((prev) => !prev);
+                        }}
+                        className="inline-flex items-center rounded-lg border px-2 py-1 transition-all"
+                        style={{ borderColor: palette.frostBlue, color: palette.deepOcean, backgroundColor: palette.pureWhite }}
+                        aria-label={t('editEmail', 'Edit email')}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M12 20h9" />
+                          <path d="M16.5 3.5a2.12 2.12 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
+                        </svg>
+                      </button>
+                    </div>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Ex: rayen@email.com"
+                      readOnly={!editEmail}
+                      className="w-full rounded-xl border px-4 py-3 focus:outline-none"
+                      style={{
+                        borderColor: palette.frostBlue,
+                        color: palette.deepOcean,
+                        backgroundColor: editEmail ? palette.pureWhite : palette.iceWhite,
+                      }}
+                    />
+                  </div>
                 </div>
 
-                {/* Card */}
-                <div className="bg-white rounded-xl shadow-md overflow-hidden border border-frostBlue">
-                    <div 
-                        className="h-1"
-                        style={{ background: `linear-gradient(to right, ${palette.deepOcean}, ${palette.softTeal})` }}
-                    ></div>
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div
+                    className="space-y-2 rounded-2xl border p-4"
+                    style={{ borderColor: palette.frostBlue, backgroundColor: palette.iceWhite }}
+                  >
+                    <p className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: palette.classicBlue }}>
+                      {t('role', 'Role')}
+                    </p>
+                    <p className="text-base font-bold" style={{ color: palette.deepOcean }}>
+                      {profile.role}
+                    </p>
+                  </div>
 
-                    <div className="p-6 sm:p-8">
-                        {/* Messages */}
-                        {error && (
-                            <div className="mb-6 p-3 rounded-md border-l-4 bg-iceWhite border-classicBlue">
-                                <p className="font-medium flex items-center text-deepOcean">
-                                    <span className="text-xl mr-2">⚠️</span>
-                                    {error}
-                                </p>
-                            </div>
-                        )}
-
-                        {message && (
-                            <div className="mb-6 p-3 rounded-md border-l-4 bg-iceWhite border-softTeal">
-                                <p className="font-medium flex items-center text-deepOcean">
-                                    <span className="text-xl mr-2">✓</span>
-                                    {message}
-                                </p>
-                            </div>
-                        )}
-
-                        {/* Form */}
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <InputField
-                                label="Nom Complet"
-                                type="text"
-                                value={nom}
-                                onChange={(e) => setNom(e.target.value)}
-                                placeholder="donner votre nom complet"
-                                isEditing={changeNom}
-                                onToggle={() => setChangeNom(!changeNom)}
-                                inputRef={nomRef}
-                            />
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <InputField
-                                    label="Email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="donner votre email"
-                                    isEditing={changeEmail}
-                                    onToggle={() => setChangeEmail(!changeEmail)}
-                                    inputRef={emailRef}
-                                />
-                                <InputField
-                                    label="Téléphone"
-                                    type="tel"
-                                    value={telephone}
-                                    onChange={(e) => setTelephone(e.target.value)}
-                                    placeholder="donner votre numéro de téléphone"
-                                    isEditing={changeTelephone}
-                                    onToggle={() => setChangeTelephone(!changeTelephone)}
-                                    inputRef={telephoneRef}
-                                />
-                            </div>
-
-                            <InputField
-                                label="Adresse"
-                                type="text"
-                                value={adresse}
-                                onChange={(e) => setAdresse(e.target.value)}
-                                placeholder="donner votre adresse"
-                                isEditing={changeAdresse}
-                                onToggle={() => setChangeAdresse(!changeAdresse)}
-                                inputRef={adresseRef}
-                            />
-
-                            {/* Buttons */}
-                            <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <button
-                                    type="submit"
-                                    style={{ background: `linear-gradient(to right, ${palette.deepOcean}, ${palette.classicBlue})` }}
-                                    className="text-white cursor-pointer hover:opacity-90 font-semibold py-3 px-6 rounded-md"
-                                >
-                                    Modifier les Paramètres
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => window.history.back()}
-                                    style={{ background: 'linear-gradient(to right, #EF4444, #DC2626)' }}
-                                    className="text-white cursor-pointer hover:opacity-90 font-semibold py-3 px-6 rounded-md"
-                                >
-                                    Quitter sans changer
-                                </button>
-                            </div>
-
-                            {/* Info */}
-                            <p className="text-classicBlue text-center text-sm pt-2 font-semibold">
-                                ✓ Vos informations restent confidentielles et sécurisées
-                            </p>
-                        </form>
-                    </div>
+                  <div
+                    className="space-y-2 rounded-2xl border p-4"
+                    style={{ borderColor: palette.frostBlue, backgroundColor: palette.iceWhite }}
+                  >
+                    <p className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: palette.classicBlue }}>
+                      {t('identifier', 'Identifier')}
+                    </p>
+                    <p className="text-base font-bold" style={{ color: palette.deepOcean }}>
+                      {profile.identifiant}
+                    </p>
+                  </div>
                 </div>
+
+                <div className="flex flex-col gap-3 pt-2 md:flex-row">
+                  {(editNom || editEmail) && (
+                    <>
+                      <button
+                        type="submit"
+                        className="w-full rounded-xl px-6 py-3 text-sm font-black uppercase tracking-wide transition-all hover:opacity-95 md:w-auto"
+                        style={{
+                          background: `linear-gradient(90deg, ${palette.deepOcean}, ${palette.classicBlue})`,
+                          boxShadow: `0 14px 24px ${hexToRgba(palette.deepOcean, 0.26)}`,
+                          color: palette.pureWhite,
+                        }}
+                      >
+                        {t('save', 'Save')}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        className="w-full rounded-xl px-6 py-3 text-sm font-black uppercase tracking-wide transition-all hover:opacity-95 md:w-auto"
+                        style={{
+                          border: `1px solid ${palette.frostBlue}`,
+                          color: palette.deepOcean,
+                          backgroundColor: palette.pureWhite,
+                        }}
+                      >
+                        {t('cancel', 'Cancel')}
+                      </button>
+                    </>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => window.history.back()}
+                    className="w-full rounded-xl px-6 py-3 text-sm font-black uppercase tracking-wide transition-all hover:opacity-95 md:w-auto"
+                    style={{
+                      background: `linear-gradient(90deg, ${palette.dangerText}, ${palette.dangerText})`,
+                      boxShadow: `0 14px 24px ${hexToRgba(palette.dangerText, 0.28)}`,
+                      color: palette.pureWhite,
+                    }}
+                  >
+                    {t('back', 'Back')}
+                  </button>
+                </div>
+              </form>
+
+              <p className="pt-4 text-xs font-semibold" style={{ color: palette.classicBlue }}>
+                {t('applyingSession', 'Changes are applied to the active session.')}
+              </p>
             </div>
+          </main>
         </div>
-    );
+      </div>
+    </div>
+  );
 }
 
 export default Parametre;

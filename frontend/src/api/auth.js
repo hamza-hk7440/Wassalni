@@ -31,6 +31,18 @@ export const registerUser = async (userData) => {
     return response.data;
 };
 
+// Start Google OAuth flow for web login
+export const googleLoginStart = async () => {
+    const webRedirect = `${window.location.origin}/login`;
+    const response = await api.get('/users/auth/google', {
+        params: {
+            platform: 'web',
+            web_redirect: webRedirect,
+        },
+    });
+    return response.data;
+};
+
 // Get Context Profile
 export const getUserInfo = async (userId) => {
     const response = await api.post('/users/getuseressentialinfo', { user_id: userId });

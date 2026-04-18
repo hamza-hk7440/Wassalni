@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/layout/NavbarRa';
 import palette from '../../components/common/pallette';
 import { getAllTickets } from '../../api/admin';
+import { useAdminLanguage } from '../../components/common/language.jsx';
 
 const EMPTY_EDIT_FORM = { trajet: '', date: '', statut: 'Vendu' };
 
 function BookTicket() {
+	const { t } = useAdminLanguage();
 	const [tickets, setTickets] = useState([]);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [searchField, setSearchField] = useState('trajet');
@@ -23,16 +25,16 @@ function BookTicket() {
 				// Map backend 'tickets' rows to frontend expected format
 				const formattedTickets = data.map(ticket => {
 					const route = ticket.schedules?.routes;
-					const transportType = ticket.schedules?.transports?.type || 'Inconnu';
+					const transportType = ticket.schedules?.transports?.type || t('unknown', 'Unknown');
 					const startSt = route?.start_station?.name || '?';
 					const endSt = route?.end_station?.name || '?';
-					const trajetName = route ? `${startSt} -> ${endSt}` : 'Trajet Inconnu';
+					const trajetName = route ? `${startSt} -> ${endSt}` : `${t('routeLabelSimple', 'Route')} ${t('unknown', 'Unknown')}`;
 					
 					return {
 						id: ticket.ticket_id,
 						trajet: trajetName,
 						date: ticket.purchase_date ? new Date(ticket.purchase_date).toISOString().split('T')[0] : 'N/A',
-						statut: ticket.status || 'Active',
+						statut: ticket.status || t('sold', 'Sold'),
 						transport: transportType,
 						price: ticket.price,
 						clientName: ticket.users ? `${ticket.users.first_name || ''} ${ticket.users.last_name || ''}`.trim() : 'Inconnu'
@@ -120,20 +122,20 @@ function BookTicket() {
 				<div className="max-w-5xl mx-auto">
 					<header className="rounded-3xl border bg-white/95 shadow-xl p-6 md:p-8 border-frostBlue">
 						<p className="text-xs font-bold uppercase tracking-[0.22em] text-skyBlue">
-							Module Ticket
+							{t('ticketModule', 'Ticket Module')}
 						</p>
 						<h1 className="text-2xl md:text-4xl font-black mt-2 text-deepOcean">
-							Tickets vendus
+							{t('soldTickets', 'Sold tickets')}
 						</h1>
 						<p className="text-sm mt-2 text-classicBlue">
-							Affichez les tickets vendus et filtrez-les selon vos critères.
+							{t('soldTicketsSubtitle', 'View sold tickets and filter them by your criteria.')}
 						</p>
 					</header>
 
 					<div className="mt-6 rounded-3xl border bg-white p-6 md:p-8 shadow-lg border-frostBlue">
 						<div>
 							<label className="mb-2 block text-sm font-bold text-deepOcean">
-								Recherche simple
+								{t('simpleSearch', 'Simple search')}
 							</label>
 							<div className="mb-3 flex flex-wrap gap-2">
 								<button
@@ -142,7 +144,7 @@ function BookTicket() {
 									className="rounded-full border px-3 py-1.5 text-xs font-bold"
 									style={getTransportFilterStyle('all')}
 								>
-									Tous
+									{t('all', 'All')}
 								</button>
 								<button
 									type="button"
@@ -168,18 +170,18 @@ function BookTicket() {
 									className="w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
 									style={searchInputStyle}
 								>
-									<option value="trajet">Par trajet</option>
-									<option value="id">Par ID</option>
-									<option value="date">Par date</option>
-									<option value="statut">Par statut</option>
-									<option value="transport">Par type</option>
+									<option value="trajet">{t('searchByRoute', 'By route')}</option>
+									<option value="id">{t('searchById', 'By ID')}</option>
+									<option value="date">{t('searchByDate', 'By date')}</option>
+									<option value="statut">{t('searchByStatus', 'By status')}</option>
+									<option value="transport">{t('searchByType', 'By type')}</option>
 								</select>
 
 								<input
 									type="text"
 									value={searchQuery}
 									onChange={(event) => setSearchQuery(event.target.value)}
-									placeholder="Tapez votre recherche"
+									placeholder={t('typeSearch', 'Type your search')}
 									className="w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
 									style={searchInputStyle}
 								/>
@@ -187,17 +189,17 @@ function BookTicket() {
 						</div>
 
 						<div className="mt-4 rounded-2xl border px-4 py-3 text-sm font-bold border-frostBlue text-deepOcean bg-iceWhite">
-                                                        {loading ? "Chargement..." : `${filteredTickets.length} ticket(s)`}
+														{loading ? t('loading', 'Loading...') : `${filteredTickets.length} ${t('ticketsCount', 'ticket(s)')}`}
                                                 </div>
 
                                                 <div className="mt-5 grid gap-4">
                                                         {loading ? (
                                                                 <div className="rounded-2xl border border-dashed p-6 text-center text-sm border-frostBlue text-textGray bg-iceWhite">
-                                                                        Chargement des tickets en cours...
+																		{t('loadingTickets', 'Loading tickets...')}
                                                                 </div>
                                                         ) : filteredTickets.length === 0 ? (
                                                                 <div className="rounded-2xl border border-dashed p-6 text-center text-sm border-frostBlue text-textGray bg-iceWhite">
-                                                                        Aucun ticket trouve.
+																		{t('emptyTickets', 'No tickets found.')}
                                                                 </div>
                                                         ) : (
                                                                 filteredTickets.map((ticket) => (
@@ -205,13 +207,13 @@ function BookTicket() {
                                                                                <div className="flex flex-wrap items-center justify-between gap-3">
                                                                                <div>
                                                                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-skyBlue">        
-                                                                               Ticket client: {ticket.clientName}
+																			{t('clientTicket', 'Client ticket')}: {ticket.clientName}
                                                                                </p>
                                                                                <h2 className="mt-2 text-xl font-black text-deepOcean text-ellipsis overflow-hidden max-w-full">
                                                                                {ticket.id}
                                                                                </h2>
                                                                                <p className="mt-1 text-xs font-bold uppercase text-textGray">
-                                                                               Type: {ticket.transport.toLowerCase() === 'metro' ? 'Metro' : 'Bus'}
+																			{t('typeLabel', 'Type')}: {ticket.transport.toLowerCase() === 'metro' ? 'Metro' : 'Bus'}
                                                                                </p>
                                                                                </div>
                                                                                <div className="inline-flex rounded-full px-3 py-1 text-xs font-bold" style={badgeStyle}>
@@ -222,7 +224,7 @@ function BookTicket() {
                                                                                <div className="mt-3 grid gap-2 md:grid-cols-2">
                                                                                         <div className="rounded-xl border px-3 py-2 border-frostBlue bg-iceWhite">
                                                                                                 <p className="text-[11px] font-bold uppercase tracking-wider text-textGray">
-                                                                                                        Trajet
+																										{t('routeLabelSimple', 'Route')}
                                                                                                 </p>
                                                                                                 <p className="text-sm font-black text-deepOcean">
                                                                                                         {ticket.trajet}
@@ -230,7 +232,7 @@ function BookTicket() {
                                                                                         </div>
                                                                                         <div className="rounded-xl border px-3 py-2 border-frostBlue bg-iceWhite">
                                                                                                 <p className="text-[11px] font-bold uppercase tracking-wider text-textGray">
-                                                                                                        Achat & Date de voyage
+																										{t('purchaseTripDate', 'Purchase & trip date')}
                                                                                                 </p>
                                                                                                 <p className="text-sm font-black text-deepOcean">
                                                                                                         {ticket.date}  ({ticket.price} TND)
@@ -243,7 +245,7 @@ function BookTicket() {
 												onClick={() => startEdit(ticket)}
 												className="rounded-full border px-3 py-1.5 text-xs font-bold border-frostBlue text-deepOcean"
 											>
-												Modifier
+												{t('edit', 'Edit')}
 											</button>
 											<button
 												type="button"
@@ -251,14 +253,14 @@ function BookTicket() {
 												className="rounded-full border px-3 py-1.5 text-xs font-bold"
 												style={deleteButtonStyle}
 											>
-												Supprimer
+												{t('delete', 'Delete')}
 											</button>
 										</div>
 
 										{isEditing && editingId === ticket.id && (
 											<form className="mt-4 rounded-2xl border p-4 border-frostBlue bg-pureWhite" onSubmit={saveEdit}>
 												<p className="text-sm font-bold text-deepOcean">
-													Modifier ce ticket
+													{t('editTicket', 'Edit this ticket')}
 												</p>
 												<div className="mt-3 grid gap-3 md:grid-cols-2">
 													<input
@@ -280,7 +282,7 @@ function BookTicket() {
 														onChange={handleEditChange}
 														className="w-full rounded-2xl border px-4 py-3 text-sm outline-none md:col-span-2 border-frostBlue"
 													>
-														<option value="Vendu">Vendu</option>
+														<option value="Vendu">{t('sold', 'Sold')}</option>
 													</select>
 												</div>
 
@@ -289,14 +291,14 @@ function BookTicket() {
 														type="submit"
 														className="rounded-full px-4 py-2 text-xs font-bold bg-classicBlue text-pureWhite"
 													>
-														Enregistrer
+														{t('save', 'Save')}
 													</button>
 													<button
 														type="button"
 														onClick={cancelEdit}
 														className="rounded-full border px-4 py-2 text-xs font-bold border-frostBlue text-deepOcean"
 													>
-														Annuler
+														{t('cancel', 'Cancel')}
 													</button>
 												</div>
 											</form>

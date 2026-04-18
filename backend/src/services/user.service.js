@@ -185,13 +185,25 @@ export async function getUserEssentialInfo({ user_id }) {
   try {
     const { data: userData, error: userError } = await supabase
       .from("users")
-      .select("first_name, last_name, email, role,token_balance")
+      .select("*")
       .eq("user_id", user_id)
-      .single();
+      .maybeSingle();
+
     if (userError) {
       throw userError;
     }
-    return userData;
+
+    if (!userData) {
+      return null;
+    }
+
+    return {
+      first_name: userData.first_name ?? "",
+      last_name: userData.last_name ?? "",
+      email: userData.email ?? "",
+      role: userData.role ?? null,
+      token_balance: Number(userData.token_balance ?? 0),
+    };
   } catch (error) {
     console.error("get user info", error.message);
     throw error;
@@ -218,13 +230,14 @@ export async function redeemTokensFromUser({ user_id, amount }) {
   }
 }
 //this function will be used to sign in with google and it will return the user data if the sign in was successful
-export async function signUpWithGoogle() {
+export async function signUpWithGoogle({ redirectTo } = {}) {
   try {
+    const resolvedRedirectTo = redirectTo || process.env.GOOGLE_OAUTH_REDIRECT_URL;
     const { data, error } = await createAuthClient().auth.signInWithOAuth({
       provider: "google",
       options: {
         //this where the user will be redirected after the sign in process is done
-        redirectTo: process.env.GOOGLE_OAUTH_REDIRECT_URL,
+        redirectTo: resolvedRedirectTo,
       },
     });
     if (error) {

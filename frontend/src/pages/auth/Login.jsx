@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { loginWebFirstStep, loginWebSecondStep, registerUser } from '../../api/auth';
+import { googleLoginStart, loginWebFirstStep, loginWebSecondStep, registerUser } from '../../api/auth';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import google from '../../assets/google.jpg';
@@ -30,6 +30,37 @@ const Auth = () => {
     useEffect(() => {
         setIsLogin(location.pathname !== '/Register');
     }, [location.pathname]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const token = params.get('token');
+        const userParam = params.get('user');
+        const oauthError = params.get('error');
+
+        if (oauthError) {
+            setError(oauthError);
+            return;
+        }
+
+        if (token && userParam) {
+            try {
+                let parsedUser;
+                try {
+                    parsedUser = JSON.parse(userParam);
+                } catch {
+                    parsedUser = JSON.parse(decodeURIComponent(userParam));
+                }
+                loginUser(token, parsedUser);
+                if (parsedUser?.role === 'admin' || parsedUser?.role === 'superAdmin') {
+                    navigate('/Dashboard', { replace: true });
+                } else {
+                    navigate('/home', { replace: true });
+                }
+            } catch (err) {
+                setError('Google login callback parsing failed.');
+            }
+        }
+    }, [location.search, loginUser, navigate]);
 
     // Cleanup form on tab switch
     useEffect(() => {
@@ -100,28 +131,48 @@ const Auth = () => {
         }
     };
 
+    const handleGoogleLogin = async () => {
+        setError(null);
+        setLoading(true);
+        try {
+            const data = await googleLoginStart();
+            if (data?.url) {
+                window.location.href = data.url;
+                return;
+            }
+            setError('Google OAuth URL is missing.');
+        } catch (err) {
+            setError(err.response?.data?.error || 'Google authentication failed.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-[#f1f8fb] font-sans p-5">
-            <div className="w-full max-w-[450px] bg-white p-10 rounded-[15px] shadow-[0_10px_40px_rgba(0,0,0,0.05)] animate-[fadeIn_0.4s_ease-in-out]">
+        <div className="relative flex min-h-screen w-screen items-center justify-center overflow-hidden bg-[linear-gradient(145deg,#eaf6ff_0%,#f7fcff_45%,#ffffff_100%)] p-5 font-sans">
+            <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-[#6EC1D1]/20 blur-3xl" />
+            <div className="pointer-events-none absolute -right-20 bottom-8 h-80 w-80 rounded-full bg-[#34729C]/20 blur-3xl" />
+
+            <div className="relative w-full max-w-[460px] rounded-2xl border border-[#d7ecf4] bg-white p-10 shadow-[0_18px_60px_rgba(30,84,112,0.14)] animate-[fadeIn_0.4s_ease-in-out]">
                 {error && (
-                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm text-center">
-                        {error}
+                    <div className="mb-4 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                        <p className="text-center">Erreur: {error}</p>
                     </div>
                 )}
 
                 <div className="animate-in fade-in duration-500">
-                    <h1 className="text-[1.8rem] font-bold text-center text-[#3b759f] mb-2">
+                    <h1 className="mb-2 text-center text-[1.9rem] font-extrabold tracking-tight text-[#1E5470]">
                         {isLogin 
-                            ? (pendingSession ? "Verification Requise" : "Welcome Back") 
-                            : "Create your Account"}  
+                            ? (pendingSession ? "Verification requise" : "Connexion") 
+                            : "Creation de compte"}
                     </h1>
-                    <p className="text-center text-[#8899a6] text-sm mb-[30px]">
+                    <p className="mb-[28px] text-center text-sm font-medium text-[#6b8292]">
                         {isLogin 
-                            ? (pendingSession ? "Entrez votre code admin � 6 chiffres" : "Connectez-vous � votre compte") 
-                            : "Rejoignez-nous aujourd'hui !"}
+                            ? (pendingSession ? "Entrez votre code admin a 6 chiffres" : "Connectez-vous a votre compte") 
+                            : "Rejoignez-nous aujourd'hui"}
                     </p>
 
-                    <form className="flex flex-col gap-[15px]" onSubmit={handleSubmit}>
+                    <form className="flex flex-col gap-3.5" onSubmit={handleSubmit}>
                         {!isLogin && (
                             <div className="flex gap-[15px]">
                                 <Input placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required /> 
@@ -141,7 +192,7 @@ const Auth = () => {
                         )}
 
                         <Button type="submit" disabled={loading} className="custom-btn">       
-                            {loading ? "Patientez..." : (isLogin ? (pendingSession ? "V�rifier le code" : "Se connecter") : "S'inscrire")}
+                            {loading ? "Patientez..." : (isLogin ? (pendingSession ? "Verifier le code" : "Se connecter") : "S'inscrire")}
                         </Button>
                         
                         {pendingSession && (
@@ -152,10 +203,10 @@ const Auth = () => {
                     </form>
 
                     {!pendingSession && (
-                        <p className="text-center text-[13px] text-[#657786] mt-5">
-                            {isLogin ? "Vous n'avez pas de compte ? " : "Vous avez d�j� un compte ? "}
+                        <p className="mt-5 text-center text-[13px] text-[#657786]">
+                            {isLogin ? "Vous n'avez pas de compte ? " : "Vous avez deja un compte ? "}
                             <span
-                                className="text-[#3b759f] font-bold cursor-pointer hover:underline"
+                                className="cursor-pointer font-bold text-[#34729C] hover:text-[#1E5470] hover:underline"
                                 onClick={toggleAuthMode}
                             >
                                 {isLogin ? "S'inscrire" : "Se connecter"}
@@ -165,11 +216,16 @@ const Auth = () => {
 
                     {isLogin && !pendingSession && (
                         <>
-                            <div className="flex items-center text-center my-5 text-[#ccc] text-[12px] before:content-[''] before:flex-1 before:border-b before:border-[#eee] after:content-[''] after:flex-1 after:border-b after:border-[#eee]">  
-                                <span className="px-2.5">O�</span>
+                            <div className="my-5 flex items-center text-center text-[12px] text-[#9cb1be] before:mr-3 before:flex-1 before:border-b before:border-[#dbeaf1] after:ml-3 after:flex-1 after:border-b after:border-[#dbeaf1]">  
+                                <span className="px-2.5">OU</span>
                             </div>
 
-                            <button type="button" className="flex items-center justify-center gap-2.5 w-full p-3 bg-white border border-[#e1e8ed] rounded-lg cursor-pointer font-semibold transition-colors hover:bg-gray-50">
+                            <button
+                                type="button"
+                                onClick={handleGoogleLogin}
+                                disabled={loading}
+                                className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-[#d7e8ef] bg-white p-3 font-semibold text-[#1E5470] transition-all hover:-translate-y-[1px] hover:border-[#c4dfea] hover:bg-[#f7fbfe] disabled:opacity-70"
+                            >
                                 <img src={google} alt="google" width="18" />        
                                 Continuer avec Google
                             </button>
