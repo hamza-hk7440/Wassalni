@@ -8,6 +8,7 @@ function Stations() {
   const { t } = useAdminLanguage();
   const [stations, setStations] = useState([]);
   const [name, setName] = useState('');
+  const [location, setLocation] = useState('');
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
@@ -27,11 +28,12 @@ function Stations() {
     e.preventDefault();
     try {
       if (editingId) {
-        await updateStation(editingId, { name });
+        await updateStation(editingId, { name, location });
       } else {
-        await createStation({ name });
+        await createStation({ name, location });
       }
       setName('');
+      setLocation('');
       setEditingId(null);
       fetchStations();
     } catch (err) {
@@ -42,6 +44,7 @@ function Stations() {
   const handleEdit = (station) => {
     setEditingId(station.station_id);
     setName(station.name);
+    setLocation(station.location || '');
   };
 
   const handleDelete = async (id) => {
@@ -91,6 +94,15 @@ function Stations() {
               style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
               required
             />
+            <input
+              type="text"
+              placeholder={t('stationLocation', 'Station location')}
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="p-3 border rounded-xl focus:outline-none"
+              style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
+              required
+            />
             <button type="submit" className="font-bold p-3 rounded-xl transition-transform hover:scale-[1.01]" style={{ backgroundColor: palette.classicBlue }}>
               <span className="text-white" style={{ color: palette.pureWhite }}>
                 {editingId ? t('updateItem', 'Update') : t('addStation', 'Add station')}
@@ -102,6 +114,7 @@ function Stations() {
                 onClick={() => {
                   setEditingId(null);
                   setName('');
+                  setLocation('');
                 }}
                 className="font-semibold p-3 rounded-xl border"
                 style={{ borderColor: palette.frostBlue, color: palette.deepOcean, backgroundColor: palette.pureWhite }}
@@ -116,16 +129,18 @@ function Stations() {
           <table className="min-w-full text-left">
             <thead style={{ backgroundColor: palette.deepOcean }}>
               <tr>
-                <th className="p-4 font-semibold text-white">ID</th>
-                <th className="p-4 font-semibold text-white">Nom</th>
+                <th className="p-4 font-semibold text-white">station_id</th>
+                <th className="p-4 font-semibold text-white">name</th>
+                <th className="p-4 font-semibold text-white">location</th>
                 <th className="p-4 font-semibold text-white text-right">{t('actions', 'Actions')}</th>
               </tr>
             </thead>
             <tbody>
               {stations.map(station => (
                 <tr key={station.station_id} className="border-b last:border-0" style={{ borderColor: palette.frostBlue }}>
-                  <td className="p-4 font-semibold" style={{ color: palette.classicBlue }}>#{station.station_id}</td>
+                  <td className="p-4 font-semibold" style={{ color: palette.classicBlue }}>{station.station_id}</td>
                   <td className="p-4 font-semibold" style={{ color: palette.deepOcean }}>{station.name}</td>
+                  <td className="p-4 font-semibold" style={{ color: palette.textGray }}>{station.location || '-'}</td>
                   <td className="p-4 text-right flex gap-2 justify-end">
                     <button
                       onClick={() => handleEdit(station)}
@@ -146,7 +161,7 @@ function Stations() {
               ))}
               {stations.length === 0 && (
                 <tr>
-                  <td colSpan="3" className="p-8 text-center font-medium" style={{ color: palette.textGray }}>
+                  <td colSpan="4" className="p-8 text-center font-medium" style={{ color: palette.textGray }}>
                     {t('emptyStations', 'No stations found.')}
                   </td>
                 </tr>

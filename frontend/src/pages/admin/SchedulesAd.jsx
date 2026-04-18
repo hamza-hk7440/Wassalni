@@ -38,6 +38,8 @@ function Schedules() {
   const [departureTime, setDepartureTime] = useState('');
   const [arrivalTime, setArrivalTime] = useState('');
   const [currentPrice, setCurrentPrice] = useState('');
+  const [direction, setDirection] = useState('');
+  const [availableSeats, setAvailableSeats] = useState('');
   const [scheduleStatus, setScheduleStatus] = useState('on_time');
   const [delayMinutes, setDelayMinutes] = useState('0');
   const [remark, setRemark] = useState('');
@@ -76,6 +78,19 @@ function Schedules() {
     }
   }
 
+  useEffect(() => {
+    if (editingId || !transportId) return;
+
+    const selectedTransport = transportsList.find(
+      (item) => String(item.transport_id) === String(transportId),
+    );
+
+    const resolvedCapacity = selectedTransport?.capacity ?? selectedTransport?.available_seats;
+    if (resolvedCapacity !== undefined && resolvedCapacity !== null && resolvedCapacity !== '') {
+      setAvailableSeats(String(resolvedCapacity));
+    }
+  }, [transportId, transportsList, editingId]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
@@ -104,6 +119,11 @@ function Schedules() {
       return;
     }
 
+    if (availableSeats !== '' && (Number.isNaN(Number(availableSeats)) || Number(availableSeats) < 0)) {
+      setFormError('Le nombre de places doit etre un nombre positif ou nul.');
+      return;
+    }
+
     if (scheduleStatus === 'delayed' && (Number.isNaN(Number(delayMinutes)) || Number(delayMinutes) < 0)) {
       setFormError('Le retard (minutes) doit etre un nombre positif ou nul.');
       return;
@@ -116,6 +136,8 @@ function Schedules() {
         departure_time: toIsoStringOrNull(departureTime),
         arrival_time: toIsoStringOrNull(arrivalTime),
         current_price: currentPrice === '' ? undefined : Number(currentPrice),
+        direction: direction.trim() || undefined,
+        available_seats: availableSeats === '' ? undefined : Number(availableSeats),
         schedule_status: scheduleStatus,
         delay_minutes: scheduleStatus === 'delayed' ? Number(delayMinutes || 0) : 0,
         remark: remark.trim(),
@@ -152,6 +174,8 @@ function Schedules() {
     setDepartureTime(toDateTimeLocalValue(schedule.departure_time));
     setArrivalTime(toDateTimeLocalValue(schedule.arrival_time));
     setCurrentPrice(schedule.current_price ?? '');
+    setDirection(schedule.direction ?? '');
+    setAvailableSeats(schedule.available_seats ?? '');
     setScheduleStatus(schedule.schedule_status || 'on_time');
     setDelayMinutes(String(schedule.delay_minutes ?? 0));
     setRemark(schedule.remark || '');
@@ -193,9 +217,23 @@ function Schedules() {
     setDepartureTime('');
     setArrivalTime('');
     setCurrentPrice('');
+    setDirection('');
+    setAvailableSeats('');
     setScheduleStatus('on_time');
     setDelayMinutes('0');
     setRemark('');
+  };
+
+  const getScheduleDisplayData = (sch) => {
+    const routeData = routesMenu.find((r) => String(r.route_id) === String(sch.route_id));
+    const transportData = transportsList.find((t) => String(t.transport_id) === String(sch.transport_id));
+
+    return {
+      route: routeData?.name || sch.routes?.name || sch.route_id,
+      transport: transportData?.type || sch.transports?.type || sch.transport_id,
+      direction: sch.direction || routeData?.direction || sch.routes?.direction || '-',
+      availableSeats: sch.available_seats ?? transportData?.available_seats ?? sch.transports?.available_seats ?? '-',
+    };
   };
 
   return (
@@ -208,25 +246,25 @@ function Schedules() {
 
       <Navbar />
 
-      <div className="relative z-10 pt-24 px-4 md:px-8 pb-8 max-w-7xl mx-auto space-y-6">
-        <section className="rounded-3xl border px-6 py-5 md:px-8 md:py-6 shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.82)', borderColor: palette.frostBlue }}>
+      <div className="relative z-10 pt-20 sm:pt-24 px-3 sm:px-4 md:px-8 pb-6 sm:pb-8 max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        <section className="rounded-3xl border px-4 sm:px-6 py-4 sm:py-5 md:px-8 md:py-6 shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.82)', borderColor: palette.frostBlue }}>
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em]" style={{ color: palette.classicBlue }}>Transit Admin</p>
-              <h1 className="text-3xl md:text-4xl font-black tracking-tight" style={{ color: palette.deepOcean }}>{t('schedulesManagement', 'Schedules Management')}</h1>
-              <p className="text-sm mt-1" style={{ color: palette.textGray }}>{t('schedulesSubtitle', 'Plan departures and arrivals on existing routes.')}</p>
+              <p className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.15em] sm:tracking-[0.18em]" style={{ color: palette.classicBlue }}>Transit Admin</p>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight" style={{ color: palette.deepOcean }}>{t('schedulesManagement', 'Schedules Management')}</h1>
+              <p className="text-xs sm:text-sm mt-1" style={{ color: palette.textGray }}>{t('schedulesSubtitle', 'Plan departures and arrivals on existing routes.')}</p>
             </div>
-            <div className="rounded-2xl px-4 py-3 min-w-[130px]" style={{ backgroundColor: palette.deepOcean }}>
-              <p className="text-xs uppercase tracking-wider font-semibold text-white/80">{t('total', 'Total')}</p>
-              <p className="text-2xl font-extrabold text-white leading-none">{schedules.length}</p>
+            <div className="rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 min-w-[110px] sm:min-w-[130px]" style={{ backgroundColor: palette.deepOcean }}>
+              <p className="text-[11px] sm:text-xs uppercase tracking-wider font-semibold text-white/80">{t('total', 'Total')}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-white leading-none">{schedules.length}</p>
             </div>
           </div>
         </section>
 
-        <form onSubmit={handleSubmit} className="p-6 md:p-7 rounded-3xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.92)', borderColor: palette.frostBlue }}>
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 md:p-7 rounded-3xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.92)', borderColor: palette.frostBlue }}>
           {formError && (
             <div
-              className="mb-4 rounded-xl border px-4 py-3 text-sm font-semibold"
+              className="mb-4 rounded-xl border px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold"
               style={{ backgroundColor: palette.dangerSoft, borderColor: palette.dangerText, color: palette.dangerText }}
             >
               {formError}
@@ -235,20 +273,20 @@ function Schedules() {
 
           {formSuccess && (
             <div
-              className="mb-4 rounded-xl border px-4 py-3 text-sm font-semibold"
+              className="mb-4 rounded-xl border px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold"
               style={{ backgroundColor: '#e8f7ee', borderColor: '#5ab77f', color: '#1f7a44' }}
             >
               {formSuccess}
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('routeLabel', 'Route')}</label>
+              <label className="text-xs sm:text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('routeLabel', 'Route')}</label>
               <select
                 value={routeId}
                 onChange={(e) => setRouteId(e.target.value)}
-                className="p-3 border rounded-xl focus:outline-none"
+                className="p-2.5 sm:p-3 text-sm sm:text-base border rounded-xl focus:outline-none"
                 style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
                 required
               >
@@ -260,11 +298,11 @@ function Schedules() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold" style={{ color: palette.deepOcean }}>Transport</label>
+              <label className="text-xs sm:text-sm font-semibold" style={{ color: palette.deepOcean }}>Transport</label>
               <select
                 value={transportId}
                 onChange={(e) => setTransportId(e.target.value)}
-                className="p-3 border rounded-xl focus:outline-none"
+                className="p-2.5 sm:p-3 text-sm sm:text-base border rounded-xl focus:outline-none"
                 style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
                 required
               >
@@ -276,49 +314,75 @@ function Schedules() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('departureTime', 'Departure time')}</label>
+              <label className="text-xs sm:text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('departureTime', 'Departure time')}</label>
               <input
                 type="datetime-local"
                 value={departureTime}
                 onChange={(e) => setDepartureTime(e.target.value)}
-                className="p-3 border rounded-xl focus:outline-none"
+                className="p-2.5 sm:p-3 text-sm sm:text-base border rounded-xl focus:outline-none"
                 style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
                 required
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('arrivalTime', 'Arrival time')}</label>
+              <label className="text-xs sm:text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('arrivalTime', 'Arrival time')}</label>
               <input
                 type="datetime-local"
                 value={arrivalTime}
                 onChange={(e) => setArrivalTime(e.target.value)}
-                className="p-3 border rounded-xl focus:outline-none"
+                className="p-2.5 sm:p-3 text-sm sm:text-base border rounded-xl focus:outline-none"
                 style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
                 required
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('priceCurrent', 'Price (current_price)')}</label>
+              <label className="text-xs sm:text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('priceCurrent', 'Price (current_price)')}</label>
               <input
                 type="number"
                 min="0"
                 step="0.01"
                 value={currentPrice}
                 onChange={(e) => setCurrentPrice(e.target.value)}
-                className="p-3 border rounded-xl focus:outline-none"
+                className="p-2.5 sm:p-3 text-sm sm:text-base border rounded-xl focus:outline-none"
                 style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
                 placeholder="Ex: 2.50"
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('status', 'Status')}</label>
+              <label className="text-xs sm:text-sm font-semibold" style={{ color: palette.deepOcean }}>Direction</label>
+              <input
+                type="text"
+                value={direction}
+                onChange={(e) => setDirection(e.target.value)}
+                className="p-2.5 sm:p-3 text-sm sm:text-base border rounded-xl focus:outline-none"
+                style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
+                placeholder="Ex: Aller / Retour"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs sm:text-sm font-semibold" style={{ color: palette.deepOcean }}>Available seats</label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={availableSeats}
+                onChange={(e) => setAvailableSeats(e.target.value)}
+                className="p-2.5 sm:p-3 text-sm sm:text-base border rounded-xl focus:outline-none"
+                style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
+                placeholder="Ex: 40"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs sm:text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('status', 'Status')}</label>
               <select
                 value={scheduleStatus}
                 onChange={(e) => setScheduleStatus(e.target.value)}
-                className="p-3 border rounded-xl focus:outline-none"
+                className="p-2.5 sm:p-3 text-sm sm:text-base border rounded-xl focus:outline-none"
                 style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
               >
                 <option value="on_time">{t('onTime', 'On time')}</option>
@@ -328,36 +392,36 @@ function Schedules() {
 
             {scheduleStatus === 'delayed' && (
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('delayedMinutes', 'Delay (minutes)')}</label>
+                <label className="text-xs sm:text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('delayedMinutes', 'Delay (minutes)')}</label>
                 <input
                   type="number"
                   min="0"
                   step="1"
                   value={delayMinutes}
                   onChange={(e) => setDelayMinutes(e.target.value)}
-                  className="p-3 border rounded-xl focus:outline-none"
+                  className="p-2.5 sm:p-3 text-sm sm:text-base border rounded-xl focus:outline-none"
                   style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
                 />
               </div>
             )}
 
             <div className="md:col-span-2 flex flex-col gap-2">
-              <label className="text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('remarkClient', 'Remark (client visible)')}</label>
+              <label className="text-xs sm:text-sm font-semibold" style={{ color: palette.deepOcean }}>{t('remarkClient', 'Remark (client visible)')}</label>
               <textarea
                 value={remark}
                 onChange={(e) => setRemark(e.target.value)}
                 rows={3}
-                className="p-3 border rounded-xl focus:outline-none"
+                className="p-2.5 sm:p-3 text-sm sm:text-base border rounded-xl focus:outline-none"
                 style={{ borderColor: palette.frostBlue, color: palette.deepOcean }}
                 placeholder="Ex: Retard a cause de circulation dense"
               />
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <button
               type="submit"
-              className="font-bold px-4 py-3 rounded-xl transition-transform hover:scale-[1.01]"
+              className="font-bold text-sm sm:text-base px-4 py-2.5 sm:py-3 rounded-xl transition-transform hover:scale-[1.01] w-full sm:w-auto"
               style={{ backgroundColor: palette.classicBlue, color: palette.pureWhite }}
             >
               {editingId ? t('updateItem', 'Update') : t('addSchedule', 'Add Schedule')}
@@ -366,7 +430,7 @@ function Schedules() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="font-semibold px-4 py-3 rounded-xl border"
+                className="font-semibold text-sm sm:text-base px-4 py-2.5 sm:py-3 rounded-xl border w-full sm:w-auto"
                 style={{ borderColor: palette.frostBlue, color: palette.deepOcean, backgroundColor: palette.pureWhite }}
               >
                 {t('cancelEdit', 'Cancel Edit')}
@@ -376,66 +440,118 @@ function Schedules() {
         </form>
 
         <div className="rounded-3xl border shadow-lg overflow-hidden" style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}>
-          <table className="min-w-full text-left">
-            <thead style={{ backgroundColor: palette.deepOcean }}>
-              <tr>
-                <th className="p-4 font-semibold text-white">ID</th>
-                <th className="p-4 font-semibold text-white">Route</th>
-                <th className="p-4 font-semibold text-white">Transport</th>
-                <th className="p-4 font-semibold text-white">Depart</th>
-                <th className="p-4 font-semibold text-white">Arrivee</th>
-                <th className="p-4 font-semibold text-white">Prix</th>
-                <th className="p-4 font-semibold text-white">Statut</th>
-                <th className="p-4 font-semibold text-white">Remarque</th>
-                <th className="p-4 font-semibold text-white text-right">{t('actions', 'Actions')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {schedules.map((sch) => {
-                const rt = routesMenu.find((r) => String(r.route_id) === String(sch.route_id))?.name || sch.routes?.name || sch.route_id;
-                const tr = transportsList.find((t) => String(t.transport_id) === String(sch.transport_id))?.type || sch.transports?.type || sch.transport_id;
-                const statusText = sch.schedule_status === 'delayed' ? `${t('delayed', 'Delayed')} (${sch.delay_minutes || 0} min)` : t('onTime', 'On time');
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full text-left">
+              <thead style={{ backgroundColor: palette.deepOcean }}>
+                <tr>
+                  <th className="p-4 font-semibold text-white">schedule_id</th>
+                  <th className="p-4 font-semibold text-white">direction</th>
+                  <th className="p-4 font-semibold text-white">current_price</th>
+                  <th className="p-4 font-semibold text-white">available_seats</th>
+                  <th className="p-4 font-semibold text-white">arrival_time</th>
+                  <th className="p-4 font-semibold text-white">departure_time</th>
+                  <th className="p-4 font-semibold text-white">transport</th>
+                  <th className="p-4 font-semibold text-white">route</th>
+                  <th className="p-4 font-semibold text-white text-right">{t('actions', 'Actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {schedules.map((sch) => {
+                  const display = getScheduleDisplayData(sch);
 
-                return (
-                  <tr key={sch.schedule_id} className="border-b last:border-0" style={{ borderColor: palette.frostBlue }}>
-                    <td className="p-4 font-semibold" style={{ color: palette.classicBlue }}>#{sch.schedule_id}</td>
-                    <td className="p-4" style={{ color: palette.deepOcean }}>{rt}</td>
-                    <td className="p-4" style={{ color: palette.textGray }}>{tr}</td>
-                    <td className="p-4" style={{ color: palette.textGray }}>{new Date(sch.departure_time).toLocaleString()}</td>
-                    <td className="p-4" style={{ color: palette.textGray }}>{new Date(sch.arrival_time).toLocaleString()}</td>
-                    <td className="p-4" style={{ color: palette.textGray }}>{Number(sch.current_price ?? 0).toFixed(2)}</td>
-                    <td className="p-4" style={{ color: palette.textGray }}>{statusText}</td>
-                    <td className="p-4" style={{ color: palette.textGray }}>{sch.remark || '-'}</td>
-                    <td className="p-4 text-right flex gap-2 justify-end">
-                      <button
-                        type="button"
-                        onClick={() => handleEdit(sch)}
-                        className="px-3 py-1.5 rounded-lg text-sm font-bold"
-                        style={{ backgroundColor: palette.iceWhite, color: palette.classicBlue }}
-                      >
-                        {t('edit', 'Edit')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(sch.schedule_id)}
-                        className="px-3 py-1.5 rounded-lg text-sm font-bold"
-                        style={{ backgroundColor: palette.dangerSoft, color: palette.dangerText }}
-                      >
-                        {t('delete', 'Delete')}
-                      </button>
+                  return (
+                    <tr key={sch.schedule_id} className="border-b last:border-0" style={{ borderColor: palette.frostBlue }}>
+                      <td className="p-4 font-semibold" style={{ color: palette.classicBlue }}>{sch.schedule_id}</td>
+                      <td className="p-4" style={{ color: palette.deepOcean }}>{display.direction}</td>
+                      <td className="p-4" style={{ color: palette.textGray }}>{Number(sch.current_price ?? 0).toFixed(2)}</td>
+                      <td className="p-4" style={{ color: palette.textGray }}>{display.availableSeats}</td>
+                      <td className="p-4" style={{ color: palette.textGray }}>{new Date(sch.arrival_time).toLocaleString()}</td>
+                      <td className="p-4" style={{ color: palette.textGray }}>{new Date(sch.departure_time).toLocaleString()}</td>
+                      <td className="p-4" style={{ color: palette.textGray }}>{display.transport}</td>
+                      <td className="p-4" style={{ color: palette.textGray }}>{display.route}</td>
+                      <td className="p-4 text-right">
+                        <div className="flex gap-2 justify-end">
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(sch)}
+                            className="px-3 py-1.5 rounded-lg text-sm font-bold"
+                            style={{ backgroundColor: palette.iceWhite, color: palette.classicBlue }}
+                          >
+                            {t('edit', 'Edit')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(sch.schedule_id)}
+                            className="px-3 py-1.5 rounded-lg text-sm font-bold"
+                            style={{ backgroundColor: palette.dangerSoft, color: palette.dangerText }}
+                          >
+                            {t('delete', 'Delete')}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {schedules.length === 0 && (
+                  <tr>
+                    <td colSpan="9" className="p-8 text-center font-medium" style={{ color: palette.textGray }}>
+                      {t('emptySchedules', 'No schedules found.')}
                     </td>
                   </tr>
-                );
-              })}
-              {schedules.length === 0 && (
-                <tr>
-                  <td colSpan="9" className="p-8 text-center font-medium" style={{ color: palette.textGray }}>
-                    {t('emptySchedules', 'No schedules found.')}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="md:hidden p-3 sm:p-4 space-y-3">
+            {schedules.map((sch) => {
+              const display = getScheduleDisplayData(sch);
+
+              return (
+                <div
+                  key={sch.schedule_id}
+                  className="rounded-2xl border p-4"
+                  style={{ borderColor: palette.frostBlue, backgroundColor: 'rgba(255,255,255,0.95)' }}
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+                    <p style={{ color: palette.classicBlue }}><span className="font-semibold">schedule_id:</span> {sch.schedule_id}</p>
+                    <p style={{ color: palette.deepOcean }}><span className="font-semibold">direction:</span> {display.direction}</p>
+                    <p style={{ color: palette.textGray }}><span className="font-semibold">current_price:</span> {Number(sch.current_price ?? 0).toFixed(2)}</p>
+                    <p style={{ color: palette.textGray }}><span className="font-semibold">available_seats:</span> {display.availableSeats}</p>
+                    <p style={{ color: palette.textGray }}><span className="font-semibold">arrival_time:</span> {new Date(sch.arrival_time).toLocaleString()}</p>
+                    <p style={{ color: palette.textGray }}><span className="font-semibold">departure_time:</span> {new Date(sch.departure_time).toLocaleString()}</p>
+                    <p style={{ color: palette.textGray }}><span className="font-semibold">transport:</span> {display.transport}</p>
+                    <p style={{ color: palette.textGray }}><span className="font-semibold">route:</span> {display.route}</p>
+                  </div>
+
+                  <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleEdit(sch)}
+                      className="px-3 py-2 rounded-lg text-xs sm:text-sm font-bold w-full sm:w-auto"
+                      style={{ backgroundColor: palette.iceWhite, color: palette.classicBlue }}
+                    >
+                      {t('edit', 'Edit')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(sch.schedule_id)}
+                      className="px-3 py-2 rounded-lg text-xs sm:text-sm font-bold w-full sm:w-auto"
+                      style={{ backgroundColor: palette.dangerSoft, color: palette.dangerText }}
+                    >
+                      {t('delete', 'Delete')}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+
+            {schedules.length === 0 && (
+              <div className="p-8 text-center font-medium" style={{ color: palette.textGray }}>
+                {t('emptySchedules', 'No schedules found.')}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

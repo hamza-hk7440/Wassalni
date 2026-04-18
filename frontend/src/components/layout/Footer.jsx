@@ -49,7 +49,8 @@ const Footer = () => {
                         Services
                     </h3>
                     <div className="flex flex-col gap-3">
-                        <Link to="/busSchedule" onClick={handleDisabledClick} className={linkStyles}>Bus & Train Schedule</Link>
+                        <Link to="/busSchedule" onClick={handleDisabledClick} className={linkStyles}>Bus Schedule</Link>
+                        <Link to="/metroSchedule" onClick={handleDisabledClick} className={linkStyles}>Metro Schedule</Link>
                         <Link to="/active-tickets" onClick={handleDisabledClick} className={linkStyles}>Active Tickets</Link>
                         <Link to="/history" onClick={handleDisabledClick} className={linkStyles}>Ticket History</Link>
                     </div>
