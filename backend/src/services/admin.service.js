@@ -1,4 +1,5 @@
 import { supabase } from "../config/supabase.js";
+import * as userService from "./user.service.js";
 
 export const getDashboardStats = async () => {
     const [users, transactions, busesData, metrosData, ticketsDataQuery] = await Promise.all([
@@ -57,36 +58,62 @@ export const getDashboardStats = async () => {
 export const createController = async (controllerData) => {
   const { email, password, first_name, last_name, role } = controllerData;
 
-  // 1. Create the Auth user
-  const { data: authData, error: authError } = await supabase.auth.signUp({
-    email,
-    password,
-  });
+  if (!email || !password || !first_name || !last_name) {
+    throw new Error("email, password, first_name and last_name are required");
+  }
 
-  if (authError) throw authError;
+  if (role && !["admin", "controller"].includes(role)) {
+    throw new Error("role must be 'controller' or 'admin'");
+  }
 
-  // 2. Generate the code (only for controllers)
-  const controllerCode = role === "admin" ? null : `CTRL-${Math.floor(1000 + Math.random() * 9000)}`;
   const userRole = role === "admin" ? "admin" : "controller";
 
-  // 3. Insert into the public users table
-  const { data, error: dbError } = await supabase
+  // Reuse the stable user creation flow used by the rest of the app.
+  // It creates auth + users row and returns the generated verification code.
+  const generatedCode = await userService.createUser({
+    email,
+    password,
+    role: userRole,
+    first_name,
+    last_name,
+  });
+
+  if (!generatedCode || typeof generatedCode !== "string") {
+    throw new Error("Failed to generate verification code");
+  }
+
+  const { data: createdUser, error: userError } = await supabase
     .from("users")
-    .insert([
-      {
-        user_id: authData.user.id,
-        email: email,
-        first_name: first_name,
-        last_name: last_name,
-        role: userRole,
-        controller_code: controllerCode,
-      },
-    ])
-    .select();
+    .select("user_id,email,first_name,last_name,role,controller_code,admin_code")
+    .eq("email", email)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-  if (dbError) throw dbError;
+  if (userError) {
+    throw new Error(userError.message);
+  }
 
-  return data[0];
+  const referenceCodeDetails = {
+    code: generatedCode,
+    calculation: {
+      formula: "verification_code = random_6_digits",
+      random_range: "100000-999999",
+      random_value: Number(generatedCode),
+      for_role: userRole,
+    },
+  };
+
+  return {
+    ...(createdUser || {
+      email,
+      first_name,
+      last_name,
+      role: userRole,
+    }),
+    reference_code: generatedCode,
+    reference_code_details: referenceCodeDetails,
+  };
 };
 
 // zedna lpart bch nfetchou l users lkoll bch nalgouhom fl dashboard, w zedna el delete user zeda
@@ -120,7 +147,7 @@ export const deleteUser = async (userId) => {
 };
 
 export const updateUser = async (userId, data) => {
-  const { first_name, last_name, email, password } = data;
+  const { first_name, last_name, email, password, token_balance } = data;
 
   // 1. Update Auth User if email or password provided
   const authUpdates = {};
@@ -134,9 +161,19 @@ export const updateUser = async (userId, data) => {
 
   // 2. Update Public Users Table
   const dbUpdates = {};
-  if (first_name) dbUpdates.first_name = first_name;
-  if (last_name) dbUpdates.last_name = last_name;
-  if (email) dbUpdates.email = email;
+  if (first_name !== undefined) dbUpdates.first_name = first_name;
+  if (last_name !== undefined) dbUpdates.last_name = last_name;
+  if (email !== undefined) dbUpdates.email = email;
+
+  if (token_balance !== undefined) {
+    const parsedTokenBalance = Number(token_balance);
+
+    if (!Number.isFinite(parsedTokenBalance) || parsedTokenBalance < 0) {
+      throw new Error("token_balance must be a valid number greater than or equal to 0");
+    }
+
+    dbUpdates.token_balance = parsedTokenBalance;
+  }
 
   if (Object.keys(dbUpdates).length > 0) {
     const { data: updatedUser, error: dbError } = await supabase

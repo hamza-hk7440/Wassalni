@@ -2,8 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/layout/NavbarRa';
 import palette from '../../components/common/pallette';
+import busLogo from '../../assets/bus.png';
+import metroLogo from '../../assets/metro.png';
+import { useAdminLanguage } from '../../components/common/language.jsx';
 
 function Transport() {
+	const { t } = useAdminLanguage();
   return (
     <div>
       <Navbar />
@@ -16,13 +20,13 @@ function Transport() {
         <div className="max-w-5xl mx-auto">
           <header className="rounded-3xl border bg-white/95 shadow-xl p-6 md:p-8 border-frostBlue">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-skyBlue">
-              Module Transport
+            {t('transportModule', 'Transport Module')}
             </p>
             <h1 className="text-2xl md:text-4xl font-black mt-2 text-deepOcean">
-              Choisir le type de transport
+            {t('transportChooseTitle', 'Choose transport type')}
             </h1>
             <p className="text-sm mt-2 text-classicBlue">
-              Accédez à la gestion des bus ou à la gestion du métro.
+            {t('transportChooseSubtitle', 'Access bus management or metro management.')}
             </p>
           </header>
 
@@ -31,7 +35,11 @@ function Transport() {
               to="/bus"
               className="group rounded-3xl border bg-white p-6 md:p-7 shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl border-frostBlue"
             >
-              <div className="text-5xl">🚌</div>
+              <img
+                src={busLogo}
+                alt="Logo Bus"
+                className="h-14 w-14 object-contain md:h-16 md:w-16"
+              />
               <h2 className="mt-4 text-2xl font-black text-deepOcean">
                 Bus
               </h2>
@@ -39,7 +47,7 @@ function Transport() {
                 Parc, lignes, chauffeurs et statut opérationnel des bus.
               </p>
               <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-softTeal">
-                Ouvrir la gestion bus <span className="group-hover:translate-x-1 transition-transform">→</span>
+              {t('openBusManagement', 'Open bus management')} <span className="group-hover:translate-x-1 transition-transform">→</span>
               </span>
             </Link>
 
@@ -47,15 +55,19 @@ function Transport() {
               to="/metro"
               className="group rounded-3xl border bg-white p-6 md:p-7 shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl border-frostBlue"
             >
-              <div className="text-5xl">🚈</div>
+              <img
+                src={metroLogo}
+                alt="Logo Metro"
+                className="h-14 w-14 object-contain md:h-16 md:w-16"
+              />
               <h2 className="mt-4 text-2xl font-black text-deepOcean">
-                Métro
+              {t('metroInService', 'Metro in service').split(' ')[0]}
               </h2>
               <p className="mt-2 text-sm text-classicBlue">
                 Lignes, conducteurs et suivi des rames métro en service.
               </p>
               <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-warmAccent">
-                Ouvrir la gestion métro <span className="group-hover:translate-x-1 transition-transform">→</span>
+              {t('openMetroManagement', 'Open metro management')} <span className="group-hover:translate-x-1 transition-transform">→</span>
               </span>
             </Link>
           </div>

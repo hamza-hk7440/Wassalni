@@ -3,6 +3,34 @@ import { useNavigate, Link } from 'react-router-dom';
 import TicketCard from '../../components/common/Ticket';
 import { getTicketHistory } from '../../api/tickets';
 
+const toCardStatus = (status) => {
+    const normalized = String(status || '').toLowerCase();
+    if (normalized === 'active') return 'active';
+    if (normalized === 'used') return 'used';
+    if (normalized === 'refunded') return 'refunded';
+    return 'active';
+};
+
+const toShortTicketCode = (ticketId) => {
+    const raw = String(ticketId || '').trim();
+    if (!raw) return '-';
+    const suffix = raw.includes('-') ? raw.split('-').pop() : raw;
+    return suffix.toUpperCase();
+};
+
+const mapTicketForCard = (ticket) => ({
+    ...ticket,
+    id: ticket.id || ticket.ticket_id,
+    status: toCardStatus(ticket.status),
+    type: ticket.transport_type || 'Transport',
+    from_station: ticket.from_station || ticket.departure_station || 'Departure',
+    to_station: ticket.to_station || ticket.arrival_station || 'Destination',
+    qr_code: toShortTicketCode(ticket.ticket_id),
+    qr_image: ticket.qr_data ? `data:image/png;base64,${ticket.qr_data}` : null,
+    valid_from: ticket.valid_from || ticket.purchase_date,
+    valid_to: ticket.valid_to || ticket.arrival_time || ticket.departure_time,
+});
+
 const TicketHistory = () => {
     const navigate = useNavigate();
     const [history, setHistory] = useState([]);
@@ -18,7 +46,7 @@ const TicketHistory = () => {
                 setError('');
                 const data = await getTicketHistory();
                 const list = Array.isArray(data) ? data : (data.tickets || []);
-                setHistory(list);
+                setHistory(list.map(mapTicketForCard));
             } catch (err) {
                 console.error('Failed to load ticket history', err);
                 setError('Could not load your ticket history.');

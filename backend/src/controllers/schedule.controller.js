@@ -19,12 +19,12 @@ class ScheduleController {
   }
   async getAll(req, res) {
     try {
-      const date = req.query.date ?? new Date().toISOString().split("T")[0];
+      const date = req.query.date;
       const schedules = await scheduleService.getAllSchedules(date);
       res.status(200).json({
         success: true,
         data: schedules,
-        requestedDate: date,
+        requestedDate: date || null,
       });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });

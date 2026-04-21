@@ -11,6 +11,7 @@ import {
   redeemTokensFromUser,
   secondStepLoginForAdminAndSuperAdmin,
   unifiedMobileLogin,
+  updateProfile,
   userLoginForMobile,
   verifyRoleCode,
 } from "../controllers/user.controller.js";
@@ -20,6 +21,7 @@ router.post("/createuser", createUser);
 //get essential info ny user id(first name, last name, email,role)
 router.post("/getuseressentialinfo", requireAuth, getUserEssentialInfo);
 router.post("/changepassword", requireAuth, changePassword);
+router.post("/updateprofile", requireAuth, updateProfile);
 //redem an amount of tokens from user
 router.post("/redeemtokensfromuser", redeemTokensFromUser);
 router.get("/auth/google", googleSignIn);

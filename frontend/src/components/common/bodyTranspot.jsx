@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import palette from "./pallette";
+import { useAdminLanguage } from './language.jsx';
 const DEFAULT_STATUS_LIST = ['En ligne', 'Maintenance', 'Retard'];
 const DEFAULT_EMPTY_FORM = {
   id: '',
@@ -22,9 +23,9 @@ const DEFAULT_LABELS = {
 };
 
 const DEFAULT_STATUS_STYLE = {
-  'En ligne': { text: '#16A34A', bg: '#DCFCE7' },
-  Maintenance: { text: '#D97706', bg: '#FEF3C7' },
-  Retard: { text: '#DC2626', bg: '#FEE2E2' },
+  'En ligne': { text: palette.deepOcean, bg: palette.iceWhite },
+  Maintenance: { text: palette.warmAccent, bg: '#FFF4E3' },
+  Retard: { text: palette.dangerText, bg: palette.dangerSoft },
 }
 
 const DEFAULT_PALETTE = palette;
@@ -44,10 +45,48 @@ function BodyTransport({
   onUpdate,
   onDelete,
 }) {
+	const { t } = useAdminLanguage();
   const { id: idKey, occupancy: occupancyKey, status: statusKey } = fieldKeys;
 
+  const normalizeStatus = (rawStatus) => {
+    const value = String(rawStatus || '').trim().toLowerCase();
+    if (!value) return statusList[0] || 'En ligne';
+
+    if (value === 'en ligne' || value === 'active' || value === 'in_service' || value === 'in service' || value === 'online') {
+      return 'En ligne';
+    }
+    if (value === 'maintenance' || value === 'maint') {
+      return 'Maintenance';
+    }
+    if (value === 'retard' || value === 'delayed' || value === 'delay' || value === 'late') {
+      return 'Retard';
+    }
+
+    const match = statusList.find((statusItem) => String(statusItem).toLowerCase() === value);
+    return match || statusList[0] || 'En ligne';
+  };
+
+  const normalizeOccupancy = (rawValue) => {
+    const numericValue = Number(rawValue);
+    if (Number.isNaN(numericValue)) return 0;
+    return Math.max(0, Math.min(100, numericValue));
+  };
+
+  const normalizeIncomingItem = (item = {}, index = 0) => {
+    const fallbackId = item?.license_plate || item?.id || item?.transport_id || `ROW-${index + 1}`;
+    const fallbackOccupancy = item?.capacity ?? item?.occupancy ?? item?.load ?? 0;
+    const fallbackStatus = item?.status ?? item?.transport_status ?? statusList[0];
+
+    return {
+      ...item,
+      [idKey]: String(item?.[idKey] ?? fallbackId).trim(),
+      [occupancyKey]: normalizeOccupancy(item?.[occupancyKey] ?? fallbackOccupancy),
+      [statusKey]: normalizeStatus(item?.[statusKey] ?? fallbackStatus),
+    };
+  };
+
   const getLoadColor = (value) => {
-    if (value >= 85) return '#DC2626';
+    if (value >= 85) return palette.dangerText;
     if (value >= 65) return palette.warmAccent;
     return palette.softTeal;
   };
@@ -73,7 +112,9 @@ function BodyTransport({
     });
   };
 
-  const validRows = Array.isArray(listDonner) ? listDonner : [];
+  const validRows = Array.isArray(listDonner)
+    ? listDonner.map((item, index) => normalizeIncomingItem(item, index))
+    : [];
 
   const [rows, setRows] = useState(validRows);
   const [form, setForm] = useState(emptyForm);
@@ -130,18 +171,18 @@ function BodyTransport({
     const occupancy = nextItem[occupancyKey];
 
     if (!id || Number.isNaN(occupancy)) {
-      setError('Champs obligatoires.');
+      setError(t('requiredFields', 'Required fields.'));
       return;
     }
 
     if (occupancy < 0 || occupancy > 100) {
-      setError('Charge entre 0 et 100.');
+      setError(t('occupancyRange', 'Load must be between 0 and 100.'));
       return;
     }
 
     const exists = rows.some((item) => String(readField(item, idKey)).toLowerCase() === id.toLowerCase() && String(item[idKey]) !== String(editingId));
     if (exists) {
-      setError('Code deja utilise.');
+      setError(t('codeAlreadyUsed', 'Code already used.'));
       return;
     }
 
@@ -162,7 +203,7 @@ function BodyTransport({
       }
       closeForm();
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue.');
+      setError(err.message || t('unexpectedError', 'An unexpected error occurred.'));
     }
   };
 
@@ -176,26 +217,32 @@ function BodyTransport({
       }
       if (editingId === id) closeForm();
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue.');
+      setError(err.message || t('unexpectedError', 'An unexpected error occurred.'));
     }
   };
 
   return (
     <section
       className="min-h-screen px-4 pt-[88px] pb-6 md:px-8 md:pt-[92px] md:pb-8"
-      style={{ background: 'linear-gradient(180deg, #ffffff 0%, #eff8ff 48%, #f8fcff 100%)' }}
+      style={{ background: `linear-gradient(180deg, ${palette.pureWhite} 0%, ${palette.iceWhite} 48%, ${palette.pureWhite} 100%)` }}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-        <header className="rounded-2xl border bg-white p-5 shadow-sm border-frostBlue">
-          <div className="h-1.5 w-28 rounded-full mb-4" style={{ background: 'linear-gradient(90deg, #3B82F6, #60A5FA)' }}></div>
+        <header
+          className="rounded-3xl border p-5 shadow-lg"
+          style={{
+            borderColor: palette.frostBlue,
+            background: `linear-gradient(145deg, ${palette.pureWhite} 0%, ${palette.iceWhite} 100%)`,
+          }}
+        >
+          <div className="h-1.5 w-28 rounded-full mb-4" style={{ background: `linear-gradient(90deg, ${palette.classicBlue}, ${palette.softTeal})` }}></div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-skyBlue">Module Transport</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-skyBlue">{t('transportModule', 'Transport Module')}</p>
               <h1 className="text-2xl md:text-3xl font-black text-deepOcean">{nom}</h1>
-              <p className="text-sm mt-1 text-textGray">Suivi des {labels.entityPlural} et op�rations</p>
+              <p className="text-sm mt-1 text-textGray">{t('transportTracking', 'Tracking {entity} and operations', { entity: labels.entityPlural })}</p>
             </div>
             {objetAdmin ? (
-              <p className="text-xs text-textGray">
+              <p className="rounded-full border px-3 py-1 text-xs font-semibold" style={{ color: palette.textGray, borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}>
                 Admin: {objetAdmin.prenom || ''} {objetAdmin.nom || ''}
               </p>
             ) : null}
@@ -203,39 +250,39 @@ function BodyTransport({
         </header>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl border bg-white p-4 shadow-sm border-frostBlue">
+          <div className="rounded-2xl border p-4 shadow-sm" style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}>
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wider text-textGray">Total</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-textGray">{t('total', 'Total')}</p>
               <span className="text-lg">#</span>
             </div>
             <p className="text-3xl font-black mt-1 text-deepOcean">{summary.total}</p>
           </div>
-          <div className="rounded-2xl border p-4 shadow-sm" style={{ borderColor: '#BAEAD7', backgroundColor: '#F0FDF7' }}>
+          <div className="rounded-2xl border p-4 shadow-sm" style={{ borderColor: palette.softTeal, backgroundColor: palette.iceWhite }}>
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#0D7A55' }}>Actifs</p>
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: palette.deepOcean }}>{t('activePlural', 'Active')}</p>
               <span className="text-lg"></span>
             </div>
-            <p className="text-3xl font-black mt-1" style={{ color: '#0D7A55' }}>{summary.active}</p>
+            <p className="text-3xl font-black mt-1" style={{ color: palette.deepOcean }}>{summary.active}</p>
           </div>
-          <div className="rounded-2xl border p-4 shadow-sm" style={{ borderColor: '#F2D8AF', backgroundColor: '#FFF8EA' }}>
+          <div className="rounded-2xl border p-4 shadow-sm" style={{ borderColor: palette.warmAccent, backgroundColor: '#FFF8EA' }}>
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#A86910' }}>Maintenance</p>
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: palette.warmAccent }}>Maintenance</p>
               <span className="text-lg"></span>
             </div>
-            <p className="text-3xl font-black mt-1" style={{ color: '#A86910' }}>{summary.maintenance}</p>
+            <p className="text-3xl font-black mt-1" style={{ color: palette.warmAccent }}>{summary.maintenance}</p>
           </div>
         </div>
 
         <div className="rounded-2xl border bg-white p-4 md:p-5 shadow-sm border-frostBlue">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-deepOcean">Liste</h2>
+            <h2 className="text-lg font-bold text-deepOcean">{t('list', 'List')}</h2>
             <button
               type="button"
               onClick={open ? closeForm : openCreateForm}
               className="rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-              style={{ background: 'linear-gradient(90deg, #3B82F6, #60A5FA)' }}
+              style={{ background: `linear-gradient(90deg, ${palette.classicBlue}, ${palette.softTeal})` }}
             >
-              {open ? 'Fermer' : 'Ajouter'}
+              {open ? t('close', 'Close') : t('add', 'Add')}
             </button>
           </div>
 
@@ -246,23 +293,23 @@ function BodyTransport({
                   <th className="px-3 py-3">{labels.id}</th>
                   <th className="px-3 py-3">{labels.occupancy}</th>
                   <th className="px-3 py-3">{labels.status}</th>
-                  <th className="px-3 py-3">Actions</th>
+                  <th className="px-3 py-3">{t('actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
                     <td colSpan="4" className="px-3 py-10 text-center text-sm font-semibold text-textGray">
-                      Aucun �l�ment disponible. Cliquez sur Ajouter pour commencer.
+                      {t('emptyElements', 'No items available. Click Add to get started.')}
                     </td>
                   </tr>
                 ) : null}
-                {rows.map((item) => (
-                  <tr key={item[idKey]} className="border-b last:border-b-0 hover:bg-slate-50/80 transition border-frostBlue">
+                {rows.map((item, index) => (
+                  <tr key={item?.transport_id || item[idKey] || `row-${index}`} className="border-b last:border-b-0 hover:bg-slate-50/80 transition border-frostBlue">
                     <td className="px-3 py-3 font-semibold text-deepOcean">{item[idKey]}</td>
                     <td className="px-3 py-3">
                       <div className="w-28">
-                        <div className="h-2 rounded-full bg-slate-100">
+                        <div className="h-2 rounded-full" style={{ backgroundColor: palette.iceWhite }}>
                           <div
                             className="h-full rounded-full transition-all duration-500"
                             style={{
@@ -278,8 +325,8 @@ function BodyTransport({
                       <span
                         className="rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider"
                         style={{
-                          color: statusStyle[item[statusKey]]?.text || '#4B5563',
-                          backgroundColor: statusStyle[item[statusKey]]?.bg || '#F3F4F6',
+                          color: statusStyle[item[statusKey]]?.text || palette.textGray,
+                          backgroundColor: statusStyle[item[statusKey]]?.bg || palette.iceWhite,
                         }}
                       >
                         {item[statusKey]}
@@ -292,10 +339,15 @@ function BodyTransport({
                           onClick={() => openEditForm(item)}
                           className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 bg-classicBlue"
                         >
-                          Modifier
+                          {t('edit', 'Edit')}
                         </button>
-                        <button type="button" onClick={() => deleteItem(item[idKey])} className="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600">
-                          Supprimer
+                        <button
+                          type="button"
+                          onClick={() => deleteItem(item[idKey])}
+                          className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90"
+                          style={{ backgroundColor: palette.dangerText }}
+                        >
+                          {t('delete', 'Delete')}
                         </button>
                       </div>
                     </td>
@@ -308,7 +360,7 @@ function BodyTransport({
 
         {open ? (
           <div ref={formRef} className="rounded-2xl border bg-white p-4 md:p-5 shadow-sm border-frostBlue">
-            <h2 className="mb-3 text-lg font-bold text-deepOcean">{isEditing ? `Modifier un ${labels.entitySingular}` : `Ajouter un ${labels.entitySingular}`}</h2>
+            <h2 className="mb-3 text-lg font-bold text-deepOcean">{isEditing ? t('editEntity', 'Edit a {entity}', { entity: labels.entitySingular }) : t('addEntity', 'Add a {entity}', { entity: labels.entitySingular })}</h2>
 
             <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <input
@@ -343,22 +395,23 @@ function BodyTransport({
                 ))}
               </select>
 
-              {error ? <p className="text-sm font-semibold text-red-600 md:col-span-2">{error}</p> : null}
+              {error ? <p className="text-sm font-semibold md:col-span-2" style={{ color: palette.dangerText }}>{error}</p> : null}
 
               <div className="flex gap-2 md:col-span-2">
                 <button
                   type="submit"
                   className="rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
-                  style={{ background: 'linear-gradient(90deg, #3B82F6, #60A5FA)' }}
+                  style={{ background: `linear-gradient(90deg, ${palette.classicBlue}, ${palette.softTeal})` }}
                 >
-                  {isEditing ? 'Enregistrer' : 'Ajouter'}
+                  {isEditing ? t('save', 'Save') : t('add', 'Add')}
                 </button>
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="rounded-lg border px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 border-frostBlue"
+                  className="rounded-lg border px-4 py-2.5 text-sm font-semibold border-frostBlue"
+                  style={{ color: palette.deepOcean, backgroundColor: palette.pureWhite }}
                 >
-                  Annuler
+                  {t('cancel', 'Cancel')}
                 </button>
               </div>
             </form>

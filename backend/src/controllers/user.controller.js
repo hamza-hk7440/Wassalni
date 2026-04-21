@@ -53,16 +53,61 @@ export const createUser = async (req, res) => {
 };
 export const getUserEssentialInfo = async (req, res) => {
   try {
-    const { user_id } = req.body;
+    const requestedUserId = req.body?.user_id;
+    const authenticatedUserId = req.user?.id;
+    const user_id = requestedUserId || authenticatedUserId;
+
     if (!user_id) {
       return res.status(400).json({
-        error: "qr data is required",
+        error: "user_id is required",
       });
     }
+
+    if (
+      requestedUserId &&
+      authenticatedUserId &&
+      String(requestedUserId) !== String(authenticatedUserId)
+    ) {
+      return res.status(403).json({
+        error: "forbidden: cannot access another user profile",
+      });
+    }
+
     const user_info = await userService.getUserEssentialInfo({ user_id });
+
+    if (!user_info) {
+      // Fallback profile from token so session restore can continue even if
+      // the public users row is missing or delayed.
+      return res.status(200).json({
+        first_name: req.user?.user_metadata?.first_name ?? "",
+        last_name: req.user?.user_metadata?.last_name ?? "",
+        email: req.user?.email ?? "",
+        role: req.user?.user_metadata?.role ?? req.user?.app_metadata?.role ?? null,
+        token_balance: 0,
+      });
+    }
+
     res.status(200).json(user_info);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const message = String(error?.message || "Internal Server Error");
+    const isAuthError = /invalid token|jwt|unauthorized/i.test(message);
+
+    if (isAuthError) {
+      return res.status(401).json({ error: message });
+    }
+
+    // Last-resort fallback to avoid breaking session restore on transient DB issues.
+    if (req.user) {
+      return res.status(200).json({
+        first_name: req.user?.user_metadata?.first_name ?? "",
+        last_name: req.user?.user_metadata?.last_name ?? "",
+        email: req.user?.email ?? "",
+        role: req.user?.user_metadata?.role ?? req.user?.app_metadata?.role ?? null,
+        token_balance: 0,
+      });
+    }
+
+    res.status(500).json({ error: message });
   }
 };
 export const redeemTokensFromUser = async (req, res) => {
@@ -86,7 +131,15 @@ export const redeemTokensFromUser = async (req, res) => {
 };
 export const googleSignIn = async (req, res) => {
   try {
-    const data = await userService.signUpWithGoogle();
+    const isWeb = String(req.query.platform || "").toLowerCase() === "web";
+    const defaultWebRedirect = process.env.WEB_OAUTH_REDIRECT_URL || "http://localhost:5173/login";
+    const webRedirect = String(req.query.web_redirect || defaultWebRedirect);
+
+    const redirectTo = isWeb
+      ? `${process.env.GOOGLE_OAUTH_REDIRECT_URL}?web_redirect=${encodeURIComponent(webRedirect)}`
+      : process.env.GOOGLE_OAUTH_REDIRECT_URL;
+
+    const data = await userService.signUpWithGoogle({ redirectTo });
     res.status(200).json({ url: data.url });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -95,7 +148,7 @@ export const googleSignIn = async (req, res) => {
 //this function will get the code in the callback url to give it to the service
 export const googleSignUpCallback = async (req, res) => {
   try {
-    const { code } = req.query;
+    const { code, web_redirect } = req.query;
     const data = await userService.handleAuthCallback(code);
     const { data: userData } = await supabase
       .from("users")
@@ -114,8 +167,20 @@ export const googleSignUpCallback = async (req, res) => {
         token_balance: userData?.token_balance ?? 0,
       }),
     );
+
+    const webRedirect = String(web_redirect || "");
+    if (webRedirect.startsWith("http://") || webRedirect.startsWith("https://")) {
+      const separator = webRedirect.includes("?") ? "&" : "?";
+      return res.redirect(`${webRedirect}${separator}token=${encodeURIComponent(token)}&user=${userJson}`);
+    }
+
     res.redirect(`myapp://auth/callback?token=${token}&user=${userJson}`);
   } catch (error) {
+    const webRedirect = String(req.query.web_redirect || "");
+    if (webRedirect.startsWith("http://") || webRedirect.startsWith("https://")) {
+      const separator = webRedirect.includes("?") ? "&" : "?";
+      return res.redirect(`${webRedirect}${separator}error=${encodeURIComponent(error.message)}`);
+    }
     res.redirect(
       `myapp://auth/callback?error=${encodeURIComponent(error.message)}`,
     );
@@ -143,6 +208,35 @@ export const changePassword = async (req, res) => {
     });
 
     return res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { first_name, last_name, email } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!first_name || !last_name || !email) {
+      return res.status(400).json({ error: "first_name, last_name and email are required" });
+    }
+
+    const updatedUser = await userService.updateUserProfile({
+      user_id: userId,
+      first_name,
+      last_name,
+      email,
+    });
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

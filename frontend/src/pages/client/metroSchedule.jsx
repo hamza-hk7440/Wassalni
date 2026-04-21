@@ -1,63 +1,113 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
+import { getAllSchedules } from '../../api/admin';
+import { createTicket } from '../../api/tickets';
+import { redeemTokens } from '../../api/auth';
+import { AuthContext } from '../../context/AuthContext';
 
 const MetroSchedule = () => {
     const navigate = useNavigate();
+    const { user, setUser } = useContext(AuthContext);
 
-    const [selectedDayKey, setSelectedDayKey] = useState('MON-8');
+    const [schedules, setSchedules] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedDayKey, setSelectedDayKey] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [bookingDetails, setBookingDetails] = useState(null);
-    const [tokenBalance, setTokenBalance] = useState(22);
     const [popup, setPopup] = useState(null); 
+    const [isBooking, setIsBooking] = useState(false);
 
-    const days = [
-        { name: 'MON', date: 8,  key: 'MON-8'  },
-        { name: 'TUE', date: 9,  key: 'TUE-9'  },
-        { name: 'WED', date: 10, key: 'WED-10' },
-        { name: 'THU', date: 11, key: 'THU-11' },
-        { name: 'FRI', date: 12, key: 'FRI-12' },
-        { name: 'SAT', date: 13, key: 'SAT-13' },
-    ];
+    // Generate next 7 days
+    const days = useMemo(() => {
+        const result = [];
+        const now = new Date();
+        for (let i = 0; i < 7; i++) {
+            const d = new Date();
+            d.setDate(now.getDate() + i);
+            const dayName = d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+            const dateNum = d.getDate();
+            const fullDate = d.toISOString().split('T')[0];
+            result.push({ name: dayName, date: dateNum, key: fullDate });
+        }
+        return result;
+    }, []);
 
-    const allTrips = {
-        'MON-8': [
-            { id: 1, from: 'Tunis Marine', to: 'La Marsa',   price: 5,  times: ['07:00 - 07:28', '09:15 - 09:43'] },
-            { id: 2, from: 'Bardo',        to: 'Ariana',     price: 4,  times: ['08:30 - 08:52'] },
-        ],
-        'TUE-9': [
-            { id: 3, from: 'Tunis Marine', to: 'Carthage',   price: 6,  times: ['10:00 - 10:35'] },
-        ],
-        'WED-10': [
-            { id: 4, from: 'El Manar',     to: 'Tunis Marine', price: 5, times: ['06:45 - 07:15', '13:00 - 13:30'] },
-            { id: 5, from: 'Bardo',        to: 'La Marsa',   price: 8,  times: ['15:20 - 16:00'] },
-        ],
-        'THU-11': [],
-        'FRI-12': [
-            { id: 6, from: 'Ariana',       to: 'Carthage',   price: 5,  times: ['08:00 - 08:40'] },
-        ],
-        'SAT-13': [],
-    };
+    useEffect(() => {
+        if (days.length > 0 && !selectedDayKey) {
+            setSelectedDayKey(days[0].key);
+        }
+    }, [days, selectedDayKey]);
 
-    const currentTrips = useMemo(() => allTrips[selectedDayKey] || [], [selectedDayKey]);
+    useEffect(() => {
+        if (selectedDayKey) {
+            fetchSchedules(selectedDayKey);
+        }
+    }, [selectedDayKey]);
 
-    const handleOpenBooking = (trip) => {
-        setBookingDetails({ ...trip, selectedTime: trip.times[0] });
-        setShowModal(true);
-    };
-
-    const handleConfirm = () => {
-        if (tokenBalance < bookingDetails.price) {
-            setShowModal(false);
-            setPopup('error');
-        } else {
-            setTokenBalance(prev => prev - bookingDetails.price);
-            setShowModal(false);
-            setPopup('success');
+    const fetchSchedules = async (date) => {
+        setLoading(true);
+        try {
+            const data = await getAllSchedules(date);
+            // Filter only metro transport types
+            const metroSchedules = data.filter(s => s.transports?.type?.toLowerCase() === 'metro');
+            setSchedules(metroSchedules);
+        } catch (err) {
+            console.error('Failed to fetch schedules', err);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const isInsufficient = bookingDetails && tokenBalance < bookingDetails.price;
+    const handleOpenBooking = (schedule) => {
+        setBookingDetails(schedule);
+        setShowModal(true);
+    };
+
+    const handleConfirm = async () => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+
+        if (user.token_balance < bookingDetails.current_price) {
+            setShowModal(false);
+            setPopup('error');
+            return;
+        }
+
+        setIsBooking(true);
+        try {
+            // 1. Create the ticket
+            await createTicket({
+                user_id: user.id,
+                schedule_id: bookingDetails.schedule_id,
+                price: bookingDetails.current_price
+            });
+
+            // 2. Redeem tokens
+            const balanceResponse = await redeemTokens(user.id, bookingDetails.current_price);
+            
+            // 3. Update local user context
+            setUser(prev => ({ ...prev, token_balance: balanceResponse.newBalance }));
+
+            setShowModal(false);
+            setPopup('success');
+        } catch (err) {
+            console.error('Booking failed', err);
+            alert(err.response?.data?.error || 'Booking failed. Please try again.');
+        } finally {
+            setIsBooking(false);
+        }
+    };
+
+    const isInsufficient = bookingDetails && user && user.token_balance < bookingDetails.current_price;
+
+    const formatTime = (isoString) => {
+        if (!isoString) return '';
+        return new Date(isoString).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    };
+
     const MetroIcon = () => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="2" y="6" width="20" height="12" rx="3"/>
@@ -83,12 +133,6 @@ const MetroSchedule = () => {
     const TokenIcon = ({ size = 14 }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
             <circle cx="12" cy="12" r="10"/><text x="12" y="16" textAnchor="middle" fontSize="11" fill="white" fontWeight="bold">T</text>
-        </svg>
-    );
-
-    const ArrowRight = () => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
         </svg>
     );
 
@@ -121,31 +165,39 @@ const MetroSchedule = () => {
                     ))}
                 </div>
                 <div className="flex flex-col gap-4">
-                    {currentTrips.length > 0 ? (
-                        currentTrips.map((trip) => (
+                    {loading ? (
+                        <div className="py-10 text-center text-gray-400">Loading schedules...</div>
+                    ) : schedules.length > 0 ? (
+                        schedules.map((schedule) => (
                             <div
-                                key={trip.id}
+                                key={schedule.schedule_id}
                                 className="flex items-center justify-between rounded-2xl border border-gray-50 bg-white p-6 shadow-[0_2px_15px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-transform duration-200">                                
                                 <div className="flex items-center gap-5">
                                     <div>
                                         <p className="text-[0.6rem] font-bold uppercase text-gray-400">From</p>
-                                        <p className="text-lg font-extrabold text-[#1a3a4a]">{trip.from}</p>
+                                        <p className="text-lg font-extrabold text-[#1a3a4a]">{schedule.routes?.start_station?.name}</p>
                                     </div>
                                     <div className="text-[#6ec1d1]">
                                         <MetroIcon />
                                     </div>
                                     <div>
                                         <p className="text-[0.6rem] font-bold uppercase text-gray-400">To</p>
-                                        <p className="text-lg font-extrabold text-[#1a3a4a]">{trip.to}</p>
+                                        <p className="text-lg font-extrabold text-[#1a3a4a]">{schedule.routes?.end_station?.name}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
+                                    <div className="flex flex-col items-end mr-4">
+                                         <span className="text-xs text-gray-400 font-bold">{formatTime(schedule.departure_time)}</span>
+                                         {schedule.schedule_status === 'delayed' && (
+                                            <span className="text-[10px] text-red-400 font-bold">+{schedule.delay_minutes}m</span>
+                                         )}
+                                    </div>
                                     <span className="flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1 text-sm font-bold text-orange-500">
                                         <TokenIcon size={13} />
-                                        {trip.price}
+                                        {schedule.current_price}
                                     </span>
                                     <Button
-                                        onClick={() => handleOpenBooking(trip)}
+                                        onClick={() => handleOpenBooking(schedule)}
                                         className="!w-fit bg-[#1a3a4a] px-8 py-2.5 rounded-xl font-bold transition-transform active:scale-95">
                                         Book
                                     </Button>
@@ -153,7 +205,7 @@ const MetroSchedule = () => {
                             </div>
                         ))
                     ) : (
-                        <div className="py-10 text-center text-gray-400">No trips available for this day.</div>
+                        <div className="py-10 text-center text-gray-400">No metro trips available for this day.</div>
                     )}
                 </div>
             </div>
@@ -165,7 +217,7 @@ const MetroSchedule = () => {
                         <div className="flex items-center justify-between mb-6">
                             <div className="text-center">
                                 <span className="block text-[0.65rem] font-bold uppercase text-gray-400">From</span>
-                                <span className="text-lg font-bold text-[#1E5470]">{bookingDetails.from}</span>
+                                <span className="text-lg font-bold text-[#1E5470]">{bookingDetails.routes?.start_station?.name}</span>
                             </div>
                             <div className="flex flex-col items-center gap-1 text-[#6ec1d1]">
                                 <MetroIcon />
@@ -173,38 +225,32 @@ const MetroSchedule = () => {
                             </div>
                             <div className="text-center">
                                 <span className="block text-[0.65rem] font-bold uppercase text-gray-400">To</span>
-                                <span className="text-lg font-bold text-[#1E5470]">{bookingDetails.to}</span>
+                                <span className="text-lg font-bold text-[#1E5470]">{bookingDetails.routes?.end_station?.name}</span>
                             </div>
                         </div>
                         <div className="flex gap-3 mb-6">
                             <div className="flex-1 rounded-2xl bg-orange-50 p-4 text-center">
                                 <p className="text-[0.65rem] font-bold uppercase text-orange-400 mb-1">Ticket Price</p>
                                 <p className="text-xl font-extrabold text-orange-500 flex items-center justify-center gap-1.5">
-                                    <TokenIcon size={16} /> {bookingDetails.price}
+                                    <TokenIcon size={16} /> {bookingDetails.current_price}
                                 </p>
                             </div>
                             <div className={`flex-1 rounded-2xl p-4 text-center ${isInsufficient ? 'bg-red-50' : 'bg-gray-50'}`}>
                                 <p className={`text-[0.65rem] font-bold uppercase mb-1 ${isInsufficient ? 'text-red-400' : 'text-gray-400'}`}>Your Balance</p>
                                 <p className={`text-xl font-extrabold flex items-center justify-center gap-1.5 ${isInsufficient ? 'text-red-500' : 'text-[#1E5470]'}`}>
-                                    <TokenIcon size={16} /> {tokenBalance}
+                                    <TokenIcon size={16} /> {user?.token_balance || 0}
                                 </p>
                             </div>
                         </div>
 
-                        {isInsufficient && (
+                        {isInsufficient && user && (
                             <p className="text-center text-sm font-semibold text-red-400 mb-4 animate-in fade-in duration-200">
                                 Not enough tokens for this trip.
                             </p>
                         )}
-                        <div className="mb-10 rounded-2xl bg-gray-50 p-1">
-                            <select
-                                value={bookingDetails.selectedTime}
-                                onChange={(e) => setBookingDetails({ ...bookingDetails, selectedTime: e.target.value })}
-                                className="w-full bg-transparent p-4 font-bold text-[#1E5470] outline-none cursor-pointer">
-                                {bookingDetails.times.map((t) => (
-                                    <option key={t} value={t}>{t}</option>
-                                ))}
-                            </select>
+                        <div className="mb-10 rounded-2xl bg-gray-50 p-4 text-center">
+                             <p className="text-[0.65rem] font-bold uppercase text-gray-400 mb-1">Departure Time</p>
+                             <p className="font-bold text-[#1E5470]">{formatTime(bookingDetails.departure_time)}</p>
                         </div>
 
                         <div className="flex gap-4">
@@ -215,11 +261,12 @@ const MetroSchedule = () => {
                             </button>
                             <button
                                 onClick={handleConfirm}
+                                disabled={isBooking || isInsufficient}
                                 className={`flex-1 rounded-2xl py-4 font-bold text-white transition-colors ${
                                     isInsufficient
                                         ? 'bg-red-400 cursor-not-allowed'
                                         : 'bg-[#1E5470] hover:bg-[#16425a]'}`}>
-                                {isInsufficient ? 'Insufficient Tokens' : 'Confirm'}
+                                {isBooking ? 'Processing...' : isInsufficient ? 'Insufficient Tokens' : 'Confirm'}
                             </button>
                         </div>
                     </div>
@@ -239,7 +286,7 @@ const MetroSchedule = () => {
                         <div className="bg-green-50 rounded-2xl p-4 mb-8 flex items-center justify-between">
                             <span className="text-sm font-bold text-gray-500">New Balance</span>
                             <span className="flex items-center gap-1.5 font-extrabold text-green-600">
-                                <TokenIcon size={14} /> {tokenBalance}
+                                <TokenIcon size={14} /> {user?.token_balance}
                             </span>
                         </div>
                         <button
@@ -263,7 +310,7 @@ const MetroSchedule = () => {
                         <div className="bg-red-50 rounded-2xl p-4 mb-8 flex items-center justify-between">
                             <span className="text-sm font-bold text-gray-500">Current Balance</span>
                             <span className="flex items-center gap-1.5 font-extrabold text-red-500">
-                                <TokenIcon size={14} /> {tokenBalance}
+                                <TokenIcon size={14} /> {user?.token_balance || 0}
                             </span>
                         </div>
                         <div className="flex gap-3">
@@ -273,7 +320,7 @@ const MetroSchedule = () => {
                                 Dismiss
                             </button>
                             <button
-                                onClick={() => setPopup(null)}
+                                onClick={() => { setPopup(null); navigate('/packages'); }}
                                 className="flex-1 py-4 rounded-2xl bg-[#1E5470] text-white font-bold hover:bg-[#16425a] transition-colors">
                                 Top Up
                             </button>

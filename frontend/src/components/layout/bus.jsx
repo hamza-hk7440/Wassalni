@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import BodyTransport from '../common/bodyTranspot';
 import { getTransports, createTransport, updateTransport, deleteTransport } from '../../api/admin';
+import { useAdminLanguage } from '../common/language.jsx';
 
 function Bus() {
+	const { t } = useAdminLanguage();
   const [busData, setBusData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -67,14 +69,14 @@ function Bus() {
   return (
     <div>
       <BodyTransport
-        nom="Gestion des bus"
+        nom={t('transport', 'Transport') + ' - Bus'}
         listDonner={busData}
         onCreate={handleCreate}
         onUpdate={handleUpdate}
         onDelete={handleDelete}
         fieldKeys={{ id: 'license_plate', occupancy: 'capacity', status: 'status' }}
-        emptyForm={{ license_plate: '', capacity: '', status: 'En ligne' }}
-        labels={{ entitySingular: 'bus', entityPlural: 'bus', id: 'Matricule', occupancy: 'Capacité', status: 'Statut' }}
+        emptyForm={{ license_plate: '', capacity: '', status: t('online', 'Online') }}
+        labels={{ entitySingular: 'bus', entityPlural: 'bus', id: 'Matricule', occupancy: 'Capacité', status: t('status', 'Status') }}
       />
     </div>
   );

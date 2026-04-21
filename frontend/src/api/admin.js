@@ -108,13 +108,25 @@ export const getAllRoutes = async () => {
 
 export const createRoute = async (data) => {
     const hasLegacyShape = data?.routeData && data?.stationSequence;
+    const normalizeBasePrice = (value) => {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+    };
+
     const payload = hasLegacyShape
-        ? data
+        ? {
+            ...data,
+            routeData: {
+                ...data.routeData,
+                base_price: normalizeBasePrice(data?.routeData?.base_price),
+            },
+        }
         : {
             routeData: {
                 name: data?.name,
                 start_station_id: data?.start_station_id,
                 end_station_id: data?.end_station_id,
+                base_price: normalizeBasePrice(data?.base_price),
             },
             stationSequence: [
                 { station_id: data?.start_station_id, sequence_order: 1 },
@@ -128,13 +140,25 @@ export const createRoute = async (data) => {
 
 export const updateRoute = async (id, data) => {
     const hasLegacyShape = data?.routeData && data?.stationSequence;
+    const normalizeBasePrice = (value) => {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+    };
+
     const payload = hasLegacyShape
-        ? data
+        ? {
+            ...data,
+            routeData: {
+                ...data.routeData,
+                base_price: normalizeBasePrice(data?.routeData?.base_price),
+            },
+        }
         : {
             routeData: {
                 name: data?.name,
                 start_station_id: data?.start_station_id,
                 end_station_id: data?.end_station_id,
+                base_price: normalizeBasePrice(data?.base_price),
             },
             stationSequence: [
                 { station_id: data?.start_station_id, sequence_order: 1 },
