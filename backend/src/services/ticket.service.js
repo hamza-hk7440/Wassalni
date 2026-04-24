@@ -17,6 +17,25 @@ const adminSupabase = createClient(
 
 export async function createTicket({ user_id, schedule_id, price }) {
   try {
+    const { data: activeCancellation, error: cancellationError } =
+      await adminSupabase
+        .from("ticket_announcements")
+        .select("announcement_id")
+        .eq("schedule_id", schedule_id)
+        .eq("type", "cancellation")
+        .eq("is_active", true)
+        .limit(1);
+
+    if (cancellationError && !isMissingSchemaError(cancellationError)) {
+      throw cancellationError;
+    }
+
+    if (Array.isArray(activeCancellation) && activeCancellation.length > 0) {
+      throw new Error(
+        "This schedule is cancelled and not valid for ticket purchase",
+      );
+    }
+
     const { data: schedule, error: scheduleError } = await adminSupabase
       .from("schedules")
       .select("available_seats")
@@ -162,6 +181,9 @@ const TICKET_DETAILS_SELECT = `
     departure_time,
     arrival_time,
     direction,
+    schedule_status,
+    delay_minutes,
+    remark,
     routes(
       start_station:stations!routes_start_station_id_fkey(name),
       end_station:stations!routes_end_station_id_fkey(name)
@@ -387,14 +409,38 @@ export async function getTicketsByPassenger({ user_id, activeOnly = false }) {
     const enriched = tickets.map((ticket) => {
       const scheduleId = ticket.schedule_id;
       const ticketId = ticket.ticket_id;
+      const scheduleData = ticket.schedules ?? {};
+      const scheduleStatus = String(
+        scheduleData.schedule_status || "",
+      ).toLowerCase();
+      const fallbackDisruption = {
+        delay_minutes: Number(scheduleData.delay_minutes ?? 0),
+        is_cancelled:
+          scheduleStatus.includes("cancel") ||
+          scheduleStatus.includes("cancell"),
+        message: String(scheduleData.remark || "").trim(),
+      };
+      const announcementDisruption = disruptionsBySchedule.get(scheduleId);
+      const disruption = announcementDisruption
+        ? {
+            delay_minutes: Number(
+              announcementDisruption.delay_minutes ??
+                fallbackDisruption.delay_minutes ??
+                0,
+            ),
+            is_cancelled:
+              Boolean(announcementDisruption.is_cancelled) ||
+              Boolean(fallbackDisruption.is_cancelled),
+            message:
+              String(announcementDisruption.message || "").trim() ||
+              fallbackDisruption.message ||
+              "",
+          }
+        : fallbackDisruption;
 
       return {
         ...ticket,
-        disruption: disruptionsBySchedule.get(scheduleId) ?? {
-          delay_minutes: 0,
-          is_cancelled: false,
-          message: "",
-        },
+        disruption,
         refund: refundByTicket.get(ticketId) ?? {
           status: "none",
           requested_at: null,

@@ -8,7 +8,7 @@ export const createRecharge = async (req, res) => {
     //so the paymenntService.createRecharge function need 2 fields the id and the amount and they will be sended by the sender of the POST
     //we access to them by req.body
     //as we know the req is already filled by the data and the res wait for us ti fill it with the data
-    const { user_id, amount } = req.body;
+    const { user_id, amount, platform, web_redirect } = req.body;
     if (!user_id || !amount) {
       return res.status(400).json({
         error: "User ID and Amount are required",
@@ -18,6 +18,8 @@ export const createRecharge = async (req, res) => {
     const paymeeData = await paymentService.createRecharge({
       user_id,
       amount,
+      platform,
+      web_redirect,
     });
     if (!paymeeData || !paymeeData.data) {
       return res.status(400).json({

@@ -1,13 +1,13 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Navbar from '../../components/layout/NavbarRa';
-import palette from '../../components/common/pallette';
-import busLogo from '../../assets/bus.png';
-import metroLogo from '../../assets/metro.png';
-import { useAdminLanguage } from '../../components/common/language.jsx';
+import React from "react";
+import { Link } from "react-router-dom";
+import Navbar from "../../components/layout/NavbarRa";
+import palette from "../../components/common/pallette";
+import busLogo from "../../assets/bus.png";
+import metroLogo from "../../assets/metro.png";
+import { useAdminLanguage } from "../../components/common/language.jsx";
 
 function Transport() {
-	const { t } = useAdminLanguage();
+  const { t } = useAdminLanguage();
   return (
     <div>
       <Navbar />
@@ -20,13 +20,16 @@ function Transport() {
         <div className="max-w-5xl mx-auto">
           <header className="rounded-3xl border bg-white/95 shadow-xl p-6 md:p-8 border-frostBlue">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-skyBlue">
-            {t('transportModule', 'Transport Module')}
+              {t("transportModule", "Transport Module")}
             </p>
             <h1 className="text-2xl md:text-4xl font-black mt-2 text-deepOcean">
-            {t('transportChooseTitle', 'Choose transport type')}
+              {t("transportChooseTitle", "Choose transport type")}
             </h1>
             <p className="text-sm mt-2 text-classicBlue">
-            {t('transportChooseSubtitle', 'Access bus management or metro management.')}
+              {t(
+                "transportChooseSubtitle",
+                "Access bus management or metro management.",
+              )}
             </p>
           </header>
 
@@ -41,13 +44,19 @@ function Transport() {
                 className="h-14 w-14 object-contain md:h-16 md:w-16"
               />
               <h2 className="mt-4 text-2xl font-black text-deepOcean">
-                Bus
+                {t("busInService", "Bus in service").split(" ")[0]}
               </h2>
               <p className="mt-2 text-sm text-classicBlue">
-                Parc, lignes, chauffeurs et statut opérationnel des bus.
+                {t(
+                  "busDescription",
+                  "Fleet, lines, drivers and bus operational status.",
+                )}
               </p>
               <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-softTeal">
-              {t('openBusManagement', 'Open bus management')} <span className="group-hover:translate-x-1 transition-transform">→</span>
+                {t("openBusManagement", "Open bus management")}{" "}
+                <span className="group-hover:translate-x-1 transition-transform">
+                  →
+                </span>
               </span>
             </Link>
 
@@ -61,13 +70,19 @@ function Transport() {
                 className="h-14 w-14 object-contain md:h-16 md:w-16"
               />
               <h2 className="mt-4 text-2xl font-black text-deepOcean">
-              {t('metroInService', 'Metro in service').split(' ')[0]}
+                {t("metroInService", "Metro in service").split(" ")[0]}
               </h2>
               <p className="mt-2 text-sm text-classicBlue">
-                Lignes, conducteurs et suivi des rames métro en service.
+                {t(
+                  "metroDescription",
+                  "Lines, drivers and active metro trainset tracking.",
+                )}
               </p>
               <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-warmAccent">
-              {t('openMetroManagement', 'Open metro management')} <span className="group-hover:translate-x-1 transition-transform">→</span>
+                {t("openMetroManagement", "Open metro management")}{" "}
+                <span className="group-hover:translate-x-1 transition-transform">
+                  →
+                </span>
               </span>
             </Link>
           </div>

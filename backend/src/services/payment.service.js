@@ -22,7 +22,12 @@ function extractTransactionId(rawValue) {
   );
 }
 
-export async function createRecharge({ user_id, amount }) {
+export async function createRecharge({
+  user_id,
+  amount,
+  platform,
+  web_redirect,
+}) {
   let transactionId = null;
 
   try {
@@ -53,6 +58,17 @@ export async function createRecharge({ user_id, amount }) {
     //we will build the paymee payload
     //this what we will send to paymee(the fields are from paymee integration documentation)
     const publicBaseUrl = process.env.NGROK_URL || "http://localhost:3000";
+    const callbackParams = new URLSearchParams({
+      transaction_id: String(transaction.transaction_id || ""),
+    });
+
+    if (platform) {
+      callbackParams.set("platform", String(platform));
+    }
+
+    if (web_redirect) {
+      callbackParams.set("web_redirect", String(web_redirect));
+    }
 
     const paymeePayload = {
       amount: amount,
@@ -61,8 +77,8 @@ export async function createRecharge({ user_id, amount }) {
       last_name: "User",
       email: "test@example.com",
       phone: "21600000000",
-      return_url: `${publicBaseUrl}/payment-success?transaction_id=${transaction.transaction_id}`,
-      cancel_url: `${publicBaseUrl}/payment-error?transaction_id=${transaction.transaction_id}`,
+      return_url: `${publicBaseUrl}/payment-success?${callbackParams.toString()}`,
+      cancel_url: `${publicBaseUrl}/payment-error?${callbackParams.toString()}`,
       webhook_url: `${process.env.NGROK_URL}/webhooks/paymee`, //this is the route that paymee will send to it the response,and like we said it have to be public(on the internet bcz paymee can't communicate to local host ) so we use Ngrok
       order_id: transaction.transaction_id || "temp_id", //here we are verifying if the id is null so we will put to it temp_id to don't crash
     };
