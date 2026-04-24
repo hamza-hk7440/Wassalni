@@ -364,6 +364,28 @@ export async function getTicketsByPassenger({ user_id, activeOnly = false }) {
     const enriched = tickets.map((ticket) => {
       const scheduleId = ticket.schedule_id;
       const ticketId = ticket.ticket_id;
+      const fallbackDisruption = {
+        delay_minutes: 0,
+        is_cancelled: false,
+        message: "",
+      };
+      const announcementDisruption = disruptionsBySchedule.get(scheduleId);
+      const disruption = announcementDisruption
+        ? {
+            delay_minutes: Number(
+              announcementDisruption.delay_minutes ??
+                fallbackDisruption.delay_minutes ??
+                0,
+            ),
+            is_cancelled:
+              Boolean(announcementDisruption.is_cancelled) ||
+              Boolean(fallbackDisruption.is_cancelled),
+            message:
+              String(announcementDisruption.message || "").trim() ||
+              fallbackDisruption.message ||
+              "",
+          }
+        : fallbackDisruption;
 
       return {
         ...ticket,
@@ -380,7 +402,11 @@ export async function getTicketsByPassenger({ user_id, activeOnly = false }) {
       };
     });
 
-    return enriched.map(normalizeTicketRow);
+    const visibleTickets = activeOnly
+      ? enriched.filter((ticket) => !Boolean(ticket?.disruption?.is_cancelled))
+      : enriched;
+
+    return visibleTickets.map(normalizeTicketRow);
   } catch (error) {
     console.error("get tickets by passenger error", JSON.stringify(error));
     throw error;
