@@ -3,6 +3,13 @@ import { supabase } from "../config/supabase.js";
 class ScheduleService {
   normalizeScheduleStatus(value) {
     const raw = String(value || "").toLowerCase();
+    if (
+      ["cancelled", "canceled", "annule", "annulé", "cancellation"].includes(
+        raw,
+      )
+    ) {
+      return "cancelled";
+    }
     if (["retard", "en_retard", "late", "delayed"].includes(raw)) {
       return "delayed";
     }
@@ -12,7 +19,8 @@ class ScheduleService {
   normalizeAnnouncementInput(status, delayMinutes, remark) {
     const normalizedStatus = this.normalizeScheduleStatus(status);
     const parsedDelay = Number(delayMinutes ?? 0);
-    const safeDelay = Number.isFinite(parsedDelay) && parsedDelay > 0 ? parsedDelay : 0;
+    const safeDelay =
+      Number.isFinite(parsedDelay) && parsedDelay > 0 ? parsedDelay : 0;
 
     return {
       status: normalizedStatus,
@@ -21,8 +29,17 @@ class ScheduleService {
     };
   }
 
-  async upsertDelayAnnouncement(scheduleId, status, delayMinutes = 0, remark = "") {
-    const normalized = this.normalizeAnnouncementInput(status, delayMinutes, remark);
+  async upsertDelayAnnouncement(
+    scheduleId,
+    status,
+    delayMinutes = 0,
+    remark = "",
+  ) {
+    const normalized = this.normalizeAnnouncementInput(
+      status,
+      delayMinutes,
+      remark,
+    );
 
     if (normalized.status !== "delayed") {
       const { error: deactivateDelayError } = await supabase
@@ -67,8 +84,56 @@ class ScheduleService {
     }
   }
 
+  async upsertCancellationAnnouncement(scheduleId, status, remark = "") {
+    const normalizedStatus = this.normalizeScheduleStatus(status);
+
+    if (normalizedStatus !== "cancelled") {
+      const { error: deactivateCancellationError } = await supabase
+        .from("ticket_announcements")
+        .update({ is_active: false })
+        .eq("schedule_id", String(scheduleId))
+        .eq("type", "cancellation")
+        .eq("is_active", true);
+
+      if (deactivateCancellationError) {
+        throw new Error(deactivateCancellationError.message);
+      }
+
+      return;
+    }
+
+    const { error: deactivateExistingCancellationError } = await supabase
+      .from("ticket_announcements")
+      .update({ is_active: false })
+      .eq("schedule_id", String(scheduleId))
+      .eq("type", "cancellation")
+      .eq("is_active", true);
+
+    if (deactivateExistingCancellationError) {
+      throw new Error(deactivateExistingCancellationError.message);
+    }
+
+    const { error: insertCancellationError } = await supabase
+      .from("ticket_announcements")
+      .insert([
+        {
+          schedule_id: String(scheduleId),
+          type: "cancellation",
+          delay_minutes: 0,
+          message: String(remark || "").trim() || "Schedule cancelled by admin",
+          is_active: true,
+        },
+      ]);
+
+    if (insertCancellationError) {
+      throw new Error(insertCancellationError.message);
+    }
+  }
+
   async getActiveAnnouncementsMap(scheduleIds = []) {
-    const cleanedIds = [...new Set((scheduleIds ?? []).filter(Boolean).map((id) => String(id)))];
+    const cleanedIds = [
+      ...new Set((scheduleIds ?? []).filter(Boolean).map((id) => String(id))),
+    ];
     if (cleanedIds.length === 0) {
       return new Map();
     }
@@ -98,6 +163,15 @@ class ScheduleService {
     return (schedules ?? []).map((schedule) => {
       const announcement = announcementsMap.get(String(schedule.schedule_id));
 
+      if (announcement?.type === "cancellation") {
+        return {
+          ...schedule,
+          schedule_status: "cancelled",
+          delay_minutes: 0,
+          remark: String(announcement.message || ""),
+        };
+      }
+
       if (!announcement || announcement.type !== "delay") {
         return {
           ...schedule,
@@ -126,7 +200,9 @@ class ScheduleService {
       arrival_time: scheduleData?.arrival_time,
       available_seats: scheduleData?.available_seats,
       current_price:
-        Number.isFinite(parsedPrice) && parsedPrice >= 0 ? parsedPrice : Number(defaultPrice || 0),
+        Number.isFinite(parsedPrice) && parsedPrice >= 0
+          ? parsedPrice
+          : Number(defaultPrice || 0),
       direction: scheduleData?.direction ?? null,
     };
   }
@@ -157,11 +233,21 @@ class ScheduleService {
     const departureDate = new Date(scheduleData?.departure_time);
     const arrivalDate = new Date(scheduleData?.arrival_time);
 
-    if (!route_id || !transport_id || !scheduleData?.departure_time || !scheduleData?.arrival_time) {
-      throw new Error("route_id, transport_id, departure_time and arrival_time are required");
+    if (
+      !route_id ||
+      !transport_id ||
+      !scheduleData?.departure_time ||
+      !scheduleData?.arrival_time
+    ) {
+      throw new Error(
+        "route_id, transport_id, departure_time and arrival_time are required",
+      );
     }
 
-    if (Number.isNaN(departureDate.getTime()) || Number.isNaN(arrivalDate.getTime())) {
+    if (
+      Number.isNaN(departureDate.getTime()) ||
+      Number.isNaN(arrivalDate.getTime())
+    ) {
       throw new Error("Invalid date format for departure_time or arrival_time");
     }
 
@@ -237,6 +323,12 @@ class ScheduleService {
       scheduleData?.remark,
     );
 
+    await this.upsertCancellationAnnouncement(
+      data.schedule_id,
+      scheduleData?.schedule_status,
+      scheduleData?.remark,
+    );
+
     return data;
   }
   //get all schedules
@@ -270,7 +362,9 @@ class ScheduleService {
     if (date) {
       const startOfDay = `${date}T00:00:00.000Z`;
       const endOfDay = `${date}T23:59:59.999Z`;
-      query = query.gte("departure_time", startOfDay).lte("departure_time", endOfDay);
+      query = query
+        .gte("departure_time", startOfDay)
+        .lte("departure_time", endOfDay);
     }
 
     const { data, error } = await query;
@@ -318,7 +412,9 @@ class ScheduleService {
           ]);
 
         if (annError) {
-          throw new Error(`${message} | cancellation fallback failed: ${annError.message}`);
+          throw new Error(
+            `${message} | cancellation fallback failed: ${annError.message}`,
+          );
         }
 
         return {
@@ -414,8 +510,13 @@ class ScheduleService {
       updateData?.remark,
     );
 
+    await this.upsertCancellationAnnouncement(
+      id,
+      updateData?.schedule_status,
+      updateData?.remark,
+    );
+
     return data;
   }
 }
 export default new ScheduleService();
-
