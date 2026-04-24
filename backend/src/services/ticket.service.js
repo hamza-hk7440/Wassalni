@@ -170,19 +170,6 @@ const TICKET_DETAILS_SELECT = `
   )
 `;
 
-function isMissingSchemaError(error) {
-  const code = String(error?.code || "").toUpperCase();
-  const message = String(error?.message || "").toLowerCase();
-
-  return (
-    code === "42P01" ||
-    code === "42703" ||
-    /relation .* does not exist|column .* does not exist|table .* does not exist/.test(
-      message,
-    )
-  );
-}
-
 function isUuid(value) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     String(value || "").trim(),
@@ -202,9 +189,6 @@ async function getActiveDisruptionsByScheduleIds(scheduleIds) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    if (isMissingSchemaError(error)) {
-      return new Map();
-    }
     throw error;
   }
 
@@ -254,10 +238,6 @@ async function processPendingRefundsForUser({ user_id }) {
     .lte("release_at", nowIso);
 
   if (pendingError) {
-    if (isMissingSchemaError(pendingError)) {
-      // Refund tables/columns not ready yet in DB; skip auto-processing gracefully.
-      return;
-    }
     throw pendingError;
   }
 
@@ -334,9 +314,6 @@ async function getRefundRequestsByTicketIds({ ticketIds, user_id }) {
     .order("requested_at", { ascending: false });
 
   if (error) {
-    if (isMissingSchemaError(error)) {
-      return new Map();
-    }
     throw error;
   }
 

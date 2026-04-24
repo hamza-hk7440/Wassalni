@@ -13,7 +13,6 @@ import cors from "cors";
 const app = express();
 app.use(cors());
 
-
 // import cors from "cors";
 // const app = express();
 
@@ -59,6 +58,8 @@ function renderPaymentCallbackPage({
   status,
   transactionId,
   extraParams = "",
+  webRedirectUrl = "",
+  useDeepLink = true,
 }) {
   const isSuccess = status === "success";
   const title = isSuccess ? "Payment Confirmed" : "Payment Cancelled";
@@ -66,6 +67,12 @@ function renderPaymentCallbackPage({
     ? "Your payment was received. You can return to Wasalni now."
     : "Your payment was not completed. You can return to Wasalni and try again.";
   const deepLink = `myapp://payment/callback?status=${status}&transaction_id=${encodeURIComponent(transactionId || "")}${extraParams}`;
+  const fallbackWebUrl =
+    webRedirectUrl || process.env.FRONTEND_URL || "http://localhost:5173/login";
+  const destinationUrl = useDeepLink ? deepLink : fallbackWebUrl;
+  const buttonText = useDeepLink
+    ? "Return to Wasalni App"
+    : "Back to Wasalni Web";
 
   return `
 <!DOCTYPE html>
@@ -115,16 +122,32 @@ function renderPaymentCallbackPage({
     <div class="card">
       <h1>${title}</h1>
       <p>${message}</p>
-      <a class="button" href="${deepLink}">Return to Wasalni App</a>
+      <a class="button" href="${destinationUrl}">${buttonText}</a>
     </div>
     <script>
       setTimeout(function () {
-        window.location.href = "${deepLink}";
+        window.location.href = "${destinationUrl}";
       }, 700);
     </script>
   </body>
 </html>
 `;
+}
+
+function resolveWebRedirectUrl(rawUrl) {
+  if (!rawUrl) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(String(rawUrl));
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null;
+    }
+    return parsed.toString();
+  } catch {
+    return null;
+  }
 }
 
 function extractTransactionId(rawValue) {
@@ -140,6 +163,9 @@ app.get("/payment-success", async (req, res) => {
   const transactionId = extractTransactionId(
     req.query.transaction_id || req.query.order_id || "",
   );
+  const platform = String(req.query.platform || "").toLowerCase();
+  const webRedirectUrl = resolveWebRedirectUrl(req.query.web_redirect);
+  const useDeepLink = platform === "mobile" || platform === "app";
   // Important: do not finalize here. Webhook is the single source of truth
   // for marking recharge completed and crediting balance.
   const deepLinkExtra = "";
@@ -148,6 +174,8 @@ app.get("/payment-success", async (req, res) => {
       status: "success",
       transactionId,
       extraParams: deepLinkExtra,
+      webRedirectUrl,
+      useDeepLink,
     }),
   );
 });
@@ -156,9 +184,17 @@ app.get("/payment-error", (req, res) => {
   const transactionId = extractTransactionId(
     req.query.transaction_id || req.query.order_id || "",
   );
-  res
-    .status(200)
-    .send(renderPaymentCallbackPage({ status: "failed", transactionId }));
+  const platform = String(req.query.platform || "").toLowerCase();
+  const webRedirectUrl = resolveWebRedirectUrl(req.query.web_redirect);
+  const useDeepLink = platform === "mobile" || platform === "app";
+  res.status(200).send(
+    renderPaymentCallbackPage({
+      status: "failed",
+      transactionId,
+      webRedirectUrl,
+      useDeepLink,
+    }),
+  );
 });
 
 const PORT = 3000;
