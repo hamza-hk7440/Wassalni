@@ -44,6 +44,7 @@ function Schedules() {
   const [delayMinutes, setDelayMinutes] = useState('0');
   const [remark, setRemark] = useState('');
   const [editingId, setEditingId] = useState(null);
+  const [isFormOpen, setIsFormOpen] = useState(true);
 
   useEffect(() => {
     fetchSchedules();
@@ -169,6 +170,7 @@ function Schedules() {
     }
 
     setEditingId(schedule.schedule_id);
+  setIsFormOpen(true);
     setRouteId(schedule.route_id ? String(schedule.route_id) : '');
     setTransportId(schedule.transport_id ? String(schedule.transport_id) : '');
     setDepartureTime(toDateTimeLocalValue(schedule.departure_time));
@@ -261,7 +263,32 @@ function Schedules() {
           </div>
         </section>
 
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 md:p-7 rounded-3xl border shadow-lg" style={{ backgroundColor: 'rgba(255,255,255,0.92)', borderColor: palette.frostBlue }}>
+        <section className="rounded-3xl border p-4 sm:p-6 md:p-7 shadow-lg space-y-4" style={{ backgroundColor: 'rgba(255,255,255,0.92)', borderColor: palette.frostBlue }}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <h2 className="text-base sm:text-lg font-bold" style={{ color: palette.deepOcean }}>
+              {editingId ? t('editSchedule', 'Edit Schedule') : t('addSchedule', 'Add Schedule')}
+            </h2>
+            <button
+              type="button"
+              onClick={() => {
+                if (isFormOpen && editingId) {
+                  resetForm();
+                }
+                setIsFormOpen((prev) => !prev);
+              }}
+              className="font-semibold text-sm sm:text-base px-4 py-2.5 sm:py-3 rounded-xl border w-full sm:w-auto"
+              style={{
+                borderColor: isFormOpen ? palette.dangerText : palette.classicBlue,
+                color: palette.pureWhite,
+                backgroundColor: isFormOpen ? palette.dangerText : palette.classicBlue,
+              }}
+            >
+              {isFormOpen ? t('close', 'Fermer') : t('open', 'Ouvrir')}
+            </button>
+          </div>
+
+          {isFormOpen && (
+        <form onSubmit={handleSubmit}>
           {formError && (
             <div
               className="mb-4 rounded-xl border px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold"
@@ -438,6 +465,8 @@ function Schedules() {
             )}
           </div>
         </form>
+          )}
+        </section>
 
         <div className="rounded-3xl border shadow-lg overflow-hidden" style={{ borderColor: palette.frostBlue, backgroundColor: palette.pureWhite }}>
           <div className="hidden md:block overflow-x-auto">
