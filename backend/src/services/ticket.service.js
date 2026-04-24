@@ -440,11 +440,7 @@ export async function getTicketsByPassenger({ user_id, activeOnly = false }) {
       };
     });
 
-    const visibleTickets = activeOnly
-      ? enriched.filter((ticket) => !Boolean(ticket?.disruption?.is_cancelled))
-      : enriched;
-
-    return visibleTickets.map(normalizeTicketRow);
+    return enriched.map(normalizeTicketRow);
   } catch (error) {
     console.error("get tickets by passenger error", JSON.stringify(error));
     throw error;
